@@ -59,6 +59,7 @@ export function LiquidGlassPanel({
   config = DEFAULT_LIQUID_GLASS_CONFIG,
 }: LiquidGlassPanelProps) {
   const glassRef = useRef<HTMLDivElement>(null);
+  const instanceRef = useRef<LiquidGlass | null>(null);
 
   useEffect(() => {
     const glassElement = glassRef.current;
@@ -79,26 +80,30 @@ export function LiquidGlassPanel({
     root.style.position = "relative";
     root.style.isolation = "isolate";
 
+    // Начальная конфигурация должна попасть в элемент
+    // ДО запуска Liquid Glass.
     glass.dataset.config = JSON.stringify(config);
 
-    let instance: LiquidGlass | null = null;
     let cancelled = false;
 
     const initialize = async () => {
       try {
-        const created = await LiquidGlass.init({
+        const instance = await LiquidGlass.init({
           root,
           glassElements: [glass],
         });
 
         if (cancelled) {
-          created.destroy();
+          instance.destroy();
           return;
         }
 
-        instance = created;
+        instanceRef.current = instance;
       } catch (error) {
-        console.error("Liquid Glass initialization failed:", error);
+        console.error(
+          "Liquid Glass initialization failed:",
+          error,
+        );
       }
     };
 
@@ -106,7 +111,9 @@ export function LiquidGlassPanel({
 
     return () => {
       cancelled = true;
-      instance?.destroy();
+
+      instanceRef.current?.destroy();
+      instanceRef.current = null;
     };
   }, []);
 
@@ -117,7 +124,19 @@ export function LiquidGlassPanel({
       return;
     }
 
-    glassElement.dataset.config = JSON.stringify(config);
+    // Обновляем конфигурацию непосредственно на HTML-элементе.
+    const configString = JSON.stringify(config);
+
+    glassElement.dataset.config = configString;
+
+    // И главное:
+    // немедленно говорим Liquid Glass,
+    // что стекло нужно перерисовать.
+    const instance = instanceRef.current;
+
+    if (instance) {
+      instance.markChanged(glassElement);
+    }
   }, [config]);
 
   return (
