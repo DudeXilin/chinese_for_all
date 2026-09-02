@@ -1,5 +1,9 @@
 {
   "private": true,
+  "allowScripts": {
+    "@ybouane/liquidglass": true,
+    "unrs-resolver": true
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
