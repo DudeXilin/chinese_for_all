@@ -1,23 +1,17 @@
 "use client";
-
 import { useEffect, useRef } from "react";
 import { LiquidGlass } from "@ybouane/liquidglass";
-
 type LiquidGlassPanelProps = {
 children: React.ReactNode;
 className?: string;
 };
-
 export function LiquidGlassPanel({
 children,
 className = "",
 }: LiquidGlassPanelProps) {
 const glassRef = useRef<HTMLDivElement>(null);
-
 useEffect(() => {
 const glassElement = glassRef.current;
-
-```
 if (!glassElement) return;
 
 const rootElement = glassElement.parentElement;
@@ -74,15 +68,13 @@ return () => {
   cancelled = true;
   instance?.destroy();
 };
-```
-
 }, []);
-
 return (
 <div
 ref={glassRef}
-className={`relative ${className}`}
+className={relative ${className}}
 >
-{children} </div>
+{children}
+</div>
 );
 }
