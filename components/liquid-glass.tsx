@@ -1,80 +1,86 @@
 "use client";
+
 import { useEffect, useRef } from "react";
 import { LiquidGlass } from "@ybouane/liquidglass";
+
 type LiquidGlassPanelProps = {
-children: React.ReactNode;
-className?: string;
+  children: React.ReactNode;
+  className?: string;
 };
+
 export function LiquidGlassPanel({
-children,
-className = "",
+  children,
+  className = "",
 }: LiquidGlassPanelProps) {
-const glassRef = useRef<HTMLDivElement>(null);
-useEffect(() => {
-const glassElement = glassRef.current;
-if (!glassElement) return;
+  const glassRef = useRef<HTMLDivElement>(null);
 
-const rootElement = glassElement.parentElement;
+  useEffect(() => {
+    const glassElement = glassRef.current;
 
-if (!rootElement) return;
+    if (!glassElement) return;
 
-const glass: HTMLElement = glassElement;
-const root: HTMLElement = rootElement;
+    const rootElement = glassElement.parentElement;
 
-glass.dataset.config = JSON.stringify({
-  blurAmount: 0.25,
-  refraction: 0.8,
-  chromAberration: 0.08,
-  edgeHighlight: 0.12,
-  specular: 0.2,
-  fresnel: 1,
-  distortion: 0.04,
-  cornerRadius: 32,
-  zRadius: 24,
-  opacity: 0.92,
-  saturation: 0.08,
-  brightness: 0.02,
-  shadowOpacity: 0.3,
-  shadowSpread: 10,
-  shadowOffsetY: 4,
-  floating: false,
-  button: false,
-});
+    if (!rootElement) return;
 
-let instance: LiquidGlass | null = null;
-let cancelled = false;
+    const glass: HTMLElement = glassElement;
+    const root: HTMLElement = rootElement;
 
-async function initialize() {
-  try {
-    const created = await LiquidGlass.init({
-      root,
-      glassElements: [glass],
+    glass.dataset.config = JSON.stringify({
+      blurAmount: 0.25,
+      refraction: 0.8,
+      chromAberration: 0.08,
+      edgeHighlight: 0.12,
+      specular: 0.2,
+      fresnel: 1,
+      distortion: 0.04,
+      cornerRadius: 32,
+      zRadius: 24,
+      opacity: 0.92,
+      saturation: 0.08,
+      brightness: 0.02,
+      shadowOpacity: 0.3,
+      shadowSpread: 10,
+      shadowOffsetY: 4,
+      floating: false,
+      button: false,
     });
 
-    if (cancelled) {
-      created.destroy();
-      return;
+    let instance: LiquidGlass | null = null;
+    let cancelled = false;
+
+    async function initialize() {
+      try {
+        const created = await LiquidGlass.init({
+          root,
+          glassElements: [glass],
+        });
+
+        if (cancelled) {
+          created.destroy();
+          return;
+        }
+
+        instance = created;
+      } catch (error) {
+        console.error("Liquid Glass initialization failed:", error);
+      }
     }
 
-    instance = created;
-  } catch (error) {
-    console.error("Liquid Glass initialization failed:", error);
-  }
-}
+    initialize();
 
-initialize();
+    return () => {
+      cancelled = true;
+      instance?.destroy();
+    };
+  }, []);
 
-return () => {
-  cancelled = true;
-  instance?.destroy();
-};
-}, []);
-return (
-<div
-ref={glassRef}
-className={relative ${className}}
->
-{children}
-</div>
-);
+  return (
+    <div
+      ref={glassRef}
+      className={`relative ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
