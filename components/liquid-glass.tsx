@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { LiquidGlass } from "@ybouane/liquidglass";
 
-type LiquidGlassProps = {
+type LiquidGlassPanelProps = {
   children: React.ReactNode;
   className?: string;
   config?: Record<string, number | boolean>;
@@ -13,7 +13,7 @@ export function LiquidGlassPanel({
   children,
   className = "",
   config = {},
-}: LiquidGlassProps) {
+}: LiquidGlassPanelProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
 
@@ -27,8 +27,8 @@ export function LiquidGlassPanel({
       blurAmount: 0,
       refraction: 0.69,
       chromAberration: 0.05,
-      edgeHighlight: 0.08,
-      specular: 0.12,
+      edgeHighlight: 0.12,
+      specular: 0.16,
       fresnel: 1,
       distortion: 0,
       cornerRadius: 32,
@@ -43,8 +43,7 @@ export function LiquidGlassPanel({
       ...config,
     });
 
-    let instance: Awaited<ReturnType<typeof LiquidGlass.init>> | null =
-      null;
+    let instance: Awaited<ReturnType<typeof LiquidGlass.init>> | null = null;
     let cancelled = false;
 
     LiquidGlass.init({
@@ -61,6 +60,21 @@ export function LiquidGlassPanel({
 
     return () => {
       cancelled = true;
+      instance?.destroy();
+    };
+  }, [config]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <div
+        ref={glassRef}
+        className={`rounded-[2rem] ${className}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}      cancelled = true;
       instance?.destroy();
     };
   }, [config]);
