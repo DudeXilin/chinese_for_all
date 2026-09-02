@@ -30,28 +30,30 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:px-12">
-      {/* Мягкие цветовые пятна за стеклом */}
-      <div className="pointer-events-none absolute left-[-10%] top-[10%] h-72 w-72 rounded-full bg-[#d9b7aa]/35 blur-3xl dark:bg-[#9b6f68]/20" />
-      <div className="pointer-events-none absolute right-[-5%] top-[20%] h-96 w-96 rounded-full bg-[#b9c9ae]/35 blur-3xl dark:bg-[#718269]/15" />
-      <div className="pointer-events-none absolute bottom-[-10%] left-[35%] h-80 w-80 rounded-full bg-[#d8c9a9]/30 blur-3xl dark:bg-[#82775e]/15" />
+    <main className="relative min-h-screen bg-[#f4f0e8] px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:bg-[#171817] dark:text-[#eeeae2]">
+      {/* Мягкий фон */}
+      <div className="pointer-events-none fixed left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/45 blur-[100px]" />
+
+      <div className="pointer-events-none fixed right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/40 blur-[110px]" />
+
+      <div className="pointer-events-none fixed bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/35 blur-[120px]" />
 
       <div className="relative mx-auto max-w-5xl">
         {/* Верхняя панель */}
         <header className="flex items-center justify-between">
           <a
             href="/"
-            className="text-sm font-semibold tracking-[0.18em] text-black/70 dark:text-white/75"
+            className="text-sm font-semibold tracking-[0.18em] text-black/60 transition-opacity hover:opacity-70 dark:text-white/65"
           >
             CHINESE FOR ALL ☭
           </a>
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/30 text-sm font-medium shadow-sm backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.04]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/50 bg-white/25 text-lg shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/10">
             ☯
           </div>
         </header>
 
-        {/* Профиль */}
+        {/* Заголовок */}
         <section className="mx-auto max-w-3xl py-16 sm:py-24">
           <div className="mb-8 text-center">
             <p className="text-xs font-medium uppercase tracking-[0.3em] text-black/40 dark:text-white/40">
@@ -63,17 +65,15 @@ export default function ProfilePage() {
             </h1>
           </div>
 
-          {/* Главное стекло */}
-          <LiquidGlassPanel
-            className="rounded-[2rem] border border-white/30 bg-white/[0.08] p-7 shadow-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-10"
-          >
+          {/* ЕДИНСТВЕННЫЙ настоящий Liquid Glass */}
+          <LiquidGlassPanel className="p-7 sm:p-10">
             {/* Пользователь */}
             <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/35 bg-white/20 text-3xl shadow-lg">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/20 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-white/15 dark:bg-white/10">
                 {loading ? "…" : "☯"}
               </div>
 
-              <div className="mt-5 sm:ml-7 sm:mt-0">
+              <div className="mt-5 min-w-0 sm:ml-7 sm:mt-0">
                 <p className="text-xs font-medium uppercase tracking-[0.22em] text-black/40 dark:text-white/40">
                   Пользователь
                 </p>
@@ -85,13 +85,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Разделитель */}
-            <div className="my-9 h-px bg-black/[0.08] dark:bg-white/[0.08]" />
+            <div className="my-9 h-px bg-white/45 dark:bg-white/10" />
 
             {/* Статистика */}
             <div className="grid gap-4 sm:grid-cols-2">
-              <LiquidGlassPanel
-                className="rounded-[1.5rem] border border-white/25 bg-white/[0.08] p-6 dark:border-white/10 dark:bg-white/[0.035]"
-              >
+              <div className="rounded-[1.5rem] border border-white/45 bg-white/20 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.07]">
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
                   Выучено
                 </p>
@@ -103,11 +101,9 @@ export default function ProfilePage() {
                 <p className="mt-2 text-sm text-black/45 dark:text-white/45">
                   слов
                 </p>
-              </LiquidGlassPanel>
+              </div>
 
-              <LiquidGlassPanel
-                className="rounded-[1.5rem] border border-white/25 bg-white/[0.08] p-6 dark:border-white/10 dark:bg-white/[0.035]"
-              >
+              <div className="rounded-[1.5rem] border border-white/45 bg-white/20 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.07]">
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
                   Прогресс
                 </p>
@@ -119,19 +115,22 @@ export default function ProfilePage() {
                 <p className="mt-2 text-sm text-black/45 dark:text-white/45">
                   0 из 1000 слов
                 </p>
-              </LiquidGlassPanel>
+              </div>
             </div>
 
-            {/* Прогресс */}
-            <div className="mt-7 rounded-[1.5rem] border border-white/20 bg-white/[0.06] p-6 dark:border-white/[0.08] dark:bg-white/[0.025]">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">1000 самых частых слов</span>
+            {/* Курс */}
+            <div className="mt-7 rounded-[1.5rem] border border-white/40 bg-white/15 p-6 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.05]">
+              <div className="flex items-center justify-between gap-4 text-sm">
+                <span className="font-medium">
+                  1000 самых частых слов
+                </span>
+
                 <span className="text-black/40 dark:text-white/40">
                   0 / 1000
                 </span>
               </div>
 
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.08]">
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
                 <div className="h-full w-0 rounded-full bg-[#b85c5c]/75" />
               </div>
             </div>
@@ -139,7 +138,7 @@ export default function ProfilePage() {
             {/* Выход */}
             <button
               onClick={handleLogout}
-              className="mt-8 w-full rounded-full border border-black/[0.08] bg-white/[0.08] px-6 py-4 text-sm font-medium transition-all hover:bg-white/[0.18] dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:bg-white/[0.09]"
+              className="mt-8 w-full rounded-full border border-white/40 bg-white/15 px-6 py-4 text-sm font-medium shadow-sm backdrop-blur-xl transition-all hover:bg-white/25 active:scale-[0.99] dark:border-white/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.1]"
             >
               Выйти из аккаунта
             </button>
