@@ -16,10 +16,18 @@ export default function Home() {
               Open • Free • For Everyone
             </p>
 
-            <h1 className="mt-8 w-full text-center text-[clamp(1.35rem,4.5vw,4.5rem)] font-extrabold leading-[1.15] tracking-tight whitespace-nowrap">
-              <span className="block">CHINESE FREE FOR EVERYONE ☭</span>
-              <span className="mt-3 block">КИТАЙСКИЙ БЕСПЛАТНО ДЛЯ ВСЕХ ☭</span>
-              <span className="mt-3 block">全民免费学习中文 ☭</span>
+            <h1 className="mx-auto mt-8 w-full max-w-[1100px] text-center font-extrabold leading-[1.15] tracking-tight">
+              <span className="block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">
+                CHINESE FREE FOR EVERYONE ☭
+              </span>
+            
+              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">
+                КИТАЙСКИЙ БЕСПЛАТНО ДЛЯ ВСЕХ ☭
+              </span>
+            
+              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)] tracking-[0.08em]">
+                全民免费学习中文 ☭
+              </span>
             </h1>
 
             <div className="mt-16 grid gap-4 sm:grid-cols-3">
