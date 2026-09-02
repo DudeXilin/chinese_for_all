@@ -1,17 +1,12 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LiquidGlassPanel } from "@/components/liquid-glass";
-
 export default function ProfilePage() {
 const [email, setEmail] = useState("Загрузка...");
 const [loading, setLoading] = useState(true);
-
 useEffect(() => {
 const supabase = createClient();
-
-```
 supabase.auth.getUser().then(({ data }) => {
   if (data.user) {
     setEmail(data.user.email ?? "Пользователь");
@@ -21,24 +16,16 @@ supabase.auth.getUser().then(({ data }) => {
 
   setLoading(false);
 });
-```
-
 }, []);
-
 async function handleLogout() {
 const supabase = createClient();
-
-```
 await supabase.auth.signOut();
 window.location.href = "/";
-```
-
 }
-
-return ( <main className="relative min-h-screen overflow-visible bg-[#f4f0e8] px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:bg-[#171817] dark:text-[#eeeae2]">
-{/* Мягкий фон */} <div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/45 blur-[100px]" />
-
-```
+return (
+<main className="relative min-h-screen overflow-visible bg-[#f4f0e8] px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:bg-[#171817] dark:text-[#eeeae2]">
+{/* Мягкий фон */}
+<div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/45 blur-[100px]" />
   <div className="pointer-events-none absolute right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/40 blur-[110px]" />
 
   <div className="pointer-events-none absolute bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/35 blur-[120px]" />
@@ -149,7 +136,5 @@ return ( <main className="relative min-h-screen overflow-visible bg-[#f4f0e8] px
     </div>
   </LiquidGlassPanel>
 </main>
-```
-
 );
 }
