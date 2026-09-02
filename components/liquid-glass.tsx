@@ -6,13 +6,11 @@ import { LiquidGlass } from "@ybouane/liquidglass";
 type LiquidGlassPanelProps = {
   children: React.ReactNode;
   className?: string;
-  config?: Record<string, number | boolean>;
 };
 
 export function LiquidGlassPanel({
   children,
   className = "",
-  config = {},
 }: LiquidGlassPanelProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
@@ -26,21 +24,20 @@ export function LiquidGlassPanel({
     glass.dataset.config = JSON.stringify({
       blurAmount: 0,
       refraction: 0.69,
-      chromAberration: 0.05,
+      chromAberration: 0.06,
       edgeHighlight: 0.12,
-      specular: 0.16,
+      specular: 0.18,
       fresnel: 1,
       distortion: 0,
       cornerRadius: 32,
-      zRadius: 22,
-      opacity: 0.82,
+      zRadius: 24,
+      opacity: 0.9,
       saturation: 0,
       tintStrength: 0,
-      brightness: 0.03,
-      shadowOpacity: 0.18,
-      shadowSpread: 8,
-      shadowOffsetY: 3,
-      ...config,
+      brightness: 0.02,
+      shadowOpacity: 0.2,
+      shadowSpread: 10,
+      shadowOffsetY: 4,
     });
 
     let instance: Awaited<ReturnType<typeof LiquidGlass.init>> | null = null;
@@ -62,28 +59,17 @@ export function LiquidGlassPanel({
       cancelled = true;
       instance?.destroy();
     };
-  }, [config]);
+  }, []);
 
   return (
     <div ref={rootRef} className="relative">
-      <div
-        ref={glassRef}
-        className={`rounded-[2rem] ${className}`}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}      cancelled = true;
-      instance?.destroy();
-    };
-  }, [config]);
+      <div className="absolute inset-0 rounded-[2rem] bg-[#d9b7aa]/30" />
+      <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#b9c9ae]/35 blur-2xl" />
+      <div className="absolute -bottom-20 -left-12 h-48 w-48 rounded-full bg-[#d8c9a9]/35 blur-2xl" />
 
-  return (
-    <div ref={rootRef} className="relative">
       <div
         ref={glassRef}
-        className={`relative overflow-visible ${className}`}
+        className={`relative rounded-[2rem] ${className}`}
       >
         {children}
       </div>
