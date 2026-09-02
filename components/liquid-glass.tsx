@@ -22,22 +22,22 @@ export function LiquidGlassPanel({
     if (!root || !glass) return;
 
     glass.dataset.config = JSON.stringify({
-      blurAmount: 0,
-      refraction: 0.69,
-      chromAberration: 0.06,
-      edgeHighlight: 0.12,
-      specular: 0.18,
-      fresnel: 1,
+      blurAmount: 0.18,
+      refraction: 0.78,
+      chromAberration: 0.04,
+      edgeHighlight: 0.1,
+      specular: 0.2,
+      fresnel: 1.15,
       distortion: 0,
       cornerRadius: 32,
-      zRadius: 24,
-      opacity: 0.9,
-      saturation: 0,
+      zRadius: 28,
+      opacity: 0.45,
+      saturation: 0.05,
       tintStrength: 0,
       brightness: 0.02,
-      shadowOpacity: 0.2,
-      shadowSpread: 10,
-      shadowOffsetY: 4,
+      shadowOpacity: 0.22,
+      shadowSpread: 12,
+      shadowOffsetY: 5,
     });
 
     let instance: Awaited<ReturnType<typeof LiquidGlass.init>> | null = null;
@@ -46,14 +46,18 @@ export function LiquidGlassPanel({
     LiquidGlass.init({
       root,
       glassElements: [glass],
-    }).then((createdInstance) => {
-      if (cancelled) {
-        createdInstance.destroy();
-        return;
-      }
+    })
+      .then((createdInstance) => {
+        if (cancelled) {
+          createdInstance.destroy();
+          return;
+        }
 
-      instance = createdInstance;
-    });
+        instance = createdInstance;
+      })
+      .catch((error) => {
+        console.error("Liquid Glass initialization failed:", error);
+      });
 
     return () => {
       cancelled = true;
@@ -63,13 +67,15 @@ export function LiquidGlassPanel({
 
   return (
     <div ref={rootRef} className="relative">
-      <div className="absolute inset-0 rounded-[2rem] bg-[#d9b7aa]/30" />
-      <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#b9c9ae]/35 blur-2xl" />
-      <div className="absolute -bottom-20 -left-12 h-48 w-48 rounded-full bg-[#d8c9a9]/35 blur-2xl" />
+      <div className="pointer-events-none absolute -left-20 -top-16 h-72 w-72 rounded-full bg-[#d8aaa0]/45 blur-3xl" />
+
+      <div className="pointer-events-none absolute -right-20 top-20 h-80 w-80 rounded-full bg-[#b8c7a8]/45 blur-3xl" />
+
+      <div className="pointer-events-none absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-[#d8c69f]/40 blur-3xl" />
 
       <div
         ref={glassRef}
-        className={`relative rounded-[2rem] ${className}`}
+        className={`relative overflow-visible rounded-[2rem] border border-white/45 bg-transparent shadow-[0_25px_70px_rgba(0,0,0,0.16)] ${className}`}
       >
         {children}
       </div>
