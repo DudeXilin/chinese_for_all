@@ -1,14 +1,30 @@
+"use client";
+
+import { LiquidGlassPanel } from "@/components/liquid-glass";
+
 export default function Home() {
   return (
-    <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
+    <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
+      {/* Настоящий фон. Он является отдельным элементом внутри root,
+          чтобы Liquid Glass мог его захватывать и преломлять. */}
+      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
+        <div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/60 blur-[100px]" />
+
+        <div className="pointer-events-none absolute right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/55 blur-[110px]" />
+
+        <div className="pointer-events-none absolute bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/50 blur-[120px]" />
+
+        <div className="pointer-events-none absolute left-[35%] top-[35%] h-[260px] w-[260px] rounded-full bg-white/25 blur-[90px]" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-6xl">
         {/* Верхняя панель */}
         <header className="flex items-center justify-between">
           <div className="text-sm font-semibold tracking-[0.18em] text-black/70 dark:text-white/75">
             CHINESE FOR ALL ☭
           </div>
 
-          <div className="h-10 w-10 rounded-full border border-black/10 bg-white/45 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5" />
+          <div className="h-10 w-10 rounded-full border border-white/60 bg-white/20 shadow-sm dark:border-white/15 dark:bg-white/5" />
         </header>
 
         {/* Главный экран */}
@@ -34,12 +50,12 @@ export default function Home() {
               </span>
             </h1>
 
-            {/* Будущие возможности */}
+            {/* Карточки возможностей */}
             <div className="mx-auto mt-20 grid max-w-5xl gap-5 sm:grid-cols-3">
               {/* Карточка 1 */}
-              <div className="group min-h-56 rounded-[2rem] border border-black/[0.08] bg-white/45 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] backdrop-blur-2xl transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.08] dark:bg-white/[0.045]">
+              <div className="group min-h-56 rounded-[2rem] border border-white/50 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.1] dark:bg-white/[0.045]">
                 <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/[0.045] text-xl dark:bg-white/[0.07]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-xl dark:bg-white/[0.07]">
                     文
                   </div>
 
@@ -60,9 +76,9 @@ export default function Home() {
               </div>
 
               {/* Карточка 2 */}
-              <div className="group min-h-56 rounded-[2rem] border border-black/[0.08] bg-white/45 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] backdrop-blur-2xl transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.08] dark:bg-white/[0.045]">
+              <div className="group min-h-56 rounded-[2rem] border border-white/50 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.1] dark:bg-white/[0.045]">
                 <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/[0.045] text-xl dark:bg-white/[0.07]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-xl dark:bg-white/[0.07]">
                     学
                   </div>
 
@@ -83,9 +99,9 @@ export default function Home() {
               </div>
 
               {/* Карточка 3 */}
-              <div className="group min-h-56 rounded-[2rem] border border-black/[0.08] bg-white/45 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] backdrop-blur-2xl transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.08] dark:bg-white/[0.045]">
+              <div className="group min-h-56 rounded-[2rem] border border-white/50 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.06)] transition-transform duration-500 hover:-translate-y-1 dark:border-white/[0.1] dark:bg-white/[0.045]">
                 <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/[0.045] text-xl dark:bg-white/[0.07]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-xl dark:bg-white/[0.07]">
                     ☯
                   </div>
 
@@ -118,18 +134,20 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Будущая зона с мусоркой */}
-            <div className="mx-auto mt-20 max-w-3xl rounded-[2.5rem] border border-black/[0.07] bg-white/25 px-8 py-12 shadow-[0_20px_80px_rgba(80,70,50,0.04)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.025]">
-              <div className="text-5xl opacity-70">🗑️</div>
+            {/* Liquid Glass */}
+            <LiquidGlassPanel className="mx-auto mt-20 max-w-3xl overflow-hidden rounded-[2.5rem]">
+              <div className="px-8 py-12">
+                <div className="text-5xl opacity-80">🗑️</div>
 
-              <p className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-black/35 dark:text-white/35">
-                Всё лишнее отправляется сюда
-              </p>
+                <p className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
+                  Всё лишнее отправляется сюда
+                </p>
 
-              <p className="mt-3 text-sm text-black/40 dark:text-white/40">
-                Google · Duolingo · App Store · 💵 · ₽
-              </p>
-            </div>
+                <p className="mt-3 text-sm text-black/50 dark:text-white/50">
+                  Google · Duolingo · App Store · 💵 · ₽
+                </p>
+              </div>
+            </LiquidGlassPanel>
 
             {/* GitHub / вклад сообщества */}
             <div className="mx-auto mt-20 max-w-2xl pb-12">
@@ -144,7 +162,7 @@ export default function Home() {
                 href="https://github.com/DudeXilin/chinese_for_all"
                 target="_blank"
                 rel="noreferrer"
-                className="mt-6 inline-flex items-center rounded-full border border-black/10 bg-white/45 px-6 py-3 text-sm font-medium shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/65 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+                className="mt-6 inline-flex items-center rounded-full border border-white/50 bg-white/20 px-6 py-3 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white/35 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
               >
                 GitHub проекта →
               </a>
