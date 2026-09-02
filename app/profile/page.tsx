@@ -248,7 +248,10 @@ export default function ProfilePage() {
         </h1>
       </div>
 
-      <LiquidGlassPanel className="mx-auto w-full max-w-3xl rounded-[2rem]">
+      <LiquidGlassPanel
+        config={glassConfig}
+        className="mx-auto w-full max-w-3xl rounded-[2rem]"
+      >
         <div className="p-7 sm:p-10">
           <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
             <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/15 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/15 dark:bg-white/5">
