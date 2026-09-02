@@ -15,13 +15,20 @@ export function LiquidGlassPanel({
   const glassRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const glass = glassRef.current;
+    const glassElement = glassRef.current;
 
-    if (!glass) return;
+    if (!glassElement) {
+      return;
+    }
 
-    const root = glass.parentElement;
+    const rootElement = glassElement.parentElement;
 
-    if (!root) return;
+    if (!rootElement) {
+      return;
+    }
+
+    const glass = glassElement as HTMLElement;
+    const root = rootElement as HTMLElement;
 
     root.style.position = "relative";
     root.style.isolation = "isolate";
@@ -49,10 +56,10 @@ export function LiquidGlassPanel({
     let instance: LiquidGlass | null = null;
     let cancelled = false;
 
-    async function initialize() {
+    const initialize = async () => {
       try {
         const created = await LiquidGlass.init({
-          root,
+          root: root,
           glassElements: [glass],
         });
 
@@ -65,7 +72,7 @@ export function LiquidGlassPanel({
       } catch (error) {
         console.error("Liquid Glass initialization failed:", error);
       }
-    }
+    };
 
     initialize();
 
