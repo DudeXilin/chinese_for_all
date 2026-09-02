@@ -15,33 +15,33 @@ export function LiquidGlassPanel({
   const glassRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const glassElement = glassRef.current;
+    const glass = glassRef.current;
 
-    if (!glassElement) return;
+    if (!glass) return;
 
-    const rootElement = glassElement.parentElement;
+    const root = glass.parentElement;
 
-    if (!rootElement) return;
+    if (!root) return;
 
-    const glass: HTMLElement = glassElement;
-    const root: HTMLElement = rootElement;
+    root.style.position = "relative";
+    root.style.isolation = "isolate";
 
     glass.dataset.config = JSON.stringify({
-      blurAmount: 0.25,
-      refraction: 0.8,
-      chromAberration: 0.08,
-      edgeHighlight: 0.12,
-      specular: 0.2,
+      blurAmount: 0.18,
+      refraction: 1.15,
+      chromAberration: 0.14,
+      edgeHighlight: 0.22,
+      specular: 0.4,
       fresnel: 1,
-      distortion: 0.04,
+      distortion: 0.08,
       cornerRadius: 32,
-      zRadius: 24,
-      opacity: 0.92,
-      saturation: 0.08,
-      brightness: 0.02,
-      shadowOpacity: 0.3,
-      shadowSpread: 10,
-      shadowOffsetY: 4,
+      zRadius: 30,
+      opacity: 0.96,
+      saturation: 0.12,
+      brightness: 0.03,
+      shadowOpacity: 0.35,
+      shadowSpread: 12,
+      shadowOffsetY: 6,
       floating: false,
       button: false,
     });
@@ -78,9 +78,11 @@ export function LiquidGlassPanel({
   return (
     <div
       ref={glassRef}
-      className={`relative ${className}`}
+      className={`relative isolate ${className}`}
     >
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 }
