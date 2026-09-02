@@ -2,11 +2,151 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { LiquidGlassPanel } from "@/components/liquid-glass";
+import {
+  DEFAULT_LIQUID_GLASS_CONFIG,
+  LiquidGlassPanel,
+  type LiquidGlassConfig,
+} from "@/components/liquid-glass";
+
+type SliderConfig = {
+  key: keyof LiquidGlassConfig;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+};
+
+const SLIDERS: SliderConfig[] = [
+  {
+    key: "blurAmount",
+    label: "Blur",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "refraction",
+    label: "Refraction",
+    min: 0,
+    max: 2,
+    step: 0.01,
+  },
+  {
+    key: "chromAberration",
+    label: "Chromatic aberration",
+    min: 0,
+    max: 0.5,
+    step: 0.01,
+  },
+  {
+    key: "edgeHighlight",
+    label: "Edge highlight",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "specular",
+    label: "Specular",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "fresnel",
+    label: "Fresnel",
+    min: 0,
+    max: 2,
+    step: 0.01,
+  },
+  {
+    key: "distortion",
+    label: "Distortion",
+    min: 0,
+    max: 0.5,
+    step: 0.01,
+  },
+  {
+    key: "cornerRadius",
+    label: "Corner radius",
+    min: 0,
+    max: 100,
+    step: 1,
+  },
+  {
+    key: "zRadius",
+    label: "Z radius / bevel depth",
+    min: 0,
+    max: 100,
+    step: 1,
+  },
+  {
+    key: "opacity",
+    label: "Opacity",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "saturation",
+    label: "Saturation",
+    min: -1,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "tintStrength",
+    label: "Tint strength",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "brightness",
+    label: "Brightness",
+    min: -0.5,
+    max: 0.5,
+    step: 0.01,
+  },
+  {
+    key: "shadowOpacity",
+    label: "Shadow opacity",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "shadowSpread",
+    label: "Shadow spread",
+    min: 0,
+    max: 50,
+    step: 1,
+  },
+  {
+    key: "shadowOffsetY",
+    label: "Shadow Y offset",
+    min: -30,
+    max: 50,
+    step: 1,
+  },
+];
+
+function formatValue(value: number, step: number) {
+  if (step >= 1) {
+    return value.toFixed(0);
+  }
+
+  return value.toFixed(2);
+}
 
 export default function ProfilePage() {
   const [email, setEmail] = useState("Загрузка...");
   const [loading, setLoading] = useState(true);
+
+  const [glassConfig, setGlassConfig] =
+    useState<LiquidGlassConfig>(DEFAULT_LIQUID_GLASS_CONFIG);
+
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -22,6 +162,53 @@ export default function ProfilePage() {
     });
   }, []);
 
+  function updateGlassValue(
+    key: keyof LiquidGlassConfig,
+    value: number,
+  ) {
+    setGlassConfig((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function updateBoolean(
+    key: "floating" | "button",
+    value: boolean,
+  ) {
+    setGlassConfig((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function updateBevelMode(value: 0 | 1) {
+    setGlassConfig((current) => ({
+      ...current,
+      bevelMode: value,
+    }));
+  }
+
+  function resetGlassConfig() {
+    setGlassConfig(DEFAULT_LIQUID_GLASS_CONFIG);
+    setCopied(false);
+  }
+
+  async function copyGlassConfig() {
+    const output = JSON.stringify(glassConfig, null, 2);
+
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   async function handleLogout() {
     const supabase = createClient();
 
@@ -31,14 +218,10 @@ export default function ProfilePage() {
 
   return (
     <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
-      {/* Настоящий фон внутри root */}
       <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
         <div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/60 blur-[100px]" />
-
         <div className="pointer-events-none absolute right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/55 blur-[110px]" />
-
         <div className="pointer-events-none absolute bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/50 blur-[120px]" />
-
         <div className="pointer-events-none absolute left-[35%] top-[35%] h-[260px] w-[260px] rounded-full bg-white/25 blur-[90px]" />
       </div>
 
@@ -65,7 +248,7 @@ export default function ProfilePage() {
         </h1>
       </div>
 
-      <LiquidGlassPanel className="mx-auto w-full max-w-3xl overflow-hidden rounded-[2rem]">
+      <LiquidGlassPanel className="mx-auto w-full max-w-3xl rounded-[2rem]">
         <div className="p-7 sm:p-10">
           <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
             <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/15 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/15 dark:bg-white/5">
@@ -90,11 +273,9 @@ export default function ProfilePage() {
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
                 Выучено
               </p>
-
               <p className="mt-4 text-5xl font-semibold tracking-tight">
                 0
               </p>
-
               <p className="mt-2 text-sm text-black/45 dark:text-white/45">
                 слов
               </p>
@@ -104,11 +285,9 @@ export default function ProfilePage() {
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
                 Прогресс
               </p>
-
               <p className="mt-4 text-5xl font-semibold tracking-tight">
                 0%
               </p>
-
               <p className="mt-2 text-sm text-black/45 dark:text-white/45">
                 0 из 1000 слов
               </p>
@@ -120,7 +299,6 @@ export default function ProfilePage() {
               <span className="font-medium">
                 1000 самых частых слов
               </span>
-
               <span className="text-black/40 dark:text-white/40">
                 0 / 1000
               </span>
@@ -139,6 +317,175 @@ export default function ProfilePage() {
           </button>
         </div>
       </LiquidGlassPanel>
+
+      {/* LIQUID GLASS DEBUG TOOL */}
+
+      <section className="relative z-10 mx-auto mt-10 w-full max-w-3xl pb-20">
+        <div className="rounded-[2rem] border border-black/10 bg-white/30 p-6 shadow-[0_20px_60px_rgba(80,70,50,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-black/40 dark:text-white/40">
+                Developer tool
+              </p>
+
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                Liquid Glass Debug
+              </h2>
+
+              <p className="mt-2 max-w-xl text-sm leading-6 text-black/50 dark:text-white/45">
+                Двигай ползунки и смотри на стекло выше. Все изменения
+                применяются сразу.
+              </p>
+            </div>
+
+            <button
+              onClick={resetGlassConfig}
+              className="rounded-full border border-black/10 bg-white/40 px-4 py-2 text-xs font-medium transition hover:bg-white/60 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
+            >
+              Сбросить
+            </button>
+          </div>
+
+          <div className="mt-8 space-y-6">
+            {SLIDERS.map((slider) => {
+              const value = glassConfig[slider.key];
+
+              if (typeof value !== "number") {
+                return null;
+              }
+
+              return (
+                <div key={slider.key}>
+                  <div className="mb-2 flex items-center justify-between gap-4">
+                    <label className="text-sm font-medium">
+                      {slider.label}
+                    </label>
+
+                    <span className="min-w-[58px] rounded-full bg-black/[0.05] px-3 py-1 text-center font-mono text-xs text-black/60 dark:bg-white/[0.07] dark:text-white/60">
+                      {formatValue(value, slider.step)}
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={slider.min}
+                    max={slider.max}
+                    step={slider.step}
+                    value={value}
+                    onChange={(event) =>
+                      updateGlassValue(
+                        slider.key,
+                        Number(event.target.value),
+                      )
+                    }
+                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-black/10 accent-black dark:bg-white/10 dark:accent-white"
+                  />
+
+                  <div className="mt-1 flex justify-between text-[10px] text-black/30 dark:text-white/30">
+                    <span>{formatValue(slider.min, slider.step)}</span>
+                    <span>{formatValue(slider.max, slider.step)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <label className="flex cursor-pointer items-center justify-between rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
+              <span>
+                <span className="block text-sm font-medium">
+                  Floating
+                </span>
+                <span className="mt-1 block text-xs text-black/40 dark:text-white/40">
+                  Drag glass
+                </span>
+              </span>
+
+              <input
+                type="checkbox"
+                checked={glassConfig.floating}
+                onChange={(event) =>
+                  updateBoolean("floating", event.target.checked)
+                }
+                className="h-5 w-5 accent-black dark:accent-white"
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-center justify-between rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
+              <span>
+                <span className="block text-sm font-medium">
+                  Button
+                </span>
+                <span className="mt-1 block text-xs text-black/40 dark:text-white/40">
+                  Hover / press
+                </span>
+              </span>
+
+              <input
+                type="checkbox"
+                checked={glassConfig.button}
+                onChange={(event) =>
+                  updateBoolean("button", event.target.checked)
+                }
+                className="h-5 w-5 accent-black dark:accent-white"
+              />
+            </label>
+
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
+              <div className="text-sm font-medium">
+                Bevel mode
+              </div>
+
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => updateBevelMode(0)}
+                  className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition ${
+                    glassConfig.bevelMode === 0
+                      ? "bg-black text-white dark:bg-white dark:text-black"
+                      : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
+                  }`}
+                >
+                  Pill
+                </button>
+
+                <button
+                  onClick={() => updateBevelMode(1)}
+                  className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition ${
+                    glassConfig.bevelMode === 1
+                      ? "bg-black text-white dark:bg-white dark:text-black"
+                      : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
+                  }`}
+                >
+                  Dome
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-[1.5rem] border border-black/10 bg-black/[0.03] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
+              Current configuration
+            </p>
+
+            <pre className="mt-4 max-h-72 overflow-auto rounded-[1rem] bg-black/[0.05] p-4 text-xs leading-6 text-black/70 dark:bg-black/20 dark:text-white/65">
+              {JSON.stringify(glassConfig, null, 2)}
+            </pre>
+          </div>
+
+          <button
+            onClick={copyGlassConfig}
+            className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-medium text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-black/85 active:translate-y-0 dark:bg-white dark:text-black dark:hover:bg-white/90"
+          >
+            {copied
+              ? "✓ Настройки скопированы"
+              : "Скопировать настройки"}
+          </button>
+
+          <p className="mt-3 text-center text-xs leading-5 text-black/35 dark:text-white/35">
+            После настройки просто пришли мне скопированный JSON.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }
