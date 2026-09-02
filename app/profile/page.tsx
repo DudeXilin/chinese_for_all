@@ -156,7 +156,6 @@ return ( <main className="relative min-h-screen overflow-visible bg-[#f4f0e8] px
     </div>
   </LiquidGlassPanel>
 </main>
-```
 
 );
 }
