@@ -217,139 +217,161 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
-        <div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/60 blur-[100px]" />
-        <div className="pointer-events-none absolute right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/55 blur-[110px]" />
-        <div className="pointer-events-none absolute bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/50 blur-[120px]" />
-        <div className="pointer-events-none absolute left-[35%] top-[35%] h-[260px] w-[260px] rounded-full bg-white/25 blur-[90px]" />
-      </div>
+    <main className="relative h-screen overflow-hidden text-[#292824] dark:text-[#eeeae2]">
+      {/* Фоновая фотография */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage:
+            "url('https://live.staticflickr.com/65535/54178310959_8f794eb438_b.jpg')",
+        }}
+      />
 
-      <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between">
-        <a
-          href="/"
-          className="text-sm font-semibold tracking-[0.18em] text-black/60 transition-opacity hover:opacity-70 dark:text-white/65"
-        >
-          CHINESE FOR ALL ☭
-        </a>
+      {/* Лёгкое затемнение фотографии, чтобы текст оставался читаемым */}
+      <div className="absolute inset-0 z-0 bg-white/20 dark:bg-black/25" />
 
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/20 text-lg shadow-sm dark:border-white/15 dark:bg-white/10">
-          ☯
-        </div>
-      </header>
+      {/* Затемнение по краям */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.18)_100%)]" />
 
-      <div className="relative z-10 mx-auto max-w-3xl py-16 text-center sm:py-24">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-black/40 dark:text-white/40">
-          Ваше пространство
-        </p>
-
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
-          Профиль
-        </h1>
-      </div>
-
-      <LiquidGlassPanel
-        config={glassConfig}
-        className="mx-auto w-full max-w-3xl rounded-[2rem]"
-      >
-        <div className="p-7 sm:p-10">
-          <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/15 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/15 dark:bg-white/5">
-              {loading ? "…" : "☯"}
-            </div>
-
-            <div className="mt-5 min-w-0 sm:ml-7 sm:mt-0">
-              <p className="text-xs font-medium uppercase tracking-[0.22em] text-black/40 dark:text-white/40">
-                Пользователь
-              </p>
-
-              <p className="mt-2 break-all text-xl font-semibold sm:text-2xl">
-                {email}
-              </p>
-            </div>
-          </div>
-
-          <div className="my-9 h-px bg-white/40 dark:bg-white/10" />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-white/40 bg-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
-                Выучено
-              </p>
-              <p className="mt-4 text-5xl font-semibold tracking-tight">
-                0
-              </p>
-              <p className="mt-2 text-sm text-black/45 dark:text-white/45">
-                слов
-              </p>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-white/40 bg-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
-                Прогресс
-              </p>
-              <p className="mt-4 text-5xl font-semibold tracking-tight">
-                0%
-              </p>
-              <p className="mt-2 text-sm text-black/45 dark:text-white/45">
-                0 из 1000 слов
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-7 rounded-[1.5rem] border border-white/35 bg-white/10 p-6 dark:border-white/10 dark:bg-white/[0.03]">
-            <div className="flex items-center justify-between gap-4 text-sm">
-              <span className="font-medium">
-                1000 самых частых слов
-              </span>
-              <span className="text-black/40 dark:text-white/40">
-                0 / 1000
-              </span>
-            </div>
-
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
-              <div className="h-full w-0 rounded-full bg-[#b85c5c]/75" />
-            </div>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="mt-8 w-full rounded-full border border-white/40 bg-white/10 px-6 py-4 text-sm font-medium shadow-sm transition-all hover:bg-white/20 active:scale-[0.99] dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.09]"
+      {/* Основной контент профиля */}
+      <div className="relative z-10 h-full overflow-y-auto px-5 py-6 sm:px-8 lg:pr-[390px]">
+        <header className="mx-auto flex max-w-5xl items-center justify-between">
+          <a
+            href="/"
+            className="rounded-full border border-white/40 bg-white/20 px-4 py-2 text-sm font-semibold tracking-[0.18em] text-black/65 shadow-sm backdrop-blur-xl transition-opacity hover:opacity-70 dark:border-white/15 dark:bg-black/10 dark:text-white/70"
           >
-            Выйти из аккаунта
-          </button>
+            CHINESE FOR ALL ☭
+          </a>
+
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/50 bg-white/20 text-lg shadow-sm backdrop-blur-xl dark:border-white/15 dark:bg-black/10">
+            ☯
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-3xl py-12 text-center sm:py-16">
+          <p className="text-xs font-medium uppercase tracking-[0.3em] text-black/50 dark:text-white/55">
+            Ваше пространство
+          </p>
+
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight drop-shadow-sm sm:text-5xl">
+            Профиль
+          </h1>
         </div>
-      </LiquidGlassPanel>
 
+        {/* Главное Liquid Glass окно */}
+        <LiquidGlassPanel
+          config={glassConfig}
+          className="mx-auto w-full max-w-3xl rounded-[2rem]"
+        >
+          <div className="p-7 sm:p-10">
+            <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/15 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/15 dark:bg-white/5">
+                {loading ? "…" : "☯"}
+              </div>
+
+              <div className="mt-5 min-w-0 sm:ml-7 sm:mt-0">
+                <p className="text-xs font-medium uppercase tracking-[0.22em] text-black/40 dark:text-white/40">
+                  Пользователь
+                </p>
+
+                <p className="mt-2 break-all text-xl font-semibold sm:text-2xl">
+                  {email}
+                </p>
+              </div>
+            </div>
+
+            <div className="my-9 h-px bg-white/40 dark:bg-white/10" />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-white/40 bg-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
+                  Выучено
+                </p>
+
+                <p className="mt-4 text-5xl font-semibold tracking-tight">
+                  0
+                </p>
+
+                <p className="mt-2 text-sm text-black/45 dark:text-white/45">
+                  слов
+                </p>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/40 bg-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/40 dark:text-white/40">
+                  Прогресс
+                </p>
+
+                <p className="mt-4 text-5xl font-semibold tracking-tight">
+                  0%
+                </p>
+
+                <p className="mt-2 text-sm text-black/45 dark:text-white/45">
+                  0 из 1000 слов
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-7 rounded-[1.5rem] border border-white/35 bg-white/10 p-6 dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="flex items-center justify-between gap-4 text-sm">
+                <span className="font-medium">
+                  1000 самых частых слов
+                </span>
+
+                <span className="text-black/40 dark:text-white/40">
+                  0 / 1000
+                </span>
+              </div>
+
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
+                <div className="h-full w-0 rounded-full bg-[#b85c5c]/75" />
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="mt-8 w-full rounded-full border border-white/40 bg-white/10 px-6 py-4 text-sm font-medium shadow-sm transition-all hover:bg-white/20 active:scale-[0.99] dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.09]"
+            >
+              Выйти из аккаунта
+            </button>
+          </div>
+        </LiquidGlassPanel>
+      </div>
+
+      {/* ====================================================== */}
       {/* LIQUID GLASS DEBUG TOOL */}
+      {/* ====================================================== */}
 
-      <section className="relative z-10 mx-auto mt-10 w-full max-w-3xl pb-20">
-        <div className="rounded-[2rem] border border-black/10 bg-white/30 p-6 shadow-[0_20px_60px_rgba(80,70,50,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <aside className="absolute right-4 top-4 z-30 flex w-[350px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-[1.75rem] border border-white/40 bg-white/35 shadow-[0_25px_80px_rgba(0,0,0,0.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-black/30 lg:bottom-4">
+        {/* Заголовок панели */}
+        <div className="shrink-0 border-b border-black/10 px-5 py-4 dark:border-white/10">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-black/40 dark:text-white/40">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-black/40 dark:text-white/40">
                 Developer tool
               </p>
 
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Liquid Glass Debug
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                Liquid Glass
               </h2>
-
-              <p className="mt-2 max-w-xl text-sm leading-6 text-black/50 dark:text-white/45">
-                Двигай ползунки и смотри на стекло выше. Все изменения
-                применяются сразу.
-              </p>
             </div>
 
             <button
               onClick={resetGlassConfig}
-              className="rounded-full border border-black/10 bg-white/40 px-4 py-2 text-xs font-medium transition hover:bg-white/60 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
+              className="rounded-full border border-black/10 bg-white/40 px-3 py-1.5 text-[10px] font-medium transition hover:bg-white/60 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
             >
               Сбросить
             </button>
           </div>
 
-          <div className="mt-8 space-y-6">
+          <p className="mt-2 text-xs leading-5 text-black/45 dark:text-white/45">
+            Меняй параметры и наблюдай за стеклом слева.
+          </p>
+        </div>
+
+        {/* Скроллируемая часть */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+          <div className="space-y-5">
             {SLIDERS.map((slider) => {
               const value = glassConfig[slider.key];
 
@@ -359,12 +381,12 @@ export default function ProfilePage() {
 
               return (
                 <div key={slider.key}>
-                  <div className="mb-2 flex items-center justify-between gap-4">
-                    <label className="text-sm font-medium">
+                  <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <label className="text-xs font-medium">
                       {slider.label}
                     </label>
 
-                    <span className="min-w-[58px] rounded-full bg-black/[0.05] px-3 py-1 text-center font-mono text-xs text-black/60 dark:bg-white/[0.07] dark:text-white/60">
+                    <span className="min-w-[52px] rounded-full bg-black/[0.05] px-2.5 py-1 text-center font-mono text-[10px] text-black/60 dark:bg-white/[0.07] dark:text-white/60">
                       {formatValue(value, slider.step)}
                     </span>
                   </div>
@@ -381,28 +403,35 @@ export default function ProfilePage() {
                         Number(event.target.value),
                       )
                     }
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-black/10 accent-black dark:bg-white/10 dark:accent-white"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-black/10 accent-black dark:bg-white/10 dark:accent-white"
                   />
 
-                  <div className="mt-1 flex justify-between text-[10px] text-black/30 dark:text-white/30">
-                    <span>{formatValue(slider.min, slider.step)}</span>
-                    <span>{formatValue(slider.max, slider.step)}</span>
+                  <div className="mt-0.5 flex justify-between text-[9px] text-black/25 dark:text-white/25">
+                    <span>
+                      {formatValue(slider.min, slider.step)}
+                    </span>
+
+                    <span>
+                      {formatValue(slider.max, slider.step)}
+                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <label className="flex cursor-pointer items-center justify-between rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
-              <span>
-                <span className="block text-sm font-medium">
+          {/* Переключатели */}
+          <div className="mt-6 grid gap-3">
+            <label className="flex cursor-pointer items-center justify-between rounded-[1rem] border border-black/10 bg-white/30 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <div>
+                <span className="block text-xs font-medium">
                   Floating
                 </span>
-                <span className="mt-1 block text-xs text-black/40 dark:text-white/40">
+
+                <span className="mt-0.5 block text-[10px] text-black/35 dark:text-white/35">
                   Drag glass
                 </span>
-              </span>
+              </div>
 
               <input
                 type="checkbox"
@@ -410,19 +439,20 @@ export default function ProfilePage() {
                 onChange={(event) =>
                   updateBoolean("floating", event.target.checked)
                 }
-                className="h-5 w-5 accent-black dark:accent-white"
+                className="h-4 w-4 accent-black dark:accent-white"
               />
             </label>
 
-            <label className="flex cursor-pointer items-center justify-between rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
-              <span>
-                <span className="block text-sm font-medium">
+            <label className="flex cursor-pointer items-center justify-between rounded-[1rem] border border-black/10 bg-white/30 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <div>
+                <span className="block text-xs font-medium">
                   Button
                 </span>
-                <span className="mt-1 block text-xs text-black/40 dark:text-white/40">
+
+                <span className="mt-0.5 block text-[10px] text-black/35 dark:text-white/35">
                   Hover / press
                 </span>
-              </span>
+              </div>
 
               <input
                 type="checkbox"
@@ -430,65 +460,66 @@ export default function ProfilePage() {
                 onChange={(event) =>
                   updateBoolean("button", event.target.checked)
                 }
-                className="h-5 w-5 accent-black dark:accent-white"
+                className="h-4 w-4 accent-black dark:accent-white"
               />
             </label>
+          </div>
 
-            <div className="rounded-[1.25rem] border border-black/10 bg-white/30 px-4 py-4 dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="text-sm font-medium">
-                Bevel mode
-              </div>
+          {/* Bevel mode */}
+          <div className="mt-3 rounded-[1rem] border border-black/10 bg-white/30 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="text-xs font-medium">
+              Bevel mode
+            </div>
 
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => updateBevelMode(0)}
-                  className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition ${
-                    glassConfig.bevelMode === 0
-                      ? "bg-black text-white dark:bg-white dark:text-black"
-                      : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
-                  }`}
-                >
-                  Pill
-                </button>
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={() => updateBevelMode(0)}
+                className={`flex-1 rounded-full px-3 py-2 text-[10px] font-medium transition ${
+                  glassConfig.bevelMode === 0
+                    ? "bg-black text-white dark:bg-white dark:text-black"
+                    : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
+                }`}
+              >
+                Pill
+              </button>
 
-                <button
-                  onClick={() => updateBevelMode(1)}
-                  className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition ${
-                    glassConfig.bevelMode === 1
-                      ? "bg-black text-white dark:bg-white dark:text-black"
-                      : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
-                  }`}
-                >
-                  Dome
-                </button>
-              </div>
+              <button
+                onClick={() => updateBevelMode(1)}
+                className={`flex-1 rounded-full px-3 py-2 text-[10px] font-medium transition ${
+                  glassConfig.bevelMode === 1
+                    ? "bg-black text-white dark:bg-white dark:text-black"
+                    : "bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/50"
+                }`}
+              >
+                Dome
+              </button>
             </div>
           </div>
 
-          <div className="mt-8 rounded-[1.5rem] border border-black/10 bg-black/[0.03] p-4 dark:border-white/10 dark:bg-white/[0.03]">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
+          {/* Текущий JSON */}
+          <div className="mt-6">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/30 dark:text-white/30">
               Current configuration
             </p>
 
-            <pre className="mt-4 max-h-72 overflow-auto rounded-[1rem] bg-black/[0.05] p-4 text-xs leading-6 text-black/70 dark:bg-black/20 dark:text-white/65">
+            <pre className="mt-2 max-h-48 overflow-auto rounded-[1rem] bg-black/[0.06] p-3 text-[9px] leading-5 text-black/65 dark:bg-black/25 dark:text-white/60">
               {JSON.stringify(glassConfig, null, 2)}
             </pre>
           </div>
+        </div>
 
+        {/* Кнопка копирования всегда внизу */}
+        <div className="shrink-0 border-t border-black/10 bg-white/20 p-4 dark:border-white/10 dark:bg-black/10">
           <button
             onClick={copyGlassConfig}
-            className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-medium text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-black/85 active:translate-y-0 dark:bg-white dark:text-black dark:hover:bg-white/90"
+            className="w-full rounded-full bg-black px-5 py-3 text-xs font-medium text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-black/85 active:translate-y-0 dark:bg-white dark:text-black dark:hover:bg-white/90"
           >
             {copied
               ? "✓ Настройки скопированы"
               : "Скопировать настройки"}
           </button>
-
-          <p className="mt-3 text-center text-xs leading-5 text-black/35 dark:text-white/35">
-            После настройки просто пришли мне скопированный JSON.
-          </p>
         </div>
-      </section>
+      </aside>
     </main>
   );
 }
