@@ -3,14 +3,60 @@
 import { useEffect, useRef } from "react";
 import { LiquidGlass } from "@ybouane/liquidglass";
 
+export type LiquidGlassConfig = {
+  blurAmount: number;
+  refraction: number;
+  chromAberration: number;
+  edgeHighlight: number;
+  specular: number;
+  fresnel: number;
+  distortion: number;
+  cornerRadius: number;
+  zRadius: number;
+  opacity: number;
+  saturation: number;
+  tintStrength: number;
+  brightness: number;
+  shadowOpacity: number;
+  shadowSpread: number;
+  shadowOffsetY: number;
+  floating: boolean;
+  button: boolean;
+  bevelMode: 0 | 1;
+};
+
+export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
+  blurAmount: 0.16,
+  refraction: 1.2,
+  chromAberration: 0.16,
+  edgeHighlight: 0.24,
+  specular: 0.42,
+  fresnel: 1,
+  distortion: 0.1,
+  cornerRadius: 32,
+  zRadius: 32,
+  opacity: 0.94,
+  saturation: 0.14,
+  tintStrength: 0,
+  brightness: 0.04,
+  shadowOpacity: 0.32,
+  shadowSpread: 14,
+  shadowOffsetY: 7,
+  floating: false,
+  button: false,
+  bevelMode: 0,
+};
+
 type LiquidGlassPanelProps = {
   children: React.ReactNode;
   className?: string;
+  config?: LiquidGlassConfig;
 };
 
 export function LiquidGlassPanel({
   children,
   className = "",
+  config = DEFAULT_LIQUID_GLASS_CONFIG,
 }: LiquidGlassPanelProps) {
   const glassRef = useRef<HTMLDivElement>(null);
 
@@ -33,25 +79,7 @@ export function LiquidGlassPanel({
     root.style.position = "relative";
     root.style.isolation = "isolate";
 
-    glass.dataset.config = JSON.stringify({
-      blurAmount: 0.16,
-      refraction: 1.2,
-      chromAberration: 0.16,
-      edgeHighlight: 0.24,
-      specular: 0.42,
-      fresnel: 1,
-      distortion: 0.1,
-      cornerRadius: 32,
-      zRadius: 32,
-      opacity: 0.94,
-      saturation: 0.14,
-      brightness: 0.04,
-      shadowOpacity: 0.32,
-      shadowSpread: 14,
-      shadowOffsetY: 7,
-      floating: false,
-      button: false,
-    });
+    glass.dataset.config = JSON.stringify(config);
 
     let instance: LiquidGlass | null = null;
     let cancelled = false;
@@ -59,7 +87,7 @@ export function LiquidGlassPanel({
     const initialize = async () => {
       try {
         const created = await LiquidGlass.init({
-          root: root,
+          root,
           glassElements: [glass],
         });
 
@@ -81,6 +109,16 @@ export function LiquidGlassPanel({
       instance?.destroy();
     };
   }, []);
+
+  useEffect(() => {
+    const glassElement = glassRef.current;
+
+    if (!glassElement) {
+      return;
+    }
+
+    glassElement.dataset.config = JSON.stringify(config);
+  }, [config]);
 
   return (
     <div
