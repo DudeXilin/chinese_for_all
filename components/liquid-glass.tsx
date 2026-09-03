@@ -26,22 +26,22 @@ export type LiquidGlassConfig = {
 };
 
 export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
-  blurAmount: 0.16,
-  refraction: 1.2,
-  chromAberration: 0.16,
-  edgeHighlight: 0.24,
-  specular: 0.42,
-  fresnel: 1,
-  distortion: 0.1,
-  cornerRadius: 32,
-  zRadius: 32,
-  opacity: 0.94,
-  saturation: 0.14,
-  tintStrength: 0,
-  brightness: 0.04,
-  shadowOpacity: 0.32,
-  shadowSpread: 14,
-  shadowOffsetY: 7,
+  blurAmount: 0.2,
+  refraction: 0.62,
+  chromAberration: 0.05,
+  edgeHighlight: 0.05,
+  specular: 0,
+  fresnel: 1.12,
+  distortion: 0,
+  cornerRadius: 41,
+  zRadius: 41,
+  opacity: 1,
+  saturation: 0,
+  tintStrength: 0.45,
+  brightness: 0,
+  shadowOpacity: 0.31,
+  shadowSpread: 15,
+  shadowOffsetY: 0,
   floating: false,
   button: false,
   bevelMode: 0,
@@ -63,25 +63,16 @@ export function LiquidGlassPanel({
 
   useEffect(() => {
     const glassElement = glassRef.current;
-
-    if (!glassElement) {
-      return;
-    }
+    if (!glassElement) return;
 
     const rootElement = glassElement.parentElement;
-
-    if (!rootElement) {
-      return;
-    }
+    if (!rootElement) return;
 
     const glass = glassElement as HTMLElement;
     const root = rootElement as HTMLElement;
 
     root.style.position = "relative";
     root.style.isolation = "isolate";
-
-    // Начальная конфигурация должна попасть в элемент
-    // ДО запуска Liquid Glass.
     glass.dataset.config = JSON.stringify(config);
 
     let cancelled = false;
@@ -100,10 +91,7 @@ export function LiquidGlassPanel({
 
         instanceRef.current = instance;
       } catch (error) {
-        console.error(
-          "Liquid Glass initialization failed:",
-          error,
-        );
+        console.error("Liquid Glass initialization failed:", error);
       }
     };
 
@@ -111,7 +99,6 @@ export function LiquidGlassPanel({
 
     return () => {
       cancelled = true;
-
       instanceRef.current?.destroy();
       instanceRef.current = null;
     };
@@ -119,21 +106,11 @@ export function LiquidGlassPanel({
 
   useEffect(() => {
     const glassElement = glassRef.current;
+    if (!glassElement) return;
 
-    if (!glassElement) {
-      return;
-    }
+    glassElement.dataset.config = JSON.stringify(config);
 
-    // Обновляем конфигурацию непосредственно на HTML-элементе.
-    const configString = JSON.stringify(config);
-
-    glassElement.dataset.config = configString;
-
-    // И главное:
-    // немедленно говорим Liquid Glass,
-    // что стекло нужно перерисовать.
     const instance = instanceRef.current;
-
     if (instance) {
       instance.markChanged(glassElement);
     }
