@@ -53,6 +53,18 @@ type LiquidGlassPanelProps = {
   config?: LiquidGlassConfig;
 };
 
+function isMobileGlassDevice() {
+  if (typeof navigator === "undefined") return false;
+
+  const ua = navigator.userAgent || "";
+  const isAndroid = /Android/i.test(ua);
+  const isAppleMobile =
+    /iPhone|iPad|iPod/i.test(ua) ||
+    (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+
+  return isAndroid || isAppleMobile;
+}
+
 export function LiquidGlassPanel({
   children,
   className = "",
@@ -70,10 +82,16 @@ export function LiquidGlassPanel({
 
     const glass = glassElement as HTMLElement;
     const root = rootElement as HTMLElement;
+    const mobile = isMobileGlassDevice();
 
     root.style.position = "relative";
     root.style.isolation = "isolate";
     glass.dataset.config = JSON.stringify(config);
+    glass.dataset.mobileFallback = mobile ? "true" : "false";
+
+    if (mobile) {
+      return;
+    }
 
     let cancelled = false;
 
@@ -92,6 +110,7 @@ export function LiquidGlassPanel({
         instanceRef.current = instance;
       } catch (error) {
         console.error("Liquid Glass initialization failed:", error);
+        glass.dataset.mobileFallback = "true";
       }
     };
 
@@ -116,10 +135,24 @@ export function LiquidGlassPanel({
     }
   }, [config]);
 
+  const fallbackStyle = {
+    "--lg-blur": `${Math.max(10, Math.round(config.blurAmount * 50))}px`,
+    "--lg-opacity": `${Math.max(0.58, Math.min(1, config.opacity))}`,
+    "--lg-saturation": `${Math.max(1, 1 + config.saturation)}`,
+    "--lg-tint": `${Math.max(0.08, Math.min(0.34, config.tintStrength * 0.42))}`,
+    "--lg-brightness": `${Math.max(0.82, 1 + config.brightness * 0.18)}`,
+    "--lg-edge": `${Math.max(0.04, Math.min(0.24, config.edgeHighlight + 0.06))}`,
+    "--lg-radius": `${Math.max(0, config.cornerRadius)}px`,
+    "--lg-shadow-opacity": `${Math.max(0, Math.min(0.55, config.shadowOpacity))}`,
+    "--lg-shadow-spread": `${Math.max(0, config.shadowSpread)}px`,
+    "--lg-shadow-y": `${config.shadowOffsetY}px`,
+  } as React.CSSProperties;
+
   return (
     <div
       ref={glassRef}
       className={`relative isolate ${className}`}
+      style={fallbackStyle}
     >
       <div className="relative z-10">
         {children}
