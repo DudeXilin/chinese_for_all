@@ -3,6 +3,51 @@
 import Link from "next/link";
 import { LiquidGlassPanel } from "@/components/liquid-glass";
 
+const glassBackground = (
+  <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
+    <div className="pointer-events-none absolute left-[-20%] top-[-20%] h-[260px] w-[260px] rounded-full bg-[#d6aaa0]/70 blur-[80px]" />
+    <div className="pointer-events-none absolute right-[-15%] top-[10%] h-[300px] w-[300px] rounded-full bg-[#b9c9ad]/65 blur-[90px]" />
+    <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[300px] w-[300px] rounded-full bg-[#d8c69f]/60 blur-[95px]" />
+  </div>
+);
+
+function FeatureCard({
+  icon,
+  number,
+  title,
+  description,
+}: {
+  icon: string;
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="relative min-h-56 overflow-hidden rounded-[2rem]">
+      {glassBackground}
+      <LiquidGlassPanel className="h-full overflow-hidden rounded-[2rem] transition-transform duration-500 hover:-translate-y-1">
+        <div className="flex h-full min-h-56 flex-col p-7 text-left">
+          <div className="flex items-start justify-between">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-xl dark:border-white/10 dark:bg-white/[0.07]">
+              {icon}
+            </div>
+            <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
+              {number}
+            </span>
+          </div>
+
+          <div className="mt-auto pt-12">
+            <p className="text-xl font-semibold">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">
+              {description}
+            </p>
+          </div>
+        </div>
+      </LiquidGlassPanel>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
@@ -24,9 +69,7 @@ export default function Home() {
             aria-label="Открыть профиль"
             className="group flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/20 shadow-[0_8px_30px_rgba(80,70,50,0.08)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/35 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
           >
-            <span className="text-lg transition-transform duration-300 group-hover:scale-110">
-              ◉
-            </span>
+            <span className="text-lg transition-transform duration-300 group-hover:scale-110">◉</span>
           </Link>
         </header>
 
@@ -37,52 +80,15 @@ export default function Home() {
             </p>
 
             <h1 className="mx-auto mt-8 w-full max-w-[1100px] text-center font-extrabold leading-[1.15] tracking-tight">
-              <span className="block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">
-                CHINESE FREE FOR EVERYONE ☭
-              </span>
-              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">
-                КИТАЙСКИЙ БЕСПЛАТНО ДЛЯ ВСЕХ ☭
-              </span>
-              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)] tracking-[0.08em]">
-                全民免费学习中文 ☭
-              </span>
+              <span className="block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">CHINESE FREE FOR EVERYONE ☭</span>
+              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)]">КИТАЙСКИЙ БЕСПЛАТНО ДЛЯ ВСЕХ ☭</span>
+              <span className="mt-3 block whitespace-nowrap text-[clamp(1.25rem,4.2vw,4.5rem)] tracking-[0.08em]">全民免费学习中文 ☭</span>
             </h1>
 
             <div className="mx-auto mt-20 grid max-w-5xl gap-5 sm:grid-cols-3">
-              <div className="group min-h-56 rounded-[2rem] border border-white/55 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/30 dark:border-white/[0.1] dark:bg-white/[0.045] dark:hover:bg-white/[0.08]">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/25 text-xl shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.07]">
-                    文
-                  </div>
-                  <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">01</span>
-                </div>
-                <div className="mt-12">
-                  <p className="text-xl font-semibold">1000 самых нужных слов</p>
-                  <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">Карточки для изучения китайского языка</p>
-                </div>
-              </div>
-
-              <div className="group min-h-56 rounded-[2rem] border border-white/55 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/30 dark:border-white/[0.1] dark:bg-white/[0.045] dark:hover:bg-white/[0.08]">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/25 text-xl shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.07]">学</div>
-                  <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">02</span>
-                </div>
-                <div className="mt-12">
-                  <p className="text-xl font-semibold">Учись в своём ритме</p>
-                  <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">Простая среда без рекламы и платных стен</p>
-                </div>
-              </div>
-
-              <div className="group min-h-56 rounded-[2rem] border border-white/55 bg-white/20 p-7 text-left shadow-[0_20px_60px_rgba(80,70,50,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/30 dark:border-white/[0.1] dark:bg-white/[0.045] dark:hover:bg-white/[0.08]">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/25 text-xl shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.07]">☯</div>
-                  <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">03</span>
-                </div>
-                <div className="mt-12">
-                  <p className="text-xl font-semibold">Твой прогресс</p>
-                  <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">Сколько уже знаешь и сколько ещё впереди</p>
-                </div>
-              </div>
+              <FeatureCard icon="文" number="01" title="1000 самых нужных слов" description="Карточки для изучения китайского языка" />
+              <FeatureCard icon="学" number="02" title="Учись в своём ритме" description="Простая среда без рекламы и платных стен" />
+              <FeatureCard icon="☯" number="03" title="Твой прогресс" description="Сколько уже знаешь и сколько ещё впереди" />
             </div>
 
             <div className="mx-auto mt-20 max-w-2xl text-base leading-7 text-black/60 dark:text-white/60 sm:text-lg">
@@ -90,13 +96,16 @@ export default function Home() {
               <p className="mt-5 font-semibold text-black/75 dark:text-white/75">В помойку мошенников! Знания — бесценны!</p>
             </div>
 
-            <LiquidGlassPanel className="mx-auto mt-20 max-w-3xl overflow-hidden rounded-[2.5rem]">
-              <div className="px-8 py-12">
-                <div className="text-5xl opacity-80">🗑️</div>
-                <p className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-black/45 dark:text-white/45">Всё лишнее отправляется сюда</p>
-                <p className="mt-3 text-sm text-black/50 dark:text-white/50">Google · Duolingo · App Store · 💵 · ₽</p>
-              </div>
-            </LiquidGlassPanel>
+            <div className="relative mx-auto mt-20 max-w-3xl overflow-hidden rounded-[2.5rem]">
+              {glassBackground}
+              <LiquidGlassPanel className="overflow-hidden rounded-[2.5rem]">
+                <div className="px-8 py-12">
+                  <div className="text-5xl opacity-80">🗑️</div>
+                  <p className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-black/45 dark:text-white/45">Всё лишнее отправляется сюда</p>
+                  <p className="mt-3 text-sm text-black/50 dark:text-white/50">Google · Duolingo · App Store · 💵 · ₽</p>
+                </div>
+              </LiquidGlassPanel>
+            </div>
 
             <div className="mx-auto mt-20 max-w-2xl pb-12">
               <p className="text-sm leading-6 text-black/45 dark:text-white/45">
