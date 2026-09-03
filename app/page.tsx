@@ -4,10 +4,14 @@ import Link from "next/link";
 import { LiquidGlassPanel } from "@/components/liquid-glass";
 
 const glassBackground = (
-  <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
-    <div className="pointer-events-none absolute left-[-20%] top-[-20%] h-[260px] w-[260px] rounded-full bg-[#d6aaa0]/70 blur-[80px]" />
-    <div className="pointer-events-none absolute right-[-15%] top-[10%] h-[300px] w-[300px] rounded-full bg-[#b9c9ad]/65 blur-[90px]" />
-    <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[300px] w-[300px] rounded-full bg-[#d8c69f]/60 blur-[95px]" />
+  <div className="absolute inset-0 -z-10 overflow-hidden rounded-[2rem] bg-[#f4f0e8] dark:bg-[#171817]">
+    <img
+      src="/liquid-glass-bg.webp"
+      alt=""
+      draggable={false}
+      className="h-full w-full object-cover"
+    />
+    <div className="pointer-events-none absolute inset-0 bg-white/10 dark:bg-black/15" />
   </div>
 );
 
@@ -52,10 +56,13 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
       <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
-        <div className="pointer-events-none absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#d6aaa0]/60 blur-[100px]" />
-        <div className="pointer-events-none absolute right-[-8%] top-[15%] h-[480px] w-[480px] rounded-full bg-[#b9c9ad]/55 blur-[110px]" />
-        <div className="pointer-events-none absolute bottom-[-15%] left-[28%] h-[500px] w-[500px] rounded-full bg-[#d8c69f]/50 blur-[120px]" />
-        <div className="pointer-events-none absolute left-[35%] top-[35%] h-[260px] w-[260px] rounded-full bg-white/25 blur-[90px]" />
+        <img
+          src="/liquid-glass-bg.webp"
+          alt=""
+          draggable={false}
+          className="h-full w-full object-cover opacity-90"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-white/20 dark:bg-black/25" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl">
