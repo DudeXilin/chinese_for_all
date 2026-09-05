@@ -123,11 +123,12 @@ export function LiquidGlassPanel({
 }: LiquidGlassPanelProps) {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<LiquidGLInstance>(null);
-  const idRef = useRef(`liquid-glass-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`);
+  const idRef = useRef<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [rect, setRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
 
   useEffect(() => {
+    idRef.current = `liquid-glass-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
     setMounted(true);
   }, []);
 
@@ -162,7 +163,7 @@ export function LiquidGlassPanel({
   }, [debug]);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !idRef.current) return;
 
     const element = document.querySelector(`[data-liquid-glass-id="${idRef.current}"]`) as HTMLElement | null;
     if (!element) return;
@@ -231,7 +232,7 @@ export function LiquidGlassPanel({
 
   return (
     <div ref={placeholderRef} className={className} style={{ visibility: "hidden" }} aria-hidden="true">
-      {mounted && createPortal(
+      {mounted && idRef.current && createPortal(
         <div
           data-liquid-glass-id={idRef.current}
           className={`liquidGL z-[9999] ${className}`}
