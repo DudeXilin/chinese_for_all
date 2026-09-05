@@ -42,6 +42,73 @@ type LiquidGlassPanelProps = {
   debug?: boolean;
 };
 
+type Lens = any;
+
+const lenses = new Set<Lens>();
+let gui: any = null;
+let guiPromise: Promise<any> | null = null;
+
+async function ensureDebugGui() {
+  if (gui) return gui;
+  if (guiPromise) return guiPromise;
+
+  guiPromise = import("lil-gui").then(({ GUI }) => {
+    if (gui) return gui;
+
+    gui = new GUI({ title: "Liquid Glass", width: 240 });
+    const folder = gui.addFolder("Effect");
+
+    const numeric = [
+      ["refraction", 0, 0.1, 0.001],
+      ["aberration", 0, 1, 0.01],
+      ["bevelDepth", 0, 0.2, 0.001],
+      ["bevelWidth", 0, 0.5, 0.001],
+      ["frost", 0, 10, 0.1],
+      ["magnify", 1, 5, 0.1],
+      ["tiltFactor", 0, 25, 0.1],
+      ["tiltEase", 0, 1000, 10],
+    ] as const;
+
+    const first = () => Array.from(lenses)[0];
+
+    for (const [key, min, max, step] of numeric) {
+      folder.add({ get value() { return first()?.options[key]; }, set value(v: number) {
+        lenses.forEach((lens) => {
+          lens.options[key] = v;
+          lens.markChanged?.();
+        });
+      }}, "value", min, max, step).name(key);
+    }
+
+    for (const key of ["shadow", "specular", "tilt"] as const) {
+      folder.add({ get value() { return first()?.options[key]; }, set value(v: boolean) {
+        lenses.forEach((lens) => {
+          lens.options[key] = v;
+          if (key === "shadow") lens.setShadow?.(v);
+          if (key === "tilt") lens.setTilt?.(v);
+          lens.markChanged?.();
+        });
+      }}, "value").name(key);
+    }
+
+    folder
+      .add({ get value() { return first()?.options.reveal; }, set value(v: "none" | "fade") {
+        lenses.forEach((lens) => {
+          lens.options.reveal = v;
+          lens.markChanged?.();
+        });
+      }}, "value", ["none", "fade"])
+      .name("reveal");
+
+    folder.close();
+    return gui;
+  }).finally(() => {
+    guiPromise = null;
+  });
+
+  return guiPromise;
+}
+
 export function LiquidGlassPanel({
   children,
   className = "",
@@ -49,87 +116,33 @@ export function LiquidGlassPanel({
   debug = true,
 }: LiquidGlassPanelProps) {
   const glassRef = useRef<HTMLDivElement>(null);
-  const instanceRef = useRef<any>(null);
-  const guiRef = useRef<any>(null);
+  const instanceRef = useRef<Lens>(null);
 
   useEffect(() => {
     const element = glassRef.current;
     if (!element) return;
 
     let cancelled = false;
+    const targetId = `liquid-glass-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
+    element.dataset.liquidGlassTarget = targetId;
 
     const initialize = async () => {
       try {
         const instance = liquidGL({
-          target: element,
+          target: `[data-liquid-glass-target="${targetId}"]`,
           snapshot: "body",
           ...config,
-          on: {
-            init() {
-              if (!cancelled) element.dataset.liquidReady = "true";
-            },
-          },
         });
 
-        if (cancelled) {
+        if (cancelled || !instance) {
           instance?.destroy?.();
           return;
         }
 
         instanceRef.current = instance;
+        lenses.add(instance);
 
-        if (!debug) return;
-
-        const { GUI } = await import("lil-gui");
-        if (cancelled || !instanceRef.current) return;
-
-        const gui = new GUI({ title: "Liquid Glass", width: 250 });
-        guiRef.current = gui;
-
-        const folder = gui.addFolder("Effect");
-        const controls = [
-          ["refraction", 0, 0.1, 0.001],
-          ["aberration", 0, 1, 0.01],
-          ["bevelDepth", 0, 0.2, 0.001],
-          ["bevelWidth", 0, 0.5, 0.001],
-          ["frost", 0, 10, 0.1],
-          ["magnify", 1, 5, 0.1],
-          ["tiltFactor", 0, 25, 0.1],
-          ["tiltEase", 0, 1000, 10],
-        ] as const;
-
-        for (const [key, min, max, step] of controls) {
-          folder
-            .add(instance.options, key, min, max, step)
-            .onChange((value: number) => {
-              instance.options[key] = value;
-              instance.markChanged?.();
-              instance.renderer?.render?.();
-            });
-        }
-
-        folder.add(instance.options, "shadow").onChange((value: boolean) => {
-          instance.options.shadow = value;
-          instance.setShadow?.(value);
-        });
-
-        folder.add(instance.options, "specular").onChange((value: boolean) => {
-          instance.options.specular = value;
-          instance.markChanged?.();
-        });
-
-        folder.add(instance.options, "tilt").onChange((value: boolean) => {
-          instance.options.tilt = value;
-          instance.setTilt?.(value);
-        });
-
-        folder
-          .add(instance.options, "reveal", ["none", "fade"])
-          .onChange((value: "none" | "fade") => {
-            instance.options.reveal = value;
-          });
-
-        folder.close();
+        if (debug) await ensureDebugGui();
       } catch (error) {
         console.error("liquidGL initialization failed:", error);
       }
@@ -139,10 +152,17 @@ export function LiquidGlassPanel({
 
     return () => {
       cancelled = true;
-      guiRef.current?.destroy?.();
-      guiRef.current = null;
-      instanceRef.current?.destroy?.();
-      instanceRef.current = null;
+      const instance = instanceRef.current;
+      if (instance) {
+        lenses.delete(instance);
+        instance.destroy?.();
+        instanceRef.current = null;
+      }
+
+      if (lenses.size === 0 && gui) {
+        gui.destroy?.();
+        gui = null;
+      }
     };
   }, []);
 
