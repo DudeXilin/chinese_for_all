@@ -30,10 +30,10 @@ export default function ProfilePage() {
           src="/liquid-glass-bg.webp"
           alt=""
           draggable={false}
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          className="fixed inset-0 z-0 h-full w-full object-cover"
         />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-white/15 dark:bg-black/20" />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(0,0,0,0.22)_100%)]" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-white/15 dark:bg-black/20" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(0,0,0,0.22)_100%)]" />
 
         <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
           <a
@@ -56,7 +56,7 @@ export default function ProfilePage() {
           </h1>
         </div>
 
-        <LiquidGlassPanel className="relative z-10 mx-auto mb-20 w-[calc(100%-2.5rem)] max-w-3xl rounded-[2rem] sm:w-[calc(100%-4rem)]">
+        <LiquidGlassPanel className="mx-auto mb-20 w-[calc(100%-2.5rem)] max-w-3xl overflow-hidden rounded-[2rem] sm:w-[calc(100%-4rem)]">
           <div className="p-7 sm:p-10">
             <div className="flex flex-col items-center text-center sm:flex-row sm:text-left">
               <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/15 text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/15 dark:bg-white/5">
