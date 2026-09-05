@@ -1,116 +1,137 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { LiquidGlass } from "@ybouane/liquidglass";
+import liquidGL from "liquid-gl";
 
 export type LiquidGlassConfig = {
-  blurAmount: number;
+  resolution: number;
   refraction: number;
-  chromAberration: number;
-  edgeHighlight: number;
-  specular: number;
-  fresnel: number;
-  distortion: number;
-  cornerRadius: number;
-  zRadius: number;
-  opacity: number;
-  saturation: number;
-  tintStrength: number;
-  brightness: number;
-  shadowOpacity: number;
-  shadowSpread: number;
-  shadowOffsetY: number;
-  floating: boolean;
-  button: boolean;
-  bevelMode: 0 | 1;
+  aberration: number;
+  bevelDepth: number;
+  bevelWidth: number;
+  frost: number;
+  shadow: boolean;
+  specular: boolean;
+  reveal: "none" | "fade";
+  tilt: boolean;
+  tiltFactor: number;
+  tiltEase: number;
+  magnify: number;
 };
 
 export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
-  blurAmount: 0.2,
-  refraction: 0.62,
-  chromAberration: 0.05,
-  edgeHighlight: 0.05,
-  specular: 0,
-  fresnel: 1.12,
-  distortion: 0,
-  cornerRadius: 41,
-  zRadius: 41,
-  opacity: 1,
-  saturation: 0,
-  tintStrength: 0.45,
-  brightness: 0,
-  shadowOpacity: 0.31,
-  shadowSpread: 15,
-  shadowOffsetY: 0,
-  floating: false,
-  button: false,
-  bevelMode: 0,
+  resolution: 2,
+  refraction: 0,
+  aberration: 0,
+  bevelDepth: 0.052,
+  bevelWidth: 0.211,
+  frost: 2,
+  shadow: true,
+  specular: true,
+  reveal: "fade",
+  tilt: false,
+  tiltFactor: 5,
+  tiltEase: 400,
+  magnify: 1,
 };
 
 type LiquidGlassPanelProps = {
   children: React.ReactNode;
   className?: string;
   config?: LiquidGlassConfig;
+  debug?: boolean;
 };
-
-function isMobileGlassDevice() {
-  if (typeof navigator === "undefined") return false;
-
-  const ua = navigator.userAgent || "";
-  const isAndroid = /Android/i.test(ua);
-  const isAppleMobile =
-    /iPhone|iPad|iPod/i.test(ua) ||
-    (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
-
-  return isAndroid || isAppleMobile;
-}
 
 export function LiquidGlassPanel({
   children,
   className = "",
   config = DEFAULT_LIQUID_GLASS_CONFIG,
+  debug = true,
 }: LiquidGlassPanelProps) {
   const glassRef = useRef<HTMLDivElement>(null);
-  const instanceRef = useRef<LiquidGlass | null>(null);
+  const instanceRef = useRef<any>(null);
+  const guiRef = useRef<any>(null);
 
   useEffect(() => {
-    const glassElement = glassRef.current;
-    if (!glassElement) return;
-
-    const rootElement = glassElement.parentElement;
-    if (!rootElement) return;
-
-    const glass = glassElement as HTMLElement;
-    const root = rootElement as HTMLElement;
-    const mobile = isMobileGlassDevice();
-
-    root.style.position = "relative";
-    root.style.isolation = "isolate";
-    glass.dataset.config = JSON.stringify(config);
-    glass.dataset.mobileFallback = mobile ? "true" : "false";
-
-    if (mobile) {
-      return;
-    }
+    const element = glassRef.current;
+    if (!element) return;
 
     let cancelled = false;
 
     const initialize = async () => {
       try {
-        const instance = await LiquidGlass.init({
-          root,
-          glassElements: [glass],
+        const instance = liquidGL({
+          target: element,
+          snapshot: "body",
+          ...config,
+          on: {
+            init() {
+              if (!cancelled) element.dataset.liquidReady = "true";
+            },
+          },
         });
 
         if (cancelled) {
-          instance.destroy();
+          instance?.destroy?.();
           return;
         }
 
         instanceRef.current = instance;
+
+        if (!debug) return;
+
+        const { GUI } = await import("lil-gui");
+        if (cancelled || !instanceRef.current) return;
+
+        const gui = new GUI({ title: "Liquid Glass", width: 250 });
+        guiRef.current = gui;
+
+        const folder = gui.addFolder("Effect");
+        const controls = [
+          ["refraction", 0, 0.1, 0.001],
+          ["aberration", 0, 1, 0.01],
+          ["bevelDepth", 0, 0.2, 0.001],
+          ["bevelWidth", 0, 0.5, 0.001],
+          ["frost", 0, 10, 0.1],
+          ["magnify", 1, 5, 0.1],
+          ["tiltFactor", 0, 25, 0.1],
+          ["tiltEase", 0, 1000, 10],
+        ] as const;
+
+        for (const [key, min, max, step] of controls) {
+          folder
+            .add(instance.options, key, min, max, step)
+            .onChange((value: number) => {
+              instance.options[key] = value;
+              instance.markChanged?.();
+              instance.renderer?.render?.();
+            });
+        }
+
+        folder.add(instance.options, "shadow").onChange((value: boolean) => {
+          instance.options.shadow = value;
+          instance.setShadow?.(value);
+        });
+
+        folder.add(instance.options, "specular").onChange((value: boolean) => {
+          instance.options.specular = value;
+          instance.markChanged?.();
+        });
+
+        folder.add(instance.options, "tilt").onChange((value: boolean) => {
+          instance.options.tilt = value;
+          instance.setTilt?.(value);
+        });
+
+        folder
+          .add(instance.options, "reveal", ["none", "fade"])
+          .onChange((value: "none" | "fade") => {
+            instance.options.reveal = value;
+          });
+
+        folder.close();
       } catch (error) {
-        console.error("Liquid Glass initialization failed:", error);
-        glass.dataset.mobileFallback = "true";
+        console.error("liquidGL initialization failed:", error);
       }
     };
 
@@ -118,45 +139,20 @@ export function LiquidGlassPanel({
 
     return () => {
       cancelled = true;
-      instanceRef.current?.destroy();
+      guiRef.current?.destroy?.();
+      guiRef.current = null;
+      instanceRef.current?.destroy?.();
       instanceRef.current = null;
     };
   }, []);
 
-  useEffect(() => {
-    const glassElement = glassRef.current;
-    if (!glassElement) return;
-
-    glassElement.dataset.config = JSON.stringify(config);
-
-    const instance = instanceRef.current;
-    if (instance) {
-      instance.markChanged(glassElement);
-    }
-  }, [config]);
-
-  const fallbackStyle = {
-    "--lg-blur": `${Math.max(10, Math.round(config.blurAmount * 50))}px`,
-    "--lg-opacity": `${Math.max(0.58, Math.min(1, config.opacity))}`,
-    "--lg-saturation": `${Math.max(1, 1 + config.saturation)}`,
-    "--lg-tint": `${Math.max(0.08, Math.min(0.34, config.tintStrength * 0.42))}`,
-    "--lg-brightness": `${Math.max(0.82, 1 + config.brightness * 0.18)}`,
-    "--lg-edge": `${Math.max(0.04, Math.min(0.24, config.edgeHighlight + 0.06))}`,
-    "--lg-radius": `${Math.max(0, config.cornerRadius)}px`,
-    "--lg-shadow-opacity": `${Math.max(0, Math.min(0.55, config.shadowOpacity))}`,
-    "--lg-shadow-spread": `${Math.max(0, config.shadowSpread)}px`,
-    "--lg-shadow-y": `${config.shadowOffsetY}px`,
-  } as React.CSSProperties;
-
   return (
     <div
       ref={glassRef}
-      className={`relative isolate ${className}`}
-      style={fallbackStyle}
+      className={`liquidGL relative isolate ${className}`}
+      style={{ borderRadius: "inherit", position: "relative" }}
     >
-      <div className="relative z-10">
-        {children}
-      </div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }
