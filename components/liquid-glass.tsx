@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type LiquidGlassConfig = {
   resolution: number;
   refraction: number;
-  aberration: number;
   bevelDepth: number;
   bevelWidth: number;
   frost: number;
@@ -14,24 +14,21 @@ export type LiquidGlassConfig = {
   reveal: "none" | "fade";
   tilt: boolean;
   tiltFactor: number;
-  tiltEase: number;
   magnify: number;
 };
 
 export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
   resolution: 2,
-  refraction: 0,
-  aberration: 0,
+  refraction: 0.01,
   bevelDepth: 0.052,
-  bevelWidth: 0.18,
+  bevelWidth: 0.211,
   frost: 2,
   shadow: true,
   specular: true,
   reveal: "fade",
   tilt: false,
   tiltFactor: 5,
-  tiltEase: 400,
-  magnify: 1,
+  magnify: 1.05,
 };
 
 type LiquidGlassPanelProps = {
@@ -59,10 +56,11 @@ async function ensureDebugGui() {
   guiPromise = import("lil-gui").then(({ GUI }) => {
     if (gui) return gui;
 
-    gui = new GUI({ title: "Liquid Glass", width: 240 });
+    gui = new GUI({ title: "Liquid Glass", width: 230 });
     const folder = gui.addFolder("liquidGL Effect");
     const first = () => Array.from(lenses)[0];
-    const updateAll = (key: keyof LiquidGlassConfig, value: unknown) => {
+
+    const set = (key: keyof LiquidGlassConfig, value: unknown) => {
       lenses.forEach((lens) => {
         lens.options[key] = value as never;
         if (key === "shadow") lens.setShadow?.(value as boolean);
@@ -70,47 +68,35 @@ async function ensureDebugGui() {
       });
     };
 
+    const proxy: Record<string, any> = {};
     const lens = first();
-    if (!lens) return gui;
+    const source = lens?.options;
 
-    folder
-      .add(lens.options, "refraction", 0, 0.1, 0.001)
-      .onChange((value: number) => updateAll("refraction", value));
-    folder
-      .add(lens.options, "aberration", 0, 1, 0.01)
-      .onChange((value: number) => updateAll("aberration", value));
-    folder
-      .add(lens.options, "bevelDepth", 0, 0.2, 0.001)
-      .onChange((value: number) => updateAll("bevelDepth", value));
-    folder
-      .add(lens.options, "bevelWidth", 0, 0.5, 0.001)
-      .onChange((value: number) => updateAll("bevelWidth", value));
-    folder
-      .add(lens.options, "frost", 0, 10, 0.1)
-      .onChange((value: number) => updateAll("frost", value));
-    folder
-      .add(lens.options, "shadow")
-      .onChange((value: boolean) => updateAll("shadow", value));
-    folder
-      .add(lens.options, "specular")
-      .onChange((value: boolean) => updateAll("specular", value));
-    folder
-      .add(lens.options, "reveal", ["none", "fade"])
-      .onChange((value: "none" | "fade") => updateAll("reveal", value));
-    folder
-      .add(lens.options, "tilt")
-      .onChange((value: boolean) => updateAll("tilt", value));
-    folder
-      .add(lens.options, "tiltFactor", 0, 25, 0.1)
-      .onChange((value: number) => updateAll("tiltFactor", value));
-    folder
-      .add(lens.options, "tiltEase", 0, 1000, 10)
-      .onChange((value: number) => updateAll("tiltEase", value));
-    folder
-      .add(lens.options, "magnify", 0.001, 3, 0.01)
-      .onChange((value: number) => updateAll("magnify", value));
+    const numeric = [
+      ["refraction", 0, 0.1, 0.001],
+      ["bevelDepth", 0, 0.2, 0.001],
+      ["bevelWidth", 0, 0.5, 0.001],
+      ["frost", 0, 10, 0.1],
+      ["tiltFactor", 0, 25, 0.1],
+      ["magnify", 0.8, 2, 0.01],
+    ] as const;
 
+    for (const [key, min, max, step] of numeric) {
+      proxy[key] = source?.[key] ?? DEFAULT_LIQUID_GLASS_CONFIG[key];
+      folder.add(proxy, key, min, max, step).onChange((v: number) => set(key, v));
+    }
+
+    proxy.shadow = source?.shadow ?? DEFAULT_LIQUID_GLASS_CONFIG.shadow;
+    proxy.specular = source?.specular ?? DEFAULT_LIQUID_GLASS_CONFIG.specular;
+    proxy.tilt = source?.tilt ?? DEFAULT_LIQUID_GLASS_CONFIG.tilt;
+    proxy.reveal = source?.reveal ?? DEFAULT_LIQUID_GLASS_CONFIG.reveal;
+
+    folder.add(proxy, "shadow").onChange((v: boolean) => set("shadow", v));
+    folder.add(proxy, "specular").onChange((v: boolean) => set("specular", v));
+    folder.add(proxy, "tilt").onChange((v: boolean) => set("tilt", v));
+    folder.add(proxy, "reveal", ["none", "fade"]).onChange((v: "none" | "fade") => set("reveal", v));
     folder.close();
+
     return gui;
   }).finally(() => {
     guiPromise = null;
@@ -119,30 +105,76 @@ async function ensureDebugGui() {
   return guiPromise;
 }
 
+function getScrollParent(element: HTMLElement) {
+  let parent = element.parentElement;
+  while (parent && parent !== document.body) {
+    const style = getComputedStyle(parent);
+    if (/(auto|scroll|overlay)/.test(style.overflowY)) return parent;
+    parent = parent.parentElement;
+  }
+  return window;
+}
+
 export function LiquidGlassPanel({
   children,
   className = "",
   config = DEFAULT_LIQUID_GLASS_CONFIG,
   debug = true,
 }: LiquidGlassPanelProps) {
-  const glassRef = useRef<HTMLDivElement>(null);
+  const placeholderRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<LiquidGLInstance>(null);
+  const idRef = useRef(`liquid-glass-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`);
+  const [mounted, setMounted] = useState(false);
+  const [rect, setRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
 
   useEffect(() => {
-    const element = glassRef.current;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const placeholder = placeholderRef.current;
+    if (!placeholder) return;
+
+    const updateRect = () => {
+      const r = placeholder.getBoundingClientRect();
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+
+    const scrollParent = getScrollParent(placeholder);
+    updateRect();
+    window.addEventListener("scroll", updateRect, { passive: true });
+    if (scrollParent !== window) scrollParent.addEventListener("scroll", updateRect, { passive: true });
+    window.addEventListener("resize", updateRect, { passive: true });
+
+    const observer = new ResizeObserver(updateRect);
+    observer.observe(placeholder);
+
+    return () => {
+      window.removeEventListener("scroll", updateRect);
+      if (scrollParent !== window) scrollParent.removeEventListener("scroll", updateRect);
+      window.removeEventListener("resize", updateRect);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (debug) void ensureDebugGui();
+  }, [debug]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const element = document.querySelector(`[data-liquid-glass-id="${idRef.current}"]`) as HTMLElement | null;
     if (!element) return;
 
     let cancelled = false;
-    const targetId = `liquid-glass-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
-    element.dataset.liquidGlassTarget = targetId;
-
     const initialize = async () => {
       try {
         const { default: liquidGL } = await import("liquid-gl");
         if (cancelled) return;
 
         const instance = liquidGL({
-          target: `[data-liquid-glass-target="${targetId}"]`,
+          target: `[data-liquid-glass-id="${idRef.current}"]`,
           snapshot: "body",
           ...config,
           on: {
@@ -159,10 +191,8 @@ export function LiquidGlassPanel({
 
         instanceRef.current = instance as LiquidGLInstance;
         lenses.add(instance as LiquidGLInstance);
-
-        if (debug) await ensureDebugGui();
       } catch (error) {
-        console.error("liquidGL initialization failed:", error);
+        console.warn("liquidGL initialization failed; CSS glass fallback remains active.", error);
       }
     };
 
@@ -176,22 +206,41 @@ export function LiquidGlassPanel({
         instance.destroy?.();
         instanceRef.current = null;
       }
-
       if (lenses.size === 0 && gui) {
         gui.destroy?.();
         gui = null;
       }
     };
-  }, []);
+  }, [mounted]);
+
+  const visualStyle = {
+    position: "fixed" as const,
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    maxWidth: "none",
+    margin: 0,
+    borderRadius: "inherit",
+    background: "rgba(255,255,255,0.07)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.35)",
+    boxShadow: "0 18px 50px rgba(30,25,20,0.10)",
+  };
 
   return (
-    <div
-      ref={glassRef}
-      data-liquid-glass-panel="true"
-      className={`liquidGL relative z-[9999] ${className}`}
-      style={{ borderRadius: "inherit" }}
-    >
-      <div className="relative z-[3]">{children}</div>
+    <div ref={placeholderRef} className={className} style={{ visibility: "hidden" }} aria-hidden="true">
+      {mounted && createPortal(
+        <div
+          data-liquid-glass-id={idRef.current}
+          className={`liquidGL z-[9999] ${className}`}
+          style={visualStyle}
+        >
+          <div className="relative z-[3] h-full w-full">{children}</div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
