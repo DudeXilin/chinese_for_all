@@ -40,7 +40,7 @@ function FeatureCard({
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full min-h-[100%] overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
         <img
           src="/liquid-glass-bg.webp"
           alt=""
