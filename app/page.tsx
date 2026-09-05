@@ -12,7 +12,6 @@ const GLASS_OPTIONS = {
   tilt: false,
   tiltFactor: 5,
   reveal: "fade" as const,
-  magnify: 1.05,
 };
 
 export default function Home() {
@@ -59,7 +58,6 @@ export default function Home() {
           ["bevelWidth", 0, 0.5, 0.001],
           ["frost", 0, 10, 0.1],
           ["tiltFactor", 0, 25, 0.1],
-          ["magnify", 0.8, 2, 0.01],
         ] as const) {
           proxy[key] = first.options[key] ?? (GLASS_OPTIONS as any)[key] ?? 0;
           folder.add(proxy, key, min, max, step).onChange((v: number) => updateAll(key, v));
@@ -102,7 +100,7 @@ export default function Home() {
       <div className="main-content">
         {[0, 1, 2, 3, 4].map((index) => (
           <div className="image-container" key={index}>
-            <img src="/liquid-glass-bg.webp" alt="" draggable={false} />
+            <img src="/liquid-glass-bg.webp" alt="Background" draggable={false} />
           </div>
         ))}
       </div>
@@ -111,15 +109,13 @@ export default function Home() {
         <div className="cards-wrapper">
           {["01", "02", "03"].map((number) => (
             <div className="marquee-card" key={number}>
-              <div className="card-content">
-                <div className="marquee">
-                  <div className="marquee-content">
-                    <span>Glassify the web with liquidGL by NaughtyDuk©</span>
-                    <span>Glassify the web with liquidGL by NaughtyDuk©</span>
-                  </div>
+              <div className="marquee">
+                <div className="marquee-content">
+                  <span>Glassify the web with liquidGL by NaughtyDuk©</span>
+                  <span>Glassify the web with liquidGL by NaughtyDuk©</span>
                 </div>
-                <span className="demo-number">{number}</span>
               </div>
+              <span className="demo-number">{number}</span>
             </div>
           ))}
         </div>
