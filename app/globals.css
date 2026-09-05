@@ -47,5 +47,3 @@ body {
 button, a { -webkit-tap-highlight-color: transparent; }
 
 ::selection { background: rgba(184, 92, 92, 0.2); }
-
-.liquidGL { isolation: isolate; }
