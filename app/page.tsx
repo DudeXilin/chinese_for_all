@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 
 const GLASS_OPTIONS = {
+  target: ".marquee-card",
+  snapshot: ".main-content",
+  resolution: 1,
   refraction: 0,
   bevelDepth: 0.052,
   bevelWidth: 0.18,
@@ -22,6 +25,25 @@ export default function Home() {
 
     const init = async () => {
       try {
+        const images = Array.from(document.querySelectorAll<HTMLImageElement>(".main-content img"));
+        await Promise.all(
+          images.map(async (img) => {
+            if (!img.complete) {
+              await new Promise<void>((resolve) => {
+                img.addEventListener("load", () => resolve(), { once: true });
+                img.addEventListener("error", () => resolve(), { once: true });
+              });
+            }
+            if (typeof img.decode === "function") {
+              try {
+                await img.decode();
+              } catch {
+                // Safari can reject decode() even when the image is usable.
+              }
+            }
+          }),
+        );
+
         const [{ default: liquidGL }, { GUI }] = await Promise.all([
           import("liquid-gl"),
           import("lil-gui"),
@@ -29,10 +51,7 @@ export default function Home() {
 
         if (destroyed) return;
 
-        effect = liquidGL({
-          target: ".marquee-card",
-          ...GLASS_OPTIONS,
-        });
+        effect = liquidGL(GLASS_OPTIONS);
 
         const lenses = Array.isArray(effect) ? effect : [effect];
         const first = lenses[0];
@@ -78,10 +97,15 @@ export default function Home() {
       }
     };
 
-    void init();
+    if (document.readyState === "complete") {
+      void init();
+    } else {
+      window.addEventListener("load", init, { once: true });
+    }
 
     return () => {
       destroyed = true;
+      window.removeEventListener("load", init);
       gui?.destroy?.();
       gui = null;
       effect?.destroy?.();
