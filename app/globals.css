@@ -3,30 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #f6f4ef;
-  --foreground: #292824;
-  --card: rgba(255, 255, 255, 0.62);
-  --card-foreground: #292824;
-  --primary: #b85c5c;
-  --primary-foreground: #ffffff;
-  --secondary: #e8e3d9;
-  --muted: #77736b;
-  --border: rgba(70, 65, 55, 0.12);
+  --background: #f0f0f0;
+  --foreground: #333;
 }
 
-.dark {
-  --background: #191918;
-  --foreground: #eeeae2;
-  --card: rgba(42, 42, 40, 0.68);
-  --card-foreground: #eeeae2;
-  --primary: #d18a8a;
-  --primary-foreground: #211b1b;
-  --secondary: #302f2b;
-  --muted: #aaa59b;
-  --border: rgba(255, 255, 255, 0.1);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-* { box-sizing: border-box; }
 
 html {
   min-height: 100%;
@@ -36,14 +21,164 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 15% 10%, rgba(215, 184, 171, 0.22), transparent 30%),
-    radial-gradient(circle at 85% 20%, rgba(183, 197, 177, 0.2), transparent 30%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist), Arial, sans-serif;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-button, a { -webkit-tap-highlight-color: transparent; }
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
 
-::selection { background: rgba(184, 92, 92, 0.2); }
+.liquid-demo-page {
+  min-height: 500svh;
+  position: relative;
+  overflow-x: clip;
+  background: #f0f0f0;
+}
+
+.global-nav {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.nav-container {
+  background: rgb(9 9 11 / 85%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  border: 0.5px solid #1e1e20;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  padding: 12px 16px;
+  color: #fafafa;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+}
+
+.image-container {
+  height: 100svh;
+  overflow: clip;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.marquee-anchor {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+.cards-wrapper {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.marquee-card {
+  width: 300px;
+  height: 385px;
+  padding: 5px;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: clip;
+  color: #b7b7b7;
+}
+
+.card-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  justify-content: center;
+}
+
+.marquee {
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 5rem;
+}
+
+.marquee-content {
+  display: flex;
+  width: fit-content;
+  animation: marquee 12s linear infinite;
+}
+
+.marquee-content span {
+  white-space: nowrap;
+  padding: 0 1rem;
+}
+
+.demo-number {
+  align-self: center;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.lil-gui {
+  --focus-color: #f5f5f5;
+  --number-color: #f5f5f5;
+}
+
+.lil-gui.autoPlace {
+  z-index: 10000;
+}
+
+@media (max-width: 768px) {
+  .global-nav {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+
+  .marquee-card {
+    width: 85vw;
+    height: 150px;
+    border-radius: 5vw;
+  }
+
+  .cards-wrapper {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .marquee {
+    font-size: 2.5rem;
+  }
+}
