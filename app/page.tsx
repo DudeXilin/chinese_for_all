@@ -3,18 +3,6 @@
 import Link from "next/link";
 import { LiquidGlassPanel } from "@/components/liquid-glass";
 
-const glassBackground = (
-  <div className="absolute inset-0 -z-10 overflow-hidden rounded-[2rem] bg-[#f4f0e8] dark:bg-[#171817]">
-    <img
-      src="/liquid-glass-bg.webp"
-      alt=""
-      draggable={false}
-      className="h-full w-full object-cover"
-    />
-    <div className="pointer-events-none absolute inset-0 bg-white/10 dark:bg-black/15" />
-  </div>
-);
-
 function FeatureCard({
   icon,
   number,
@@ -27,42 +15,39 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="relative min-h-56 overflow-hidden rounded-[2rem]">
-      {glassBackground}
-      <LiquidGlassPanel className="h-full overflow-hidden rounded-[2rem] transition-transform duration-500 hover:-translate-y-1">
-        <div className="flex h-full min-h-56 flex-col p-7 text-left">
-          <div className="flex items-start justify-between">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-xl dark:border-white/10 dark:bg-white/[0.07]">
-              {icon}
-            </div>
-            <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
-              {number}
-            </span>
+    <LiquidGlassPanel className="min-h-56 overflow-hidden rounded-[2rem] transition-transform duration-500 hover:-translate-y-1">
+      <div className="flex h-full min-h-56 flex-col p-7 text-left">
+        <div className="flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-xl dark:border-white/10 dark:bg-white/[0.07]">
+            {icon}
           </div>
-
-          <div className="mt-auto pt-12">
-            <p className="text-xl font-semibold">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">
-              {description}
-            </p>
-          </div>
+          <span className="text-xs font-medium uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
+            {number}
+          </span>
         </div>
-      </LiquidGlassPanel>
-    </div>
+
+        <div className="mt-auto pt-12">
+          <p className="text-xl font-semibold">{title}</p>
+          <p className="mt-2 text-sm leading-6 text-black/45 dark:text-white/45">
+            {description}
+          </p>
+        </div>
+      </div>
+    </LiquidGlassPanel>
   );
 }
 
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-visible px-5 py-8 text-[#292824] sm:px-8 lg:px-12 dark:text-[#eeeae2]">
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
         <img
           src="/liquid-glass-bg.webp"
           alt=""
           draggable={false}
           className="h-full w-full object-cover opacity-90"
         />
-        <div className="pointer-events-none absolute inset-0 bg-white/20 dark:bg-black/25" />
+        <div className="absolute inset-0 bg-white/20 dark:bg-black/25" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl">
@@ -103,8 +88,7 @@ export default function Home() {
               <p className="mt-5 font-semibold text-black/75 dark:text-white/75">В помойку мошенников! Знания — бесценны!</p>
             </div>
 
-            <div className="relative mx-auto mt-20 max-w-3xl overflow-hidden rounded-[2.5rem]">
-              {glassBackground}
+            <div className="mx-auto mt-20 max-w-3xl">
               <LiquidGlassPanel className="overflow-hidden rounded-[2.5rem]">
                 <div className="px-8 py-12">
                   <div className="text-5xl opacity-80">🗑️</div>
