@@ -23,7 +23,7 @@ export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
   refraction: 0,
   aberration: 0,
   bevelDepth: 0.052,
-  bevelWidth: 0.211,
+  bevelWidth: 0.18,
   frost: 2,
   shadow: true,
   specular: true,
@@ -43,15 +43,12 @@ type LiquidGlassPanelProps = {
 
 type LiquidGLInstance = {
   options: LiquidGlassConfig & { target: string; snapshot?: string };
-  markChanged?: () => void;
   setShadow?: (enabled: boolean) => void;
   setTilt?: (enabled: boolean) => void;
   destroy?: () => void;
 };
 
-type Lens = LiquidGLInstance;
-
-const lenses = new Set<Lens>();
+const lenses = new Set<LiquidGLInstance>();
 let gui: any = null;
 let guiPromise: Promise<any> | null = null;
 
@@ -63,58 +60,55 @@ async function ensureDebugGui() {
     if (gui) return gui;
 
     gui = new GUI({ title: "Liquid Glass", width: 240 });
-    const folder = gui.addFolder("Effect");
-
-    const numeric = [
-      ["refraction", 0, 0.1, 0.001],
-      ["aberration", 0, 1, 0.01],
-      ["bevelDepth", 0, 0.2, 0.001],
-      ["bevelWidth", 0, 0.5, 0.001],
-      ["frost", 0, 10, 0.1],
-      ["magnify", 1, 5, 0.1],
-      ["tiltFactor", 0, 25, 0.1],
-      ["tiltEase", 0, 1000, 10],
-    ] as const;
-
+    const folder = gui.addFolder("liquidGL Effect");
     const first = () => Array.from(lenses)[0];
+    const updateAll = (key: keyof LiquidGlassConfig, value: unknown) => {
+      lenses.forEach((lens) => {
+        lens.options[key] = value as never;
+        if (key === "shadow") lens.setShadow?.(value as boolean);
+        if (key === "tilt") lens.setTilt?.(value as boolean);
+      });
+    };
 
-    for (const [key, min, max, step] of numeric) {
-      folder.add({
-        get value() { return first()?.options[key]; },
-        set value(v: number) {
-          lenses.forEach((lens) => {
-            lens.options[key] = v;
-            lens.markChanged?.();
-          });
-        },
-      }, "value", min, max, step).name(key);
-    }
-
-    for (const key of ["shadow", "specular", "tilt"] as const) {
-      folder.add({
-        get value() { return first()?.options[key]; },
-        set value(v: boolean) {
-          lenses.forEach((lens) => {
-            lens.options[key] = v;
-            if (key === "shadow") lens.setShadow?.(v);
-            if (key === "tilt") lens.setTilt?.(v);
-            lens.markChanged?.();
-          });
-        },
-      }, "value").name(key);
-    }
+    const lens = first();
+    if (!lens) return gui;
 
     folder
-      .add({
-        get value() { return first()?.options.reveal; },
-        set value(v: "none" | "fade") {
-          lenses.forEach((lens) => {
-            lens.options.reveal = v;
-            lens.markChanged?.();
-          });
-        },
-      }, "value", ["none", "fade"])
-      .name("reveal");
+      .add(lens.options, "refraction", 0, 0.1, 0.001)
+      .onChange((value: number) => updateAll("refraction", value));
+    folder
+      .add(lens.options, "aberration", 0, 1, 0.01)
+      .onChange((value: number) => updateAll("aberration", value));
+    folder
+      .add(lens.options, "bevelDepth", 0, 0.2, 0.001)
+      .onChange((value: number) => updateAll("bevelDepth", value));
+    folder
+      .add(lens.options, "bevelWidth", 0, 0.5, 0.001)
+      .onChange((value: number) => updateAll("bevelWidth", value));
+    folder
+      .add(lens.options, "frost", 0, 10, 0.1)
+      .onChange((value: number) => updateAll("frost", value));
+    folder
+      .add(lens.options, "shadow")
+      .onChange((value: boolean) => updateAll("shadow", value));
+    folder
+      .add(lens.options, "specular")
+      .onChange((value: boolean) => updateAll("specular", value));
+    folder
+      .add(lens.options, "reveal", ["none", "fade"])
+      .onChange((value: "none" | "fade") => updateAll("reveal", value));
+    folder
+      .add(lens.options, "tilt")
+      .onChange((value: boolean) => updateAll("tilt", value));
+    folder
+      .add(lens.options, "tiltFactor", 0, 25, 0.1)
+      .onChange((value: number) => updateAll("tiltFactor", value));
+    folder
+      .add(lens.options, "tiltEase", 0, 1000, 10)
+      .onChange((value: number) => updateAll("tiltEase", value));
+    folder
+      .add(lens.options, "magnify", 0.001, 3, 0.01)
+      .onChange((value: number) => updateAll("magnify", value));
 
     folder.close();
     return gui;
@@ -132,7 +126,7 @@ export function LiquidGlassPanel({
   debug = true,
 }: LiquidGlassPanelProps) {
   const glassRef = useRef<HTMLDivElement>(null);
-  const instanceRef = useRef<Lens>(null);
+  const instanceRef = useRef<LiquidGLInstance>(null);
 
   useEffect(() => {
     const element = glassRef.current;
@@ -151,6 +145,11 @@ export function LiquidGlassPanel({
           target: `[data-liquid-glass-target="${targetId}"]`,
           snapshot: "body",
           ...config,
+          on: {
+            init() {
+              if (!cancelled) element.dataset.liquidGlassReady = "true";
+            },
+          },
         });
 
         if (cancelled || !instance) {
@@ -158,8 +157,8 @@ export function LiquidGlassPanel({
           return;
         }
 
-        instanceRef.current = instance as Lens;
-        lenses.add(instance as Lens);
+        instanceRef.current = instance as LiquidGLInstance;
+        lenses.add(instance as LiquidGLInstance);
 
         if (debug) await ensureDebugGui();
       } catch (error) {
@@ -188,10 +187,11 @@ export function LiquidGlassPanel({
   return (
     <div
       ref={glassRef}
-      className={`liquidGL relative isolate ${className}`}
-      style={{ borderRadius: "inherit", position: "relative" }}
+      data-liquid-glass-panel="true"
+      className={`liquidGL relative z-[9999] ${className}`}
+      style={{ borderRadius: "inherit" }}
     >
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-[3]">{children}</div>
     </div>
   );
 }
