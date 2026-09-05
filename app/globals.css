@@ -37,7 +37,6 @@ a {
 .liquid-demo-page {
   min-height: 500svh;
   position: relative;
-  overflow-x: clip;
   background: #f0f0f0;
 }
 
@@ -78,6 +77,7 @@ a {
   height: 100%;
   object-fit: cover;
   display: block;
+  will-change: transform;
 }
 
 .marquee-anchor {
@@ -109,15 +109,6 @@ a {
   position: relative;
   overflow: clip;
   color: #b7b7b7;
-}
-
-.card-content {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  height: 100%;
   justify-content: center;
 }
 
