@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import liquidGL from "liquid-gl";
 
 export type LiquidGlassConfig = {
   resolution: number;
@@ -42,7 +41,15 @@ type LiquidGlassPanelProps = {
   debug?: boolean;
 };
 
-type Lens = any;
+type LiquidGLInstance = {
+  options: LiquidGlassConfig & { target: string; snapshot?: string };
+  markChanged?: () => void;
+  setShadow?: (enabled: boolean) => void;
+  setTilt?: (enabled: boolean) => void;
+  destroy?: () => void;
+};
+
+type Lens = LiquidGLInstance;
 
 const lenses = new Set<Lens>();
 let gui: any = null;
@@ -72,32 +79,41 @@ async function ensureDebugGui() {
     const first = () => Array.from(lenses)[0];
 
     for (const [key, min, max, step] of numeric) {
-      folder.add({ get value() { return first()?.options[key]; }, set value(v: number) {
-        lenses.forEach((lens) => {
-          lens.options[key] = v;
-          lens.markChanged?.();
-        });
-      }}, "value", min, max, step).name(key);
+      folder.add({
+        get value() { return first()?.options[key]; },
+        set value(v: number) {
+          lenses.forEach((lens) => {
+            lens.options[key] = v;
+            lens.markChanged?.();
+          });
+        },
+      }, "value", min, max, step).name(key);
     }
 
     for (const key of ["shadow", "specular", "tilt"] as const) {
-      folder.add({ get value() { return first()?.options[key]; }, set value(v: boolean) {
-        lenses.forEach((lens) => {
-          lens.options[key] = v;
-          if (key === "shadow") lens.setShadow?.(v);
-          if (key === "tilt") lens.setTilt?.(v);
-          lens.markChanged?.();
-        });
-      }}, "value").name(key);
+      folder.add({
+        get value() { return first()?.options[key]; },
+        set value(v: boolean) {
+          lenses.forEach((lens) => {
+            lens.options[key] = v;
+            if (key === "shadow") lens.setShadow?.(v);
+            if (key === "tilt") lens.setTilt?.(v);
+            lens.markChanged?.();
+          });
+        },
+      }, "value").name(key);
     }
 
     folder
-      .add({ get value() { return first()?.options.reveal; }, set value(v: "none" | "fade") {
-        lenses.forEach((lens) => {
-          lens.options.reveal = v;
-          lens.markChanged?.();
-        });
-      }}, "value", ["none", "fade"])
+      .add({
+        get value() { return first()?.options.reveal; },
+        set value(v: "none" | "fade") {
+          lenses.forEach((lens) => {
+            lens.options.reveal = v;
+            lens.markChanged?.();
+          });
+        },
+      }, "value", ["none", "fade"])
       .name("reveal");
 
     folder.close();
@@ -128,6 +144,9 @@ export function LiquidGlassPanel({
 
     const initialize = async () => {
       try {
+        const { default: liquidGL } = await import("liquid-gl");
+        if (cancelled) return;
+
         const instance = liquidGL({
           target: `[data-liquid-glass-target="${targetId}"]`,
           snapshot: "body",
@@ -139,8 +158,8 @@ export function LiquidGlassPanel({
           return;
         }
 
-        instanceRef.current = instance;
-        lenses.add(instance);
+        instanceRef.current = instance as Lens;
+        lenses.add(instance as Lens);
 
         if (debug) await ensureDebugGui();
       } catch (error) {
