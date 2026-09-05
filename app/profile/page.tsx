@@ -26,14 +26,16 @@ export default function ProfilePage() {
   return (
     <main className="relative h-screen overflow-hidden text-[#292824] dark:text-[#eeeae2]">
       <div className="relative h-full overflow-y-auto overscroll-contain">
-        <img
-          src="/liquid-glass-bg.webp"
-          alt=""
-          draggable={false}
-          className="fixed inset-0 z-0 h-full w-full object-cover"
-        />
-        <div className="pointer-events-none fixed inset-0 z-0 bg-white/15 dark:bg-black/20" />
-        <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(0,0,0,0.22)_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[140%] min-h-full overflow-hidden bg-[#f4f0e8] dark:bg-[#171817]">
+          <img
+            src="/liquid-glass-bg.webp"
+            alt=""
+            draggable={false}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-white/15 dark:bg-black/20" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(0,0,0,0.22)_100%)]" />
+        </div>
 
         <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
           <a
