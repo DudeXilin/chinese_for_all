@@ -316,3 +316,5 @@ export function LiquidGlassWebGL({
     />
   );
 }
+
+export default LiquidGlassWebGL;
