@@ -80,6 +80,16 @@ a {
   will-change: transform;
 }
 
+.liquid-glass-webgl-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2;
+  display: block;
+  pointer-events: none;
+}
+
 .marquee-anchor {
   position: fixed;
   inset: 0;
@@ -138,6 +148,104 @@ a {
   font-weight: 700;
 }
 
+.liquid-glass-debug-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10001;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 22, 26, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.liquid-glass-debug-toggle svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+.liquid-glass-debug-panel {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  bottom: 12px;
+  width: 272px;
+  z-index: 10002;
+  background: rgba(22, 22, 26, 0.92);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  color: #fff;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px;
+  font-size: 13px;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+.liquid-glass-debug-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.liquid-glass-debug-header > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.liquid-glass-debug-header button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.liquid-glass-debug-panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 9px 0;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.liquid-glass-debug-panel label span {
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.liquid-glass-debug-panel input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #8b7cf7;
+}
+
+.liquid-glass-debug-panel b {
+  min-width: 38px;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -171,5 +279,22 @@ a {
 
   .marquee {
     font-size: 2.5rem;
+  }
+
+  .liquid-glass-debug-toggle {
+    top: auto;
+    left: auto;
+    right: 14px;
+    bottom: 68px;
+  }
+
+  .liquid-glass-debug-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 55vh;
+    border-radius: 20px 20px 0 0;
   }
 }
