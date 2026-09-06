@@ -52,6 +52,7 @@ export default function LiquidGlassWebGL({ backgroundUrl = "/liquid-glass-bg.web
       renderer=new THREE.WebGLRenderer({canvas,alpha:true});
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth,window.innerHeight);
+      renderer.autoClear=false;
       const scene=new THREE.Scene();
       const camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
       material=new THREE.ShaderMaterial({vertexShader:VERTEX_SHADER,fragmentShader:FRAGMENT_SHADER,uniforms:{
@@ -61,7 +62,7 @@ export default function LiquidGlassWebGL({ backgroundUrl = "/liquid-glass-bg.web
       new THREE.TextureLoader().load(backgroundUrl,(tex:any)=>{if(!alive)return;texture=tex;tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;material.uniforms.uBgTex.value=tex;material.uniforms.uBgAspect.value=tex.image.width/tex.image.height;});
       const panes=()=>Array.from(document.querySelectorAll<HTMLElement>("[data-glass-pane]"));
       const resize=()=>{renderer.setPixelRatio(window.devicePixelRatio);renderer.setSize(window.innerWidth,window.innerHeight);material.uniforms.uResolution.value.set(window.innerWidth,window.innerHeight);};
-      const render=()=>{if(!alive)return;const u=material.uniforms;const p=paramsRef.current;u.uResolution.value.set(window.innerWidth,window.innerHeight);u.uGlassSize.value.set(p.width,p.height);u.uRadius.value=p.radius;u.uBezel.value=p.bezel;u.uThickness.value=p.thickness;u.uIOR.value=p.ior;u.uBlur.value=p.blur;u.uSpecular.value=p.specular;u.uTint.value=p.tint;u.uShadow.value=p.shadow;renderer.clear();for(const pane of panes()){const r=pane.getBoundingClientRect();u.uGlassCenter.value.set(r.left+r.width/2,window.innerHeight-(r.top+r.height/2));renderer.render(scene,camera);}frame=requestAnimationFrame(render);};
+      const render=()=>{if(!alive)return;const u=material.uniforms;const p=paramsRef.current;u.uResolution.value.set(window.innerWidth,window.innerHeight);u.uGlassSize.value.set(p.width,p.height);u.uRadius.value=p.radius;u.uBezel.value=p.bezel;u.uThickness.value=p.thickness;u.uIOR.value=p.ior;u.uBlur.value=p.blur;u.uSpecular.value=p.specular;u.uTint.value=p.tint;u.uShadow.value=p.shadow;renderer.clear();for(const pane of panes()){const r=pane.getBoundingClientRect();u.uGlassCenter.value.set(r.left+r.width/2,r.top+r.height/2);renderer.render(scene,camera);}frame=requestAnimationFrame(render);};
       window.addEventListener("resize",resize,{passive:true});resize();render();
     };
     void init();
