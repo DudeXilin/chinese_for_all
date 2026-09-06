@@ -664,26 +664,6 @@
     </style>
   </head>
   <body>
-    <!-- Global Navigation -->
-    <nav class="global-nav">
-      <div class="nav-container">
-        <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation menu">
-          <span>Demos</span>
-          <svg viewBox="0 0 16 16">
-            <path d="M8 11L3 6h10l-5 5z"/>
-          </svg>
-        </button>
-        <div class="nav-menu">
-          <a href="index.html" class="nav-item active">Index</a>
-          <a href="demos/demo-1.html" class="nav-item">D1 - Nav Bar</a>
-          <a href="demos/demo-2.html" class="nav-item">D2 - Bank Card</a>
-          <a href="demos/demo-3.html" class="nav-item">D3 - Animate</a>
-          <a href="demos/demo-4.html" class="nav-item">D4 - Cards</a>
-          <a href="demos/demo-5.html" class="nav-item">D5 - Reveal</a>
-        </div>
-      </div>
-    </nav>
-
     <div class="preloader" data-liquid-ignore>
       <div class="preloader-inner">
         <div class="preloader-progress-bar">
@@ -723,23 +703,6 @@
             </svg>
             <span>View on GitHub</span>
           </a>
-        </div>
-      </div>
-      <div
-        class="content-section video-section"
-      >
-      <div class="section-title-container">
-        <div class="banner-text dark sm">Watch Video</div>
-      </div>
-        <div class="video-hover-area">
-          <video
-            class="banner-video"
-            src="/assets/liquidGlass-Full-Promo25fps-OPT.mp4"
-            autoplay
-            muted
-            loop
-            playsinline
-          ></video>
         </div>
       </div>
       <div
@@ -878,7 +841,6 @@
           </svg>
           <span>View on GitHub</span>
         </a>
-        <img src="/assets/naughtyduk-logo.svg" class="footer-logo" alt="NaughtyDuk©" />
       </div>
     </div>
     </div>
@@ -886,27 +848,6 @@
     <!-- Single lens shape -->
     <div class="shape liquidGL"></div>
 
-    <!-- Fullscreen Video Player -->
-    <div class="fullscreen-player">
-      <div
-        class="close-btn"
-        tabindex="0"
-        role="button"
-        aria-label="Close video player"
-      ></div>
-      <video src="/assets/liquidGlass-Full-Promo25fps-OPT.mp4"></video>
-      <div class="custom-controls">
-        <button
-          class="play-pause-btn"
-          role="button"
-          aria-label="Play video"
-        ></button>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill"></div>
-        </div>
-      </div>
-    </div>
-    <img src="/assets/play-icon.svg" class="play-icon" alt="Play" />
     
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous"></script>
@@ -927,34 +868,6 @@
 
       /* RECOMMENDED - DOMContentLoaded Event */
       document.addEventListener("DOMContentLoaded", () => {
-        /* Global Navigation Setup */
-        const navToggle = document.querySelector('.nav-toggle');
-        const navContainer = document.querySelector('.nav-container');
-        
-        if (navToggle && navContainer) {
-          navToggle.addEventListener('click', () => {
-            const isExpanded = navContainer.classList.contains('expanded');
-            navContainer.classList.toggle('expanded');
-            navToggle.setAttribute('aria-expanded', !isExpanded);
-          });
-
-          // Close navigation when clicking outside
-          document.addEventListener('click', (e) => {
-            if (!navContainer.contains(e.target)) {
-              navContainer.classList.remove('expanded');
-              navToggle.setAttribute('aria-expanded', 'false');
-            }
-          });
-
-          // Close navigation when pressing Escape
-          document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && navContainer.classList.contains('expanded')) {
-              navContainer.classList.remove('expanded');
-              navToggle.setAttribute('aria-expanded', 'false');
-            }
-          });
-        }
-
         /* OPTIONAL - Preloader */
         const preloader = document.querySelector(".preloader");
         const preloaderProgress = document.querySelector(".preloader-progress");
@@ -1128,168 +1041,6 @@
               .add(first.options, "reveal", ["none", "fade"])
               .onChange((v) => sync("reveal", v));
             folder.close();
-          }
-        });
-      });
-    </script>
-    <script>
-      /* DEMO ONLY - VIDEO PLAYER, NOT REQUIRED FOR LIBRARY USAGE */
-      document.addEventListener("DOMContentLoaded", () => {
-        const videoTrigger = document.querySelector(".video-hover-area");
-        const playIcon = document.querySelector(".play-icon");
-        const fullscreenPlayer = document.querySelector(".fullscreen-player");
-        const fullscreenVideo = fullscreenPlayer.querySelector("video");
-        const closeBtn = document.querySelector(".close-btn");
-
-        const customControls = document.querySelector(".custom-controls");
-        const playPauseBtn = document.querySelector(".play-pause-btn");
-        const progressBarContainer = document.querySelector(
-          ".progress-bar-container"
-        );
-        const progressBarFill = document.querySelector(".progress-bar-fill");
-
-        if (!videoTrigger) return;
-
-        videoTrigger.style.cursor = "pointer";
-
-        gsap.set(playIcon, {
-          scale: 0,
-          autoAlpha: 0,
-          xPercent: -50,
-          yPercent: -50,
-        });
-
-        gsap.set(fullscreenPlayer, {
-          xPercent: -100,
-          visibility: "hidden",
-        });
-
-        let inactivityTimer;
-
-        const hideControls = () => {
-          if (!fullscreenVideo.paused) {
-            fullscreenPlayer.classList.add("inactive");
-          }
-        };
-
-        const resetInactivityTimer = () => {
-          fullscreenPlayer.classList.remove("inactive");
-          clearTimeout(inactivityTimer);
-          inactivityTimer = setTimeout(hideControls, 3000);
-        };
-
-        fullscreenPlayer.addEventListener("mousemove", resetInactivityTimer);
-        fullscreenPlayer.addEventListener("touchstart", resetInactivityTimer);
-
-        const togglePlayPause = () => {
-          if (fullscreenVideo.paused) {
-            fullscreenVideo.play();
-            playPauseBtn.classList.add("playing");
-            playPauseBtn.setAttribute("aria-label", "Pause video");
-            resetInactivityTimer();
-          } else {
-            fullscreenVideo.pause();
-            playPauseBtn.classList.remove("playing");
-            playPauseBtn.setAttribute("aria-label", "Play video");
-            clearTimeout(inactivityTimer);
-          }
-        };
-
-        playPauseBtn.addEventListener("click", togglePlayPause);
-        fullscreenVideo.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (e.target === fullscreenVideo) {
-            togglePlayPause();
-          }
-        });
-
-        fullscreenVideo.addEventListener("timeupdate", () => {
-          const progress =
-            (fullscreenVideo.currentTime / fullscreenVideo.duration) * 100;
-          gsap.to(progressBarFill, {
-            width: `${progress}%`,
-            duration: 0.1,
-            ease: "linear",
-          });
-        });
-
-        progressBarContainer.addEventListener("click", (e) => {
-          const rect = progressBarContainer.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const width = rect.width;
-          const newTime = (clickX / width) * fullscreenVideo.duration;
-          fullscreenVideo.currentTime = newTime;
-        });
-
-        fullscreenVideo.addEventListener("ended", () => {
-          playPauseBtn.classList.remove("playing");
-          playPauseBtn.setAttribute("aria-label", "Play video");
-          fullscreenPlayer.classList.remove("inactive");
-          clearTimeout(inactivityTimer);
-        });
-
-        videoTrigger.addEventListener("mouseenter", (e) => {
-          gsap.set(playIcon, { x: e.clientX, y: e.clientY });
-          gsap.to(playIcon, { autoAlpha: 1, scale: 1, duration: 0.3 });
-        });
-
-        videoTrigger.addEventListener("mouseleave", () => {
-          gsap.to(playIcon, { autoAlpha: 0, scale: 0, duration: 0.3 });
-        });
-
-        videoTrigger.addEventListener("mousemove", (e) => {
-          gsap.to(playIcon, {
-            x: e.clientX,
-            y: e.clientY,
-            duration: 0.4,
-            ease: "power3.out",
-          });
-        });
-
-        videoTrigger.addEventListener("click", () => {
-          gsap.to(fullscreenPlayer, {
-            xPercent: 0,
-            visibility: "visible",
-            duration: 0.8,
-            ease: "expo.inOut",
-            onComplete: () => {
-              fullscreenVideo.play();
-              playPauseBtn.classList.add("playing");
-              playPauseBtn.setAttribute("aria-label", "Pause video");
-              resetInactivityTimer();
-            },
-          });
-        });
-
-        const closePlayer = () => {
-          gsap.to(fullscreenVideo, {
-            volume: 0,
-            duration: 0.5,
-            ease: "linear",
-            onComplete: () => {
-              fullscreenVideo.pause();
-              gsap.to(fullscreenPlayer, {
-                xPercent: -100,
-                duration: 0.8,
-                ease: "expo.inOut",
-                onComplete: () => {
-                  gsap.set(fullscreenPlayer, { visibility: "hidden" });
-                  fullscreenVideo.currentTime = 0;
-                  fullscreenVideo.volume = 1; // Reset for next time
-                  playPauseBtn.classList.remove("playing");
-                  playPauseBtn.setAttribute("aria-label", "Play video");
-                  gsap.set(progressBarFill, { width: "0%" });
-                },
-              });
-            },
-          });
-        };
-
-        closeBtn.addEventListener("click", closePlayer);
-        closeBtn.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            closePlayer();
           }
         });
       });
