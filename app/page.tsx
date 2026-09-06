@@ -1,8 +1,12 @@
 "use client";
 
+import LiquidGlassWebGL from "@/components/liquid-glass-webgl";
+
 export default function Home() {
   return (
     <main className="liquid-demo-page">
+      <LiquidGlassWebGL backgroundUrl="/liquid-glass-bg.webp" />
+
       <nav className="global-nav">
         <div className="nav-container">
           <span>Demos</span>
@@ -27,8 +31,8 @@ export default function Home() {
             <div className="marquee-card" key={number}>
               <div className="marquee">
                 <div className="marquee-content">
-                  <span>Glassify the web with liquidGL by NaughtyDuk©</span>
-                  <span>Glassify the web with liquidGL by NaughtyDuk©</span>
+                  <span>Liquid Glass WebGL</span>
+                  <span>Liquid Glass WebGL</span>
                 </div>
               </div>
               <span className="demo-number">{number}</span>
