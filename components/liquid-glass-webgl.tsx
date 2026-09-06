@@ -40,6 +40,7 @@ uniform float uTint;
 uniform float uShadow;
 uniform sampler2D uBgTex;
 uniform float uBgAspect;
+uniform float uScrollProgress;
 
 float sdRoundedRect(vec2 p, vec2 halfSize, float r) {
   vec2 q = abs(p) - halfSize + r;
@@ -54,6 +55,12 @@ float surfaceHeight(float t) {
 vec3 sampleBg(vec2 screenUV) {
   float screenAspect = uResolution.x / uResolution.y;
   vec2 uv = screenUV;
+
+  // The real page contains the same full-screen image repeatedly. Map the
+  // glass back to the image position currently visible behind it, instead of
+  // sampling one frozen copy forever.
+  uv.y = fract(uv.y + uScrollProgress);
+
   if (uBgAspect > screenAspect) {
     float s = screenAspect / uBgAspect;
     uv.x = uv.x * s + (1.0 - s) * 0.5;
@@ -157,12 +164,21 @@ export function LiquidGlassWebGL({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const gl = canvas.getContext("webgl", {
-      alpha: true,
-      antialias: true,
-      premultipliedAlpha: false,
-      powerPreference: "high-performance",
-    });
+
+    const gl =
+      canvas.getContext("webgl2", {
+        alpha: true,
+        antialias: true,
+        premultipliedAlpha: false,
+        powerPreference: "high-performance",
+      }) ||
+      canvas.getContext("webgl", {
+        alpha: true,
+        antialias: true,
+        premultipliedAlpha: false,
+        powerPreference: "high-performance",
+      });
+
     if (!gl) return;
 
     const compile = (type: number, source: string) => {
@@ -212,6 +228,7 @@ export function LiquidGlassWebGL({
     const uShadow = uniform("uShadow");
     const uBgTex = uniform("uBgTex");
     const uBgAspect = uniform("uBgAspect");
+    const uScrollProgress = uniform("uScrollProgress");
 
     const texture = gl.createTexture();
     const image = new Image();
@@ -222,6 +239,7 @@ export function LiquidGlassWebGL({
     let alive = true;
     let bgAspect = 1.5;
     let textureReady = false;
+    let scrollProgress = 0;
 
     const uploadTexture = () => {
       if (!alive || !image.naturalWidth) return;
@@ -239,7 +257,8 @@ export function LiquidGlassWebGL({
     image.onload = uploadTexture;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const mobile = window.innerWidth <= 768;
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
       const width = Math.max(1, Math.round(window.innerWidth * dpr));
       const height = Math.max(1, Math.round(window.innerHeight * dpr));
       if (canvas.width !== width || canvas.height !== height) {
@@ -249,11 +268,18 @@ export function LiquidGlassWebGL({
       gl.viewport(0, 0, width, height);
     };
 
+    const updateScroll = () => {
+      const viewportHeight = Math.max(1, window.innerHeight);
+      scrollProgress = (window.scrollY % viewportHeight) / viewportHeight;
+    };
+
     const render = () => {
       if (!alive) return;
       resize();
+      updateScroll();
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
+
       if (textureReady) {
         gl.useProgram(program);
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -264,6 +290,7 @@ export function LiquidGlassWebGL({
         gl.uniform1i(uBgTex, 0);
         gl.uniform2f(uResolution, canvas.width, canvas.height);
         gl.uniform1f(uBgAspect, bgAspect);
+        gl.uniform1f(uScrollProgress, scrollProgress);
         gl.uniform1f(uBezel, 60);
         gl.uniform1f(uThickness, 50);
         gl.uniform1f(uIOR, 3);
@@ -285,13 +312,16 @@ export function LiquidGlassWebGL({
     };
 
     window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("scroll", updateScroll, { passive: true });
     resize();
+    updateScroll();
     render();
 
     return () => {
       alive = false;
       cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", updateScroll);
       image.onload = null;
       gl.deleteTexture(texture);
       gl.deleteBuffer(buffer);
