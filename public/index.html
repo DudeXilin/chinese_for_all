@@ -119,6 +119,45 @@
         gap: 1rem;
       }
 
+      .hero-slogan-container {
+        gap: 0.55rem;
+      }
+
+      .hero-slogan {
+        color: #f1ddbf;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: clamp(1.45rem, 4.4vw, 5rem);
+        font-weight: 700;
+        line-height: 1.05;
+        text-align: center;
+        text-transform: none;
+        white-space: nowrap;
+      }
+
+      .hero-slogan-en {
+        letter-spacing: 0.02em;
+      }
+
+      .hero-slogan-ru {
+        letter-spacing: -0.01em;
+      }
+
+      .hero-slogan-zh {
+        letter-spacing: 0.85em;
+        padding-left: 0.85em;
+      }
+
+      @media (max-width: 768px) {
+        .hero-slogan {
+          font-size: clamp(1.1rem, 5.1vw, 2.4rem);
+        }
+
+        .hero-slogan-zh {
+          letter-spacing: 0.54em;
+          padding-left: 0.54em;
+        }
+      }
+
       .banner-text {
         width: 100%;
         text-align: center;
@@ -689,12 +728,10 @@
         >
           <source src="/assets/loop-opt.mp4" type="video/mp4" />
         </video>
-        <div class="banner-text-container">
-          <div class="banner-text sm">Introducing</div>
-          <div class="banner-text xl">liquidGL</div>
-          <div class="banner-text xs">
-          </br></br>A real-time liquid glass effect for the web. Built with love by <a target="_blank" href="https://naughtyduk.com">NaughtyDuk©</a>
-          </div>
+        <div class="banner-text-container hero-slogan-container">
+          <div class="banner-text hero-slogan hero-slogan-en">CHINESE FREE FOR EVERYONE☭</div>
+          <div class="banner-text hero-slogan hero-slogan-ru">КИТАЙСКИЙ БЕСПЛАТНО ДЛЯ ВСЕХ ☭</div>
+          <div class="banner-text hero-slogan hero-slogan-zh">全民免费学习中文 ☭</div>
         </div>
         <div class="banner-text-container">
           <a href="https://github.com/naughtyduk/liquidgl" target="_blank" class="banner-text-button">
