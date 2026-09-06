@@ -2,6 +2,8 @@
 
 import LiquidGlassWebGL from "@/components/liquid-glass-webgl";
 
+const GITHUB_URL = "https://github.com/archisvaze/liquid-glass";
+
 export default function Home() {
   return (
     <main className="liquid-demo-page">
@@ -28,7 +30,14 @@ export default function Home() {
       <div className="marquee-anchor">
         <div className="cards-wrapper">
           {["01", "02", "03"].map((number) => (
-            <div className="marquee-card" key={number}>
+            <a
+              className="marquee-card glass-test-button"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              data-glass-pane
+              key={number}
+            >
               <div className="marquee">
                 <div className="marquee-content">
                   <span>Liquid Glass WebGL</span>
@@ -36,7 +45,7 @@ export default function Home() {
                 </div>
               </div>
               <span className="demo-number">{number}</span>
-            </div>
+            </a>
           ))}
         </div>
       </div>
