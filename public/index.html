@@ -120,41 +120,48 @@
       }
 
       .hero-slogan-container {
-        gap: 0.55rem;
+        gap: 0.45rem;
+        max-width: min(82vw, 920px);
       }
 
-      .hero-slogan {
+      .banner-text.hero-slogan {
+        width: 100%;
         color: #f1ddbf;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: clamp(1.45rem, 4.4vw, 5rem);
-        font-weight: 700;
-        line-height: 1.05;
+        font-family: inherit;
+        font-size: clamp(1rem, 3.3vw, 3.7rem);
+        font-weight: 800;
+        line-height: 1;
         text-align: center;
         text-transform: none;
         white-space: nowrap;
       }
 
-      .hero-slogan-en {
-        letter-spacing: 0.02em;
+      .banner-text.hero-slogan-en {
+        letter-spacing: 0.01em;
       }
 
-      .hero-slogan-ru {
-        letter-spacing: -0.01em;
+      .banner-text.hero-slogan-ru {
+        letter-spacing: -0.015em;
       }
 
-      .hero-slogan-zh {
-        letter-spacing: 0.85em;
-        padding-left: 0.85em;
+      .banner-text.hero-slogan-zh {
+        letter-spacing: 0.45em;
+        padding-left: 0.45em;
       }
 
       @media (max-width: 768px) {
-        .hero-slogan {
-          font-size: clamp(1.1rem, 5.1vw, 2.4rem);
+        .hero-slogan-container {
+          max-width: 90vw;
+          gap: 0.35rem;
         }
 
-        .hero-slogan-zh {
-          letter-spacing: 0.54em;
-          padding-left: 0.54em;
+        .banner-text.hero-slogan {
+          font-size: clamp(0.85rem, 4.1vw, 1.7rem);
+        }
+
+        .banner-text.hero-slogan-zh {
+          letter-spacing: 0.31em;
+          padding-left: 0.31em;
         }
       }
 
