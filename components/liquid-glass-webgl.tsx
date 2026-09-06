@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type GlassPane = {
   x: number;
@@ -13,6 +13,26 @@ type GlassPane = {
 type LiquidGlassWebGLProps = {
   backgroundUrl?: string;
   panes?: GlassPane[];
+};
+
+type GlassParams = {
+  bezel: number;
+  thickness: number;
+  ior: number;
+  blur: number;
+  specular: number;
+  tint: number;
+  shadow: number;
+};
+
+const DEFAULT_PARAMS: GlassParams = {
+  bezel: 60,
+  thickness: 50,
+  ior: 3,
+  blur: 1.5,
+  specular: 0.55,
+  tint: 0.08,
+  shadow: 0.5,
 };
 
 const VERTEX_SHADER = `
@@ -55,10 +75,6 @@ float surfaceHeight(float t) {
 vec3 sampleBg(vec2 screenUV) {
   float screenAspect = uResolution.x / uResolution.y;
   vec2 uv = screenUV;
-
-  // The real page contains the same full-screen image repeatedly. Map the
-  // glass back to the image position currently visible behind it, instead of
-  // sampling one frozen copy forever.
   uv.y = fract(uv.y + uScrollProgress);
 
   if (uBgAspect > screenAspect) {
@@ -68,6 +84,7 @@ vec3 sampleBg(vec2 screenUV) {
     float s = uBgAspect / screenAspect;
     uv.y = uv.y * s + (1.0 - s) * 0.5;
   }
+
   uv.y = 1.0 - uv.y;
   return texture2D(uBgTex, uv).rgb;
 }
@@ -113,13 +130,13 @@ void main() {
   }
 
   float distFromEdge = -sd;
-  float bezel = min(uBezel, min(uRadius, min(halfSize.x, halfSize.y)) - 1.0);
-  float t = clamp(distFromEdge / bezel, 0.0, 1.0);
+  float safeBezel = max(1.0, min(uBezel, min(uRadius, min(halfSize.x, halfSize.y)) - 1.0));
+  float t = clamp(distFromEdge / safeBezel, 0.0, 1.0);
   float h = surfaceHeight(t);
   float dt = 0.001;
   float h2 = surfaceHeight(min(t + dt, 1.0));
   float dh = (h2 - h) / dt;
-  float slopeAngle = atan(dh * (uThickness / bezel));
+  float slopeAngle = atan(dh * (uThickness / safeBezel));
   float sinR = clamp(sin(slopeAngle) / uIOR, -1.0, 1.0);
   float thetaR = asin(sinR);
   float displacement = h * uThickness * (tan(slopeAngle) - tan(thetaR));
@@ -136,10 +153,10 @@ void main() {
 
   vec2 lightDir = normalize(vec2(0.5, -0.7));
   float rimDot = abs(dot(grad, lightDir));
-  float rimFalloff = 1.0 - smoothstep(0.0, bezel * 0.4, distFromEdge);
+  float rimFalloff = 1.0 - smoothstep(0.0, safeBezel * 0.4, distFromEdge);
   color += vec3(pow(rimDot * rimFalloff, 1.5) * uSpecular);
 
-  float innerShadow = 1.0 - smoothstep(0.0, bezel * 0.6, distFromEdge);
+  float innerShadow = 1.0 - smoothstep(0.0, safeBezel * 0.6, distFromEdge);
   color *= mix(1.0, 0.7, innerShadow * 0.3);
   float innerRim = smoothstep(0.0, 2.0, distFromEdge) * (1.0 - smoothstep(2.0, 5.0, distFromEdge));
   color += vec3(innerRim * 0.15 * uSpecular);
@@ -160,24 +177,23 @@ export function LiquidGlassWebGL({
   panes = DEFAULT_PANES,
 }: LiquidGlassWebGLProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const paramsRef = useRef<GlassParams>(DEFAULT_PARAMS);
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl =
-      canvas.getContext("webgl2", {
-        alpha: true,
-        antialias: true,
-        premultipliedAlpha: false,
-        powerPreference: "high-performance",
-      }) ||
-      canvas.getContext("webgl", {
-        alpha: true,
-        antialias: true,
-        premultipliedAlpha: false,
-        powerPreference: "high-performance",
-      });
+    // Use the broadly supported WebGL 1 path for the shader. WebGL 2 devices
+    // also support this API, while this avoids mobile browsers selecting a
+    // WebGL 2 context and then rejecting the older shader syntax.
+    const gl = canvas.getContext("webgl", {
+      alpha: true,
+      antialias: true,
+      premultipliedAlpha: false,
+      powerPreference: "high-performance",
+    });
 
     if (!gl) return;
 
@@ -242,7 +258,7 @@ export function LiquidGlassWebGL({
     let scrollProgress = 0;
 
     const uploadTexture = () => {
-      if (!alive || !image.naturalWidth) return;
+      if (!alive || !image.naturalWidth || !texture) return;
       bgAspect = image.naturalWidth / image.naturalHeight;
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -256,9 +272,10 @@ export function LiquidGlassWebGL({
 
     image.onload = uploadTexture;
 
+    const getDpr = () => Math.min(window.devicePixelRatio || 1, window.innerWidth <= 768 ? 1.5 : 2);
+
     const resize = () => {
-      const mobile = window.innerWidth <= 768;
-      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
+      const dpr = getDpr();
       const width = Math.max(1, Math.round(window.innerWidth * dpr));
       const height = Math.max(1, Math.round(window.innerHeight * dpr));
       if (canvas.width !== width || canvas.height !== height) {
@@ -273,6 +290,23 @@ export function LiquidGlassWebGL({
       scrollProgress = (window.scrollY % viewportHeight) / viewportHeight;
     };
 
+    const readPanes = (): GlassPane[] => {
+      const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-glass-pane]"));
+      if (!elements.length) return panes;
+      const dpr = getDpr();
+      return elements.map((element) => {
+        const rect = element.getBoundingClientRect();
+        const radius = parseFloat(getComputedStyle(element).borderTopLeftRadius) || 28;
+        return {
+          x: ((rect.left + rect.width / 2) * dpr) / canvas.width,
+          y: ((window.innerHeight - rect.top - rect.height / 2) * dpr) / canvas.height,
+          width: (rect.width * dpr) / canvas.width,
+          height: (rect.height * dpr) / canvas.height,
+          radius: radius * dpr,
+        };
+      });
+    };
+
     const render = () => {
       if (!alive) return;
       resize();
@@ -281,6 +315,7 @@ export function LiquidGlassWebGL({
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       if (textureReady) {
+        const current = paramsRef.current;
         gl.useProgram(program);
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.enableVertexAttribArray(position);
@@ -291,15 +326,15 @@ export function LiquidGlassWebGL({
         gl.uniform2f(uResolution, canvas.width, canvas.height);
         gl.uniform1f(uBgAspect, bgAspect);
         gl.uniform1f(uScrollProgress, scrollProgress);
-        gl.uniform1f(uBezel, 60);
-        gl.uniform1f(uThickness, 50);
-        gl.uniform1f(uIOR, 3);
-        gl.uniform1f(uBlur, 1.5);
-        gl.uniform1f(uSpecular, 0.55);
-        gl.uniform1f(uTint, 0.08);
-        gl.uniform1f(uShadow, 0.5);
+        gl.uniform1f(uBezel, current.bezel * getDpr());
+        gl.uniform1f(uThickness, current.thickness * getDpr());
+        gl.uniform1f(uIOR, current.ior);
+        gl.uniform1f(uBlur, current.blur);
+        gl.uniform1f(uSpecular, current.specular);
+        gl.uniform1f(uTint, current.tint);
+        gl.uniform1f(uShadow, current.shadow);
 
-        for (const pane of panes) {
+        for (const pane of readPanes()) {
           const width = pane.width * canvas.width;
           const height = pane.height * canvas.height;
           gl.uniform2f(uGlassCenter, pane.x * canvas.width, pane.y * canvas.height);
@@ -308,6 +343,7 @@ export function LiquidGlassWebGL({
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
       }
+
       animationFrame = requestAnimationFrame(render);
     };
 
@@ -323,27 +359,107 @@ export function LiquidGlassWebGL({
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", updateScroll);
       image.onload = null;
-      gl.deleteTexture(texture);
-      gl.deleteBuffer(buffer);
+      if (texture) gl.deleteTexture(texture);
+      if (buffer) gl.deleteBuffer(buffer);
       gl.deleteProgram(program);
       gl.deleteShader(vertex);
       gl.deleteShader(fragment);
     };
   }, [backgroundUrl, panes]);
 
+  const changeParam = (key: keyof GlassParams, value: number) => {
+    const next = { ...paramsRef.current, [key]: value };
+    paramsRef.current = next;
+    setParams(next);
+  };
+
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100vh",
-        pointerEvents: "none",
-        zIndex: 2,
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
+
+      <div
+        style={{
+          position: "fixed",
+          top: 12,
+          left: 12,
+          zIndex: 10001,
+          fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          fontSize: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setDebugOpen((open) => !open)}
+          style={{
+            border: "1px solid rgba(255,255,255,.18)",
+            borderRadius: 10,
+            padding: "8px 11px",
+            background: "rgba(20,20,22,.78)",
+            color: "white",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            cursor: "pointer",
+          }}
+        >
+          {debugOpen ? "Close debug" : "Debug glass"}
+        </button>
+
+        {debugOpen && (
+          <div
+            style={{
+              marginTop: 8,
+              width: 250,
+              padding: 12,
+              borderRadius: 14,
+              background: "rgba(18,18,20,.88)",
+              color: "#fff",
+              boxShadow: "0 12px 40px rgba(0,0,0,.35)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
+              border: "1px solid rgba(255,255,255,.12)",
+            }}
+          >
+            <div style={{ marginBottom: 10, opacity: 0.7 }}>WebGL glass controls</div>
+            {([
+              ["bezel", 5, 120, 1],
+              ["thickness", 0, 120, 1],
+              ["ior", 1, 5, 0.05],
+              ["blur", 0, 8, 0.1],
+              ["specular", 0, 1, 0.01],
+              ["tint", 0, 0.5, 0.01],
+              ["shadow", 0, 1, 0.01],
+            ] as const).map(([key, min, max, step]) => (
+              <label key={key} style={{ display: "block", marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                  <span>{key}</span>
+                  <span>{params[key].toFixed(key === "ior" || key === "blur" ? 2 : 2)}</span>
+                </div>
+                <input
+                  type="range"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={params[key]}
+                  onChange={(event) => changeParam(key, Number(event.target.value))}
+                  style={{ width: "100%" }}
+                />
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
