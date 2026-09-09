@@ -23,11 +23,7 @@ export default function ProfileButton() {
     }
 
     const supabase = createClient();
-    const { data } = await supabase
-      .from("profiles")
-      .select("nickname")
-      .eq("id", currentUser.id)
-      .maybeSingle();
+    const { data } = await supabase.from("profiles").select("nickname").eq("id", currentUser.id).maybeSingle();
 
     if (data) {
       setProfile(data);
@@ -35,10 +31,9 @@ export default function ProfileButton() {
       return;
     }
 
-    const initialNickname = currentUser.user_metadata?.nickname ?? "";
     const { data: created } = await supabase
       .from("profiles")
-      .upsert({ id: currentUser.id, nickname: initialNickname || null })
+      .upsert({ id: currentUser.id, nickname: null })
       .select("nickname")
       .single();
 
@@ -62,21 +57,8 @@ export default function ProfileButton() {
   const saveNickname = async () => {
     if (!user || !nickname.trim()) return;
     setSaving(true);
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("profiles")
-      .update({ nickname: nickname.trim(), updated_at: new Date().toISOString() })
-      .eq("id", user.id)
-      .select("nickname")
-      .single();
-
-    if (data) setProfile(data);
+    await createClient().from("profiles").update({ nickname: nickname.trim() }).eq("id", user.id);
     setSaving(false);
-  };
-
-  const signOut = async () => {
-    await createClient().auth.signOut();
-    setOpen(false);
   };
 
   return (
@@ -84,45 +66,32 @@ export default function ProfileButton() {
       <button
         aria-label="Профиль"
         onClick={() => setOpen(true)}
-        className="fixed right-6 top-6 z-50 h-12 w-12 rounded-full border border-white/30 bg-white/20 shadow-lg backdrop-blur-xl"
-      />
+        className="fixed right-6 top-6 z-[100] flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/20 text-2xl shadow-xl backdrop-blur-xl"
+      >
+        👤
+      </button>
 
       {open && (
-        <div className="fixed inset-0 z-40 flex items-start justify-end bg-black/10 p-6">
-          <div className="mt-14 w-80 rounded-3xl border border-white/30 bg-white/20 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="fixed inset-0 z-[90] flex items-start justify-end bg-black/10 p-6">
+          <div className="mt-16 w-80 rounded-3xl border border-white/30 bg-white/20 p-6 shadow-2xl backdrop-blur-xl">
             {user ? (
               <>
-                <p className="text-lg font-medium text-white">Профиль</p>
-                <p className="mt-2 text-sm text-white/70">{user.email}</p>
-
-                <div className="mt-6">
-                  <label htmlFor="nickname" className="text-sm text-white/80">
-                    Псевдоним
-                  </label>
-                  <input
-                    id="nickname"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="Твой псевдоним"
-                    className="mt-2 w-full rounded-2xl border border-white/30 bg-white/20 px-4 py-3 text-white outline-none placeholder:text-white/50"
-                  />
-                  <button
-                    onClick={saveNickname}
-                    disabled={saving || !nickname.trim()}
-                    className="mt-3 rounded-2xl border border-white/30 bg-white/20 px-4 py-2 text-sm text-white disabled:opacity-50"
-                  >
-                    {saving ? "Сохранение..." : "Сохранить"}
-                  </button>
-                </div>
-
-                <button className="mt-6 block text-white/70" onClick={signOut}>
-                  Выйти
+                <p className="text-lg text-white">Профиль</p>
+                <p className="mt-2 text-white/70">{user.email}</p>
+                <input
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="Псевдоним"
+                  className="mt-5 w-full rounded-2xl bg-white/20 p-3 text-white"
+                />
+                <button onClick={saveNickname} className="mt-3 text-white">
+                  {saving ? "Сохранение..." : "Сохранить"}
                 </button>
               </>
             ) : (
               <p className="text-white">Вход и регистрация</p>
             )}
-            <button className="mt-6 block text-white/70" onClick={() => setOpen(false)}>
+            <button className="mt-6 text-white/70" onClick={() => setOpen(false)}>
               Закрыть
             </button>
           </div>
