@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
+import ProfileButton from "@/components/profile-button";
 
 export const metadata: Metadata = {
   title: "CHINESE FOR ALL",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ProfileButton />
+      </body>
     </html>
   );
 }
