@@ -3,10 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile = {
-  nickname: string | null;
-};
-
 export default function ProfileButton() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -42,13 +38,13 @@ export default function ProfileButton() {
       <button
         aria-label="Profile"
         onClick={() => setOpen(true)}
-        className="fixed right-5 top-5 z-[9999] flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/70 bg-white/40 text-3xl shadow-2xl backdrop-blur-xl"
+        className="fixed right-5 top-5 z-[99999] flex h-20 w-20 items-center justify-center rounded-full bg-black text-4xl shadow-2xl"
       >
         👤
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[9998] flex justify-end bg-black/20 p-6">
+        <div className="fixed inset-0 z-[99998] flex justify-end bg-black/20 p-6">
           <div className="mt-20 w-80 rounded-3xl border border-white/40 bg-white/30 p-6 shadow-2xl backdrop-blur-xl">
             {user ? (
               <>
