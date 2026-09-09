@@ -38,8 +38,9 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // The authenticated destination is the user's profile. /protected does not exist.
-      router.replace("/profile");
+      // Profile lives in the button/panel on the homepage, not a
+      // separate route - /profile does not exist.
+      router.replace("/");
       router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
