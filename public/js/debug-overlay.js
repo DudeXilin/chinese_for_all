@@ -10,13 +10,31 @@
   if (window.__cfaDebugInstalled) return;
   window.__cfaDebugInstalled = true;
 
-  var log = [];
+  var STORAGE_KEY = "cfa-debug-log";
   var MAX = 300;
+  var log = [];
+
+  try {
+    var saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) log = JSON.parse(saved);
+  } catch {
+    log = [];
+  }
+
+  function save() {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+    } catch {
+      /* ignore (e.g. private mode storage limits) */
+    }
+  }
 
   function push(entry) {
     entry.t = new Date().toISOString().slice(11, 23);
+    entry.page = location.pathname;
     log.push(entry);
     if (log.length > MAX) log.shift();
+    save();
     render();
   }
 
@@ -171,7 +189,18 @@
       overlay.style.display = "none";
     });
 
+    var clearBtn = document.createElement("button");
+    clearBtn.textContent = "Очистить";
+    clearBtn.style.cssText =
+      "padding:10px 14px;border-radius:8px;border:none;background:#a33;color:#fff;font-size:14px;";
+    clearBtn.addEventListener("click", function () {
+      log = [];
+      save();
+      render();
+    });
+
     header.appendChild(copyBtn);
+    header.appendChild(clearBtn);
     header.appendChild(closeBtn);
     overlay.appendChild(header);
 
