@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function LogoutButton() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoading(true);
     await fetch("/api/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    // Hard navigation, same reason as login: guarantees a fresh
+    // request instead of a possibly cached client-side route.
+    window.location.href = "/";
   };
 
   return (
