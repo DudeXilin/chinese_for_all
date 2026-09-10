@@ -38,9 +38,7 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Profile lives in the button/panel on the homepage, not a
-      // separate route - /profile does not exist.
-      router.replace("/");
+      router.replace("/profile");
       router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
