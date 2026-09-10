@@ -26,23 +26,34 @@ export function LoginForm({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const debugLog = (
+      window as unknown as {
+        __cfaDebugLogEvent?: (type: string, data?: object) => void;
+      }
+    ).__cfaDebugLogEvent;
+    debugLog?.("login-submit", { email });
+
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
+      debugLog?.("login-calling-supabase");
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
+      debugLog?.("login-success");
       // A hard navigation (not router.replace/refresh) so the browser
       // makes a brand-new request with the just-set session cookie,
       // instead of possibly reusing a cached pre-login response for
       // this route from the client-side router cache.
       window.location.href = "/profile";
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      const message = error instanceof Error ? error.message : "An error occurred";
+      debugLog?.("login-error", { message });
+      setError(message);
       setIsLoading(false);
     }
   };
