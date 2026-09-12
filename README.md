@@ -69,5 +69,6 @@ The GitHub repository contains only the application code and database structure.
 - [Vercel](https://vercel.com/) - deployment platform
 
 
-## HUGE THANKS TO NAUGHTYDUK
-https://github.com/naughtyduk/liquidgl for a great liquid glass effect implementation and make it free for everyone to use. 
+## HUGE THANKS TO NAUGHTYDUK AND PEOPLE WHO HELPED HIM
+https://github.com/naughtyduk/liquidgl
+for a stunning liquid glass effect implementation and making it free for everyone to use.
