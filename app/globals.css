@@ -14,3 +14,15 @@ body {
 body {
   margin: 0;
 }
+
+/* iOS Safari jitters position:fixed elements while its address-bar
+   animates during scroll. Promoting the liquidGL canvas to its own
+   GPU layer keeps it visually locked in place instead of lagging.
+   See public/css/components.css for the same fix on the homepage. */
+canvas[data-liquid-ignore] {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

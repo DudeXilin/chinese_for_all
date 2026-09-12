@@ -1,13 +1,31 @@
 /* ===== Profile button + dropdown (Chinese For All) =====
    The actual glass look here comes from the real liquidGL WebGL
-   refraction (see /scripts/liquidGL.js + js/main.js) - the elements
-   with class "liquidGL" below are picked up automatically by the
-   existing liquidGL({ target: ".liquidGL", ... }) call, same as the
-   hero shape. This file only handles layout/sizing and keeps the
-   actual button/dropdown interactive: liquidGL makes its target
-   element invisible + non-clickable (by design, so it can render its
-   own canvas in its place), so each interactive piece here wraps a
-   plain liquidGL glass div behind a normal, clickable content layer. */
+   refraction (see /scripts/liquidGL.js + js/auth.js) - the elements
+   with class "cfa-glass" below get their own liquidGL({ target:
+   ".cfa-glass", ... }) call (separate from the hero shape's own
+   call), tuned for small UI elements. This file only handles layout/
+   sizing and keeps the actual button/dropdown interactive: liquidGL
+   makes its target element invisible + non-clickable (by design, so
+   it can render its own canvas in its place), so each interactive
+   piece here wraps a plain liquidGL glass div behind a normal,
+   clickable content layer. */
+
+/* iOS Safari jitters position:fixed elements while its address-bar
+   shows/hides during a scroll gesture (this stops as soon as the
+   toolbar is manually hidden, confirming it's that animation, not
+   liquidGL itself). Promoting these to their own GPU compositing
+   layer keeps them visually locked in place instead of lagging a
+   frame or two behind the animating chrome. Targets the WebGL canvas
+   via the data-liquid-ignore attribute the library already sets on
+   it, so nothing in liquidGL.js needs to change. */
+#cfa-profile-root,
+canvas[data-liquid-ignore] {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
 
 #cfa-profile-root {
   position: fixed;
