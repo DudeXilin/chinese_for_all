@@ -1855,12 +1855,28 @@
       };
       requestAnimationFrame(scrollCheck);
 
+      let _lastResizeW = window.innerWidth;
+      let _lastResizeH = window.innerHeight;
       const onResize = debounce(() => {
         if (this._capturing || this._isScrolling) return;
 
         if (window.visualViewport && window.visualViewport.scale !== 1) {
           return;
         }
+
+        // iOS Safari's animated address bar fires plain 'resize' events
+        // (innerHeight changes) while showing/hiding, without any
+        // actual layout change worth recapturing for. Treat a
+        // same-width, small-height-delta resize as that, not a real
+        // resize (rotation/window resize always changes width, or
+        // changes height by much more than the toolbar ever does).
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const isLikelyToolbarResize =
+          w === _lastResizeW && Math.abs(h - _lastResizeH) < 150;
+        _lastResizeW = w;
+        _lastResizeH = h;
+        if (isLikelyToolbarResize) return;
 
         this._dynamicNodes.forEach((node) => {
           const meta = this._dynMeta.get(node.el);
