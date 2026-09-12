@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
-import ProfileButton from "@/components/profile-button";
 
 export const metadata: Metadata = {
   title: "CHINESE FOR ALL",
@@ -24,10 +23,7 @@ export default function RootLayout({
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/js/debug-overlay.js" />
       </head>
-      <body>
-        {children}
-        <ProfileButton />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

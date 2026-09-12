@@ -1,52 +1,75 @@
 /* ===== Profile button + dropdown (Chinese For All) =====
-   Sits on top of the liquidGL scene, so it uses its own frosted-glass
-   look via plain CSS backdrop-filter (this is intentionally simple -
-   it does not need the WebGL refraction that liquidGL.js provides for
-   the hero shape). */
+   The actual glass look here comes from the real liquidGL WebGL
+   refraction (see /scripts/liquidGL.js + js/main.js) - the elements
+   with class "liquidGL" below are picked up automatically by the
+   existing liquidGL({ target: ".liquidGL", ... }) call, same as the
+   hero shape. This file only handles layout/sizing and keeps the
+   actual button/dropdown interactive: liquidGL makes its target
+   element invisible + non-clickable (by design, so it can render its
+   own canvas in its place), so each interactive piece here wraps a
+   plain liquidGL glass div behind a normal, clickable content layer. */
 
 #cfa-profile-root {
   position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
+  top: 1rem;
+  right: 1rem;
   z-index: 100000; /* above .shape (9999) and .close-btn (100000) siblings */
 }
 
+/* ---- Button ---- */
+
 .cfa-profile-button {
-  width: 48px;
-  height: 48px;
+  position: relative;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(20, 20, 20, 0.35);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  color: #f5f5f5;
-  font-size: 1.1rem;
-  font-weight: 600;
+  border: none;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
 .cfa-profile-button:hover {
-  transform: scale(1.05);
-  background: rgba(20, 20, 20, 0.5);
+  transform: scale(1.06);
 }
 
-.cfa-profile-button svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
+.cfa-profile-button-glass {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
 }
+
+.cfa-profile-button-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: #f5f5f5;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.cfa-profile-button-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+/* ---- Dropdown ---- */
 
 .cfa-profile-dropdown {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 10px);
   right: 0;
-  width: 260px;
-  padding: 1.25rem;
+  width: 240px;
+  padding: 1.1rem;
   border-radius: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.35);
   background: rgba(20, 20, 20, 0.55);
@@ -67,51 +90,48 @@
 }
 
 .cfa-profile-dropdown h3 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .cfa-profile-dropdown p {
-  font-size: 0.9rem;
-  opacity: 0.85;
-  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin-bottom: 0.9rem;
 }
 
-.cfa-profile-link,
-.cfa-profile-dropdown button {
+.cfa-profile-link {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
   color: #f5f5f5;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .cfa-profile-link + .cfa-profile-link {
-  margin-top: 0.6rem;
+  margin-top: 0.55rem;
 }
 
-.cfa-profile-link:hover,
-.cfa-profile-dropdown button:hover {
-  background: rgba(255, 255, 255, 0.12);
+.cfa-profile-link:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 @media (max-width: 768px) {
   #cfa-profile-root {
-    top: 0.85rem;
-    right: 0.85rem;
+    top: 0.75rem;
+    right: 0.75rem;
   }
 
   .cfa-profile-dropdown {
-    width: 78vw;
-    max-width: 300px;
+    width: 74vw;
+    max-width: 280px;
   }
 }

@@ -46,6 +46,21 @@
     var button = el("cfa-profile-button");
     if (!button) return;
 
+    if (window.liquidGL) {
+      window.liquidGL({
+        target: ".cfa-glass",
+        snapshot: "body",
+        resolution: 2,
+        refraction: 0.02,
+        bevelDepth: 0.12,
+        bevelWidth: 0.2,
+        frost: 0.05,
+        specular: true,
+        shadow: true,
+        reveal: "fade",
+      });
+    }
+
     document.addEventListener("click", function (e) {
       var dropdown = el("cfa-profile-dropdown");
       if (dropdown.contains(e.target) || button.contains(e.target)) return;
