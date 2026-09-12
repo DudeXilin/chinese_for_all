@@ -67,3 +67,7 @@ The GitHub repository contains only the application code and database structure.
 - [Next.js](https://nextjs.org/) - application framework
 - [Supabase](https://supabase.com/) - authentication and database
 - [Vercel](https://vercel.com/) - deployment platform
+
+
+## HUGE THANKS TO NAUGHTYDUK
+https://github.com/naughtyduk/liquidgl for a great liquid glass effect implementation and make it free for everyone to use. 
