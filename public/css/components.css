@@ -19,18 +19,7 @@ html body .lil-gui.root.liquidgl-helper {
 }
 
 /* ===== Profile button + "Start learning" button (Chinese For All) =====
-   Structure follows liquidGL's own recommended pattern (see their
-   demo-1 "Navigation Menu Glass"): the target element (the one with
-   class liquidGL/cfa-glass) holds its content DIRECTLY as a normal
-   child - opacity is only 0 momentarily during capture/reveal, then
-   restored, so the content is visible again; pointer-events:none on
-   the target is fine because its clickable parent (<button>/<a>)
-   catches the click instead.
-
-   Per liquidGL's docs, multiple instances on one page must share the
-   SAME z-index (the effect uses one shared canvas, drawn at
-   z-index = highest target z-index - 1) - so both buttons' fixed
-   wrappers below use the same value. */
+   Structure follows liquidGL's own recommended pattern. */
 
 #cfa-profile-root,
 .cfa-start-btn-link {
@@ -38,14 +27,6 @@ html body .lil-gui.root.liquidgl-helper {
   z-index: 9999;
 }
 
-/* iOS Safari jitters position:fixed elements while its address-bar
-   shows/hides during a scroll gesture (this stops as soon as the
-   toolbar is manually hidden, confirming it's that animation, not
-   liquidGL itself). Promoting these to their own GPU compositing
-   layer keeps them visually locked in place instead of lagging a
-   frame or two behind the animating chrome. Targets the WebGL canvas
-   via the data-liquid-ignore attribute the library already sets on
-   it, so nothing in liquidGL.js needs to change. */
 #cfa-profile-root,
 .cfa-start-btn-link,
 canvas[data-liquid-ignore] {
@@ -105,7 +86,7 @@ canvas[data-liquid-ignore] {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
 }
 
-/* ---- Profile dropdown (plain CSS glass - see js/auth.js for why) ---- */
+/* ---- Profile dropdown ---- */
 
 .cfa-profile-dropdown {
   position: absolute;
@@ -180,8 +161,6 @@ canvas[data-liquid-ignore] {
 }
 
 /* ---- Floating "Start learning" button ---- */
-/* Same liquidGL style/options as the old hero shape (see js/main.js) -
-   just 1/3 of its width and a short, pill-shaped height. */
 
 .cfa-start-btn-link {
   left: 50%;
@@ -207,7 +186,7 @@ canvas[data-liquid-ignore] {
 .cfa-start-btn-label {
   color: #f5f5f5;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 2.2rem;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
   white-space: nowrap;
@@ -226,6 +205,6 @@ canvas[data-liquid-ignore] {
   }
 
   .cfa-start-btn-label {
-    font-size: 1rem;
+    font-size: 2rem;
   }
 }
