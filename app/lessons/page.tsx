@@ -9,12 +9,8 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const placeholders = [
-  "Здесь будут колоды с тематиками",
-  "Здесь будут упражнения по грамматике",
-  "Здесь будет 3 тип упражнений",
-  "Здесь будет 4 тип упражнений",
-];
+const topics = Array.from({ length: 10 }, (_, index) => `Тема ${index + 1}`);
+const grammarExercises = Array.from({ length: 5 }, (_, index) => `Упражнение ${index + 1}`);
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
@@ -71,11 +67,33 @@ export default function LessonsPage() {
           className="lessons-track"
           style={{ transform: `translate3d(${-active * 100}vw, 0, 0)` }}
         >
-          {placeholders.map((text) => (
-            <section className="lesson-panel" key={text}>
-              <div className="lesson-placeholder"><span>{text}</span></div>
-            </section>
-          ))}
+          <section className="lesson-panel">
+            <div className="lesson-list">
+              {topics.map((topic) => (
+                <button className="lesson-island" key={topic} type="button">
+                  {topic}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="lesson-panel">
+            <div className="lesson-list grammar-list">
+              {grammarExercises.map((exercise) => (
+                <button className="lesson-island" key={exercise} type="button">
+                  {exercise}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="lesson-panel">
+            <div className="lesson-placeholder"><span>Здесь будет 3 тип упражнений</span></div>
+          </section>
+
+          <section className="lesson-panel">
+            <div className="lesson-placeholder"><span>Здесь будет 4 тип упражнений</span></div>
+          </section>
         </div>
       </div>
 
@@ -106,7 +124,16 @@ export default function LessonsPage() {
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
-        .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 100px 24px 150px; box-sizing: border-box; }
+        .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 70px 24px 120px; box-sizing: border-box; }
+
+        .lesson-list { width: min(760px, 90vw); height: 100%; max-height: calc(100vh - 190px); overflow-y: auto; display: flex; flex-direction: column; align-items: stretch; gap: 16px; padding: 12px 8px 24px; box-sizing: border-box; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.28) transparent; }
+        .lesson-list::-webkit-scrollbar { width: 7px; }
+        .lesson-list::-webkit-scrollbar-track { background: transparent; }
+        .lesson-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28); border-radius: 10px; }
+        .lesson-island { flex: 0 0 92px; width: 100%; border: 1px solid rgba(255,255,255,.14); border-radius: 28px; background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); box-shadow: 0 8px 28px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; font: 600 24px/1.2 Arial,sans-serif; cursor: pointer; transition: background 160ms ease, transform 160ms ease, border-color 160ms ease; }
+        .lesson-island:hover { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
+        .lesson-island:active { transform: scale(.985); }
+        .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
         .lessons-navigator { --navigator-width: min(27vw,350px); --step: 74px; position: fixed; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom)); transform: translateX(-50%); width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030; box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden; }
@@ -122,6 +149,8 @@ export default function LessonsPage() {
           .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
           .lessons-navigator-item { font-size: 11px; }
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
+          .lesson-list { width: 94vw; max-height: calc(100vh - 170px); gap: 12px; padding-left: 4px; padding-right: 4px; }
+          .lesson-island { flex-basis: 82px; border-radius: 24px; font-size: 20px; }
         }
       `}</style>
     </main>
