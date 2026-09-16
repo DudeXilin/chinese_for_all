@@ -45,16 +45,11 @@ export default function LessonsPage() {
 
   const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
     if (dragStart.current === null) return;
-
     const delta = dragDelta.current;
     dragStart.current = null;
     dragDelta.current = 0;
     setDragging(false);
-
-    if (Math.abs(delta) >= 45) {
-      goTo(active + (delta < 0 ? 1 : -1));
-    }
-
+    if (Math.abs(delta) >= 45) goTo(active + (delta < 0 ? 1 : -1));
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -65,7 +60,6 @@ export default function LessonsPage() {
       moved.current = false;
       return;
     }
-
     const rect = event.currentTarget.getBoundingClientRect();
     if (event.clientX < rect.left + rect.width / 2) goTo(active - 1);
     if (event.clientX > rect.left + rect.width / 2) goTo(active + 1);
@@ -73,8 +67,8 @@ export default function LessonsPage() {
 
   return (
     <main className="lessons-page">
-      <Link href="/" aria-label="Вернуться на главную" className="lessons-back-button">
-        <span>&lt;</span>
+      <Link href="/" className="lessons-back" aria-label="Вернуться на главную">
+        <span className="lessons-back-icon" aria-hidden="true">&lt;</span>
       </Link>
 
       <div className="lessons-viewport">
@@ -84,9 +78,7 @@ export default function LessonsPage() {
         >
           {placeholders.map((text) => (
             <section className="lesson-panel" key={text}>
-              <div className="lesson-placeholder">
-                <span>{text}</span>
-              </div>
+              <div className="lesson-placeholder"><span>{text}</span></div>
             </section>
           ))}
         </div>
@@ -108,206 +100,75 @@ export default function LessonsPage() {
             style={{ transform: `translateX(calc(-${active} * var(--step)))` }}
           >
             {sections.map((section) => (
-              <span className="lessons-navigator-item" key={section}>
-                {section}
-              </span>
+              <span className="lessons-navigator-item" key={section}>{section}</span>
             ))}
           </div>
         </div>
-
-        <div className="lessons-navigator-center">
-          {sections[active]}
-        </div>
+        <div className="lessons-navigator-center">{sections[active]}</div>
       </div>
 
       <style jsx>{`
-        .lessons-page {
-          position: fixed;
-          inset: 0;
-          background: #000;
-          color: #fff;
-          overflow: hidden;
-          touch-action: none;
-        }
+        .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
 
-        .lessons-back-button {
+        .lessons-back {
           position: fixed;
-          top: 16px;
-          left: 16px;
-          z-index: 1000;
-          width: 57px;
-          height: 57px;
+          top: 18px;
+          left: 18px;
+          z-index: 9999;
+          width: 56px;
+          height: 56px;
+          margin: 0;
+          padding: 0;
+          border: 0;
           border-radius: 50%;
-          background: #3a3a3a;
+          background: #383838;
           color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;
           text-decoration: none;
           box-sizing: border-box;
-          box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
+          box-shadow: 0 4px 14px rgba(0,0,0,.55);
+          cursor: pointer;
           pointer-events: auto;
-          isolation: isolate;
+          overflow: visible;
         }
 
-        .lessons-back-button span {
+        .lessons-back-icon {
           display: block;
           color: #fff;
-          font: 400 32px/1 Arial, sans-serif;
-          transform: translateY(-2px);
-          pointer-events: none;
-        }
-
-        .lessons-viewport {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-        }
-
-        .lessons-track {
-          display: flex;
-          width: 400vw;
-          height: 100%;
-          transition: transform 520ms cubic-bezier(.22, 1, .36, 1);
-          will-change: transform;
-        }
-
-        .lesson-panel {
-          width: 100vw;
-          height: 100%;
-          flex: 0 0 100vw;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 100px 24px 150px;
-          box-sizing: border-box;
-        }
-
-        .lesson-placeholder {
-          width: min(760px, 90vw);
-          min-height: 180px;
-          border: 1px solid rgba(255, 255, 255, .15);
-          border-radius: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 30px;
-          box-sizing: border-box;
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 32px;
+          font-weight: 400;
+          line-height: 56px;
+          width: 56px;
+          height: 56px;
           text-align: center;
-          color: rgba(255, 255, 255, .65);
-          font: 500 clamp(18px, 2vw, 26px)/1.3 Arial, sans-serif;
-          background: rgba(255, 255, 255, .04);
-        }
-
-        .lessons-navigator {
-          --navigator-width: min(27vw, 350px);
-          --step: 74px;
-          position: fixed;
-          z-index: 110;
-          left: 50%;
-          bottom: max(22px, env(safe-area-inset-bottom));
-          transform: translateX(-50%);
-          width: var(--navigator-width);
-          height: 57px;
-          border-radius: 29px;
-          background: #303030;
-          box-shadow: 0 8px 30px rgba(0, 0, 0, .45);
+          transform: translate(-1px,-2px);
+          pointer-events: none;
           user-select: none;
-          cursor: grab;
-          touch-action: pan-x;
-          overflow: hidden;
         }
 
-        .lessons-navigator.is-dragging {
-          cursor: grabbing;
-        }
+        .lessons-viewport { position: absolute; inset: 0; overflow: hidden; }
+        .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
+        .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 100px 24px 150px; box-sizing: border-box; }
+        .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
-        .lessons-navigator-window {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-        }
+        .lessons-navigator { --navigator-width: min(27vw,350px); --step: 74px; position: fixed; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom)); transform: translateX(-50%); width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030; box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden; }
+        .lessons-navigator.is-dragging { cursor: grabbing; }
+        .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
+        .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
+        .lessons-navigator-item { flex: 0 0 var(--step); width: var(--step); text-align: center; color: rgba(255,255,255,.7); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
+        .lessons-navigator-center { position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px; transform: translate(-50%,-50%); border-radius: 22px; background: #555; box-shadow: 0 3px 12px rgba(0,0,0,.35); pointer-events: none; display: flex; align-items: center; justify-content: center; padding: 0 14px; box-sizing: border-box; text-align: center; color: #fff; font: 600 13px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lessons-navigator::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        .lessons-navigator-strip {
-          position: absolute;
-          left: 50%;
-          top: 0;
-          height: 57px;
-          display: flex;
-          align-items: center;
-          transition: transform 520ms cubic-bezier(.22, 1, .36, 1);
-          will-change: transform;
-        }
-
-        .lessons-navigator-item {
-          flex: 0 0 var(--step);
-          width: var(--step);
-          text-align: center;
-          color: rgba(255, 255, 255, .7);
-          font: 600 12px/1.1 Arial, sans-serif;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .lessons-navigator-item:first-child {
-          margin-left: calc(var(--step) * -0.5);
-        }
-
-        .lessons-navigator-center {
-          position: absolute;
-          z-index: 2;
-          left: 50%;
-          top: 50%;
-          width: min(62%, 220px);
-          height: 43px;
-          transform: translate(-50%, -50%);
-          border-radius: 22px;
-          background: #555;
-          box-shadow: 0 3px 12px rgba(0, 0, 0, .35);
-          pointer-events: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 14px;
-          box-sizing: border-box;
-          text-align: center;
-          color: #fff;
-          font: 600 13px/1.1 Arial, sans-serif;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .lessons-navigator::after {
-          content: "";
-          position: absolute;
-          z-index: 3;
-          inset: 0;
-          pointer-events: none;
-          border-radius: inherit;
-          box-shadow: inset 20px 0 18px -22px rgba(0, 0, 0, .9), inset -20px 0 18px -22px rgba(0, 0, 0, .9);
-        }
-
-        @media (max-width: 600px) {
-          .lessons-back-button {
-            top: 12px;
-            left: 12px;
-          }
-
-          .lessons-navigator {
-            --navigator-width: min(78vw, 350px);
-            --step: 68px;
-          }
-
-          .lessons-navigator-item {
-            font-size: 11px;
-          }
-
-          .lesson-panel {
-            padding-left: 18px;
-            padding-right: 18px;
-          }
+        @media (max-width:600px) {
+          .lessons-back { top: 14px; left: 14px; width: 54px; height: 54px; }
+          .lessons-back-icon { width: 54px; height: 54px; line-height: 54px; font-size: 31px; }
+          .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
+          .lessons-navigator-item { font-size: 11px; }
+          .lesson-panel { padding-left: 18px; padding-right: 18px; }
         }
       `}</style>
     </main>
