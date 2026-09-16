@@ -15,32 +15,6 @@
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
       }
-      /* ===== Single full-viewport lens ===== */
-      .shape {
-        position: fixed;
-        top: 10vw;
-        left: 10vw;
-        width: calc(100vw - 20vw);
-        height: calc(100svh - 20vw);
-        border-radius: 2vw;
-        transform: scaleX(0);
-        transform-origin: center;
-        will-change: transform;
-        pointer-events: none;
-        z-index: 9999;
-      }
-
-      @media screen and (max-width: 768px) {
-        .shape {
-          top: 17.5svh;
-          left: 1.25rem;
-          width: calc(100% - 2.5rem);
-          height: calc(65svh);
-          border-radius: 4vw;
-          pointer-events: auto;
-          z-index: 9999;
-        }
-      }
 
       .content-section {
         display: flex;

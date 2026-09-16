@@ -17,7 +17,13 @@
     <link rel="stylesheet" href="/css/components.css" />
   </head>
   <body>
-    <!-- Profile / Auth button (Chinese For All) -->
+    <!-- Profile / Auth button (Chinese For All).
+         Follows liquidGL's own recommended structure (see their demo-1):
+         the target element itself holds the content directly - opacity
+         is only 0 momentarily during capture/reveal, then restored, so
+         the icon is visible again; pointer-events:none on the target
+         is fine because the actual <button> element (its parent here)
+         is what's clickable. -->
     <div id="cfa-profile-root" data-liquid-ignore>
       <button
         id="cfa-profile-button"
@@ -27,10 +33,11 @@
         aria-expanded="false"
         aria-label="Профиль"
       >
-        <div class="cfa-profile-button-glass cfa-glass"></div>
-        <span id="cfa-profile-icon" class="cfa-profile-button-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z"/></svg>
-        </span>
+        <div class="cfa-profile-button-glass cfa-glass">
+          <span id="cfa-profile-icon" class="cfa-profile-button-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z"/></svg>
+          </span>
+        </div>
       </button>
 
       <div id="cfa-profile-dropdown" class="cfa-profile-dropdown" role="menu">
@@ -42,13 +49,15 @@
     </div>
 
     <!-- Floating "Start learning" button (Chinese For All).
-         Same liquidGL style as the hero shape (shares the ".liquidGL"
-         target/options, see js/main.js) - just a smaller, flatter
-         shape wrapped in a clickable <a>, since liquidGL makes its
-         target invisible/unclickable by design. -->
-    <a href="/lessons" id="cfa-start-btn" class="cfa-start-btn" data-liquid-ignore>
-      <div class="cfa-start-btn-glass liquidGL"></div>
-      <span class="cfa-start-btn-label">Начать обучение</span>
+         Same liquidGL style/options as the old hero shape (still
+         shares the ".liquidGL" target, see js/main.js) - just sized
+         down into a pill button. Content (the label) lives directly
+         inside the target div, exactly like liquidGL's own demo-1
+         menu button - not a separate overlay layer. -->
+    <a href="/lessons" class="cfa-start-btn-link" data-liquid-ignore>
+      <div id="cfa-start-btn" class="cfa-start-btn liquidGL">
+        <span class="cfa-start-btn-label">Начать обучение</span>
+      </div>
     </a>
 
     <div class="preloader" data-liquid-ignore>
@@ -230,9 +239,6 @@
     </div>
     </div>
 
-    <!-- Single lens shape -->
-    <div class="shape liquidGL"></div>
-
     <!-- Libraries -->
     <script src="/js/debug-overlay.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous"></script>
@@ -242,8 +248,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js" integrity="sha384-li4UtcFCH6QeUqR4JyV58/VgTprMuz9aauj+oWtew7V4Y7ZVjnvz5px9Y3UCG0Ea" crossorigin="anonymous"></script>
     <!-- App scripts -->
     <script src="/scripts/liquidGL.js"></script>
+    <script src="/scripts/liquidGL-helper.js"></script>
     <script src="/js/main.js"></script>
-    <script src="/js/controls.js"></script>
     <script src="/js/auth.js"></script>
   </body>
 </html>
