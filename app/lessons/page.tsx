@@ -6,30 +6,41 @@ export const metadata = {
 
 export default function LessonsPage() {
   return (
-    <main className="min-h-svh bg-[#111]">
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-      <script src="/scripts/liquidGL.js" />
-      <style>{`
-        html body .lil-gui.root.liquidgl-helper {
-          top: auto !important;
-          bottom: 1rem !important;
-          left: 1rem !important;
-          right: auto !important;
-        }
-        @media (max-width: 768px) {
-          html body .lil-gui.root.liquidgl-helper {
-            top: auto !important;
-            bottom: 0.5rem !important;
-            left: 0.5rem !important;
-            right: auto !important;
-          }
-        }
-      `}</style>
-
-      <Link href="/" className="cfa-lessons-back-link" aria-label="Назад">
-        <span className="cfa-lessons-back-button" aria-hidden="true">
-          &lt;
-        </span>
+    <main
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#000",
+        overflow: "hidden",
+      }}
+    >
+      <Link
+        href="/"
+        aria-label="Назад"
+        style={{
+          position: "fixed",
+          top: "16px",
+          left: "16px",
+          zIndex: 2147483647,
+          width: "57px",
+          height: "57px",
+          borderRadius: "50%",
+          backgroundColor: "#3a3a3a",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textDecoration: "none",
+          fontFamily: "Arial, sans-serif",
+          fontSize: "32px",
+          fontWeight: 400,
+          lineHeight: 1,
+          boxSizing: "border-box",
+          paddingBottom: "4px",
+          boxShadow: "0 3px 10px rgba(0,0,0,0.35)",
+        }}
+      >
+        &lt;
       </Link>
     </main>
   );
