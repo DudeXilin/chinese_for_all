@@ -115,7 +115,10 @@ export default function LessonsPage() {
             ))}
           </div>
         </div>
-        <div className="lessons-navigator-center" aria-hidden="true" />
+
+        <div className="lessons-navigator-center">
+          {sections[active]}
+        </div>
       </div>
 
       <style jsx>{`
@@ -235,7 +238,7 @@ export default function LessonsPage() {
           flex: 0 0 var(--step);
           width: var(--step);
           text-align: center;
-          color: rgba(255, 255, 255, .78);
+          color: rgba(255, 255, 255, .7);
           font: 600 12px/1.1 Arial, sans-serif;
           white-space: nowrap;
           overflow: hidden;
@@ -258,10 +261,17 @@ export default function LessonsPage() {
           background: #555;
           box-shadow: 0 3px 12px rgba(0, 0, 0, .35);
           pointer-events: none;
-        }
-
-        .lessons-navigator-center::after {
-          content: attr(data-label);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 14px;
+          box-sizing: border-box;
+          text-align: center;
+          color: #fff;
+          font: 600 13px/1.1 Arial, sans-serif;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .lessons-navigator::after {
@@ -272,14 +282,6 @@ export default function LessonsPage() {
           pointer-events: none;
           border-radius: inherit;
           box-shadow: inset 20px 0 18px -22px rgba(0, 0, 0, .9), inset -20px 0 18px -22px rgba(0, 0, 0, .9);
-        }
-
-        .lessons-navigator-center {
-          font: 600 13px/1 Arial, sans-serif;
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
         @media (max-width: 600px) {
