@@ -13,6 +13,15 @@ export default function LessonsPage() {
       <script src="/scripts/liquidGL.js" />
       <GlassInit target=".cfa-glass" />
 
+      <Link
+        href="/"
+        className="cfa-lessons-back-link"
+        aria-label="Назад"
+        data-liquid-ignore
+      >
+        <span className="cfa-lessons-back-button cfa-glass">&lt;</span>
+      </Link>
+
       <div className="mx-auto max-w-3xl">
         <h1 className="mb-2 text-center text-2xl font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
           Что будем учить?
