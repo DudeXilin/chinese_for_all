@@ -1,3 +1,23 @@
+/* ---- Debug helper panel (from scripts/liquidGL-helper.js) ----
+   The library pins its own panel to the top-right via !important
+   inline in its injected stylesheet. This override uses extra
+   (harmless) element selectors purely to win the specificity tie
+   reliably, regardless of whether their <style> tag was inserted
+   before or after this file. */
+html body .lil-gui.root.liquidgl-helper {
+  top: 1rem !important;
+  left: 1rem !important;
+  right: auto !important;
+}
+
+@media (max-width: 768px) {
+  html body .lil-gui.root.liquidgl-helper {
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+    right: auto !important;
+  }
+}
+
 /* ===== Profile button + "Start learning" button (Chinese For All) =====
    Structure follows liquidGL's own recommended pattern (see their
    demo-1 "Navigation Menu Glass"): the target element (the one with

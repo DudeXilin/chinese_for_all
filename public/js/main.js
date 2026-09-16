@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tilt: false,
       tiltFactor: 10,
       magnify: 1,
-      helper: false,
+      helper: true,
       on: {
         init: function (intro) {
           /* OPTIONAL - GSAP ANIMATION OF TARGET ELEMENT */
