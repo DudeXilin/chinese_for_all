@@ -15,6 +15,7 @@ const grammarExercises = Array.from({ length: 5 }, (_, index) => `Упражне
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [dragRatio, setDragRatio] = useState(0);
   const dragStart = useRef<number | null>(null);
   const dragDelta = useRef(0);
   const moved = useRef(false);
@@ -34,17 +35,36 @@ export default function LessonsPage() {
 
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (dragStart.current === null) return;
-    dragDelta.current = event.clientX - dragStart.current;
-    if (Math.abs(dragDelta.current) > 6) moved.current = true;
+
+    const rawDelta = event.clientX - dragStart.current;
+    const atFirst = active === 0 && rawDelta > 0;
+    const atLast = active === sections.length - 1 && rawDelta < 0;
+    const delta = atFirst || atLast ? rawDelta * 0.32 : rawDelta;
+
+    dragDelta.current = delta;
+    if (Math.abs(rawDelta) > 6) moved.current = true;
+
+    const viewportWidth = window.innerWidth || 1;
+    setDragRatio(delta / viewportWidth);
   };
 
   const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
     if (dragStart.current === null) return;
+
     const delta = dragDelta.current;
+    const viewportWidth = window.innerWidth || 1;
+    const threshold = Math.max(45, viewportWidth * 0.18);
+    const shouldChange = Math.abs(delta) >= threshold;
+    const direction = delta < 0 ? 1 : -1;
+    const next = Math.max(0, Math.min(sections.length - 1, active + direction));
+
     dragStart.current = null;
     dragDelta.current = 0;
     setDragging(false);
-    if (Math.abs(delta) >= 45) goTo(active + (delta < 0 ? 1 : -1));
+    setDragRatio(0);
+
+    if (shouldChange && next !== active) goTo(next);
+
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -71,7 +91,10 @@ export default function LessonsPage() {
       >
         <div
           className="lessons-track"
-          style={{ transform: `translate3d(${-active * 100}vw, 0, 0)` }}
+          style={{
+            transform: `translate3d(calc(${-active * 100}vw + ${dragRatio * 100}vw), 0, 0)`,
+            transition: dragging ? "none" : undefined,
+          }}
         >
           <section className="lesson-panel">
             <div className="lesson-list">
@@ -116,7 +139,10 @@ export default function LessonsPage() {
         <div className="lessons-navigator-window">
           <div
             className="lessons-navigator-strip"
-            style={{ transform: `translateX(calc(-${active} * var(--step)))` }}
+            style={{
+              transform: `translateX(calc(-${active} * var(--step) + ${dragRatio} * var(--step)))`,
+              transition: dragging ? "none" : undefined,
+            }}
           >
             {sections.map((section) => (
               <span className="lessons-navigator-item" key={section}>{section}</span>
