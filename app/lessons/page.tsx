@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { PointerEvent, useRef, useState } from "react";
 
 const sections = [
@@ -67,10 +66,6 @@ export default function LessonsPage() {
 
   return (
     <main className="lessons-page">
-      <Link href="/" className="lessons-back" aria-label="Вернуться на главную">
-        <span className="lessons-back-icon" aria-hidden="true">&lt;</span>
-      </Link>
-
       <div className="lessons-viewport">
         <div
           className="lessons-track"
@@ -109,54 +104,6 @@ export default function LessonsPage() {
 
       <style jsx>{`
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
-
-        .lessons-back {
-          position: fixed !important;
-          top: 18px !important;
-          left: 18px !important;
-          z-index: 2147483647 !important;
-          width: 56px !important;
-          height: 56px !important;
-          min-width: 56px !important;
-          min-height: 56px !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          border: 0 !important;
-          border-radius: 50% !important;
-          background: #3a3a3a !important;
-          color: #fff !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          text-decoration: none !important;
-          box-sizing: border-box !important;
-          box-shadow: 0 4px 14px rgba(0,0,0,.65) !important;
-          cursor: pointer !important;
-          pointer-events: auto !important;
-          overflow: hidden !important;
-          appearance: none !important;
-          -webkit-appearance: none !important;
-        }
-
-        .lessons-back-icon {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          width: 100% !important;
-          height: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          color: #fff !important;
-          font-family: Arial, Helvetica, sans-serif !important;
-          font-size: 32px !important;
-          font-weight: 400 !important;
-          line-height: 1 !important;
-          text-align: center !important;
-          transform: translate(-1px,-2px) !important;
-          pointer-events: none !important;
-          user-select: none !important;
-        }
-
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 100px 24px 150px; box-sizing: border-box; }
@@ -172,8 +119,6 @@ export default function LessonsPage() {
         .lessons-navigator::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
         @media (max-width:600px) {
-          .lessons-back { top: 14px !important; left: 14px !important; width: 54px !important; height: 54px !important; min-width: 54px !important; min-height: 54px !important; }
-          .lessons-back-icon { font-size: 31px !important; }
           .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
           .lessons-navigator-item { font-size: 11px; }
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
