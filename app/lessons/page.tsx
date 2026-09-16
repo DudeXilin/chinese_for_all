@@ -19,7 +19,10 @@ export default function LessonsPage() {
         aria-label="Назад"
         data-liquid-ignore
       >
-        <span className="cfa-lessons-back-button cfa-glass">&lt;</span>
+        <span className="cfa-lessons-back-glass cfa-glass" aria-hidden="true" />
+        <span className="cfa-lessons-back-button" aria-hidden="true">
+          &lt;
+        </span>
       </Link>
 
       <div className="mx-auto max-w-3xl">
