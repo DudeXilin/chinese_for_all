@@ -67,21 +67,20 @@ export default function LessonsPage() {
     }
 
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    if (x < rect.width / 2) goTo(active - 1);
-    if (x > rect.width / 2) goTo(active + 1);
+    if (event.clientX < rect.left + rect.width / 2) goTo(active - 1);
+    if (event.clientX > rect.left + rect.width / 2) goTo(active + 1);
   };
 
   return (
     <main className="lessons-page">
       <Link href="/" aria-label="Вернуться на главную" className="lessons-back-button">
-        &lt;
+        <span>&lt;</span>
       </Link>
 
       <div className="lessons-viewport">
         <div
           className="lessons-track"
-          style={{ transform: `translate3d(${-active * 100}%, 0, 0)` }}
+          style={{ transform: `translate3d(${-active * 100}vw, 0, 0)` }}
         >
           {placeholders.map((text) => (
             <section className="lesson-panel" key={text}>
@@ -135,7 +134,7 @@ export default function LessonsPage() {
           position: fixed;
           top: 16px;
           left: 16px;
-          z-index: 100;
+          z-index: 1000;
           width: 57px;
           height: 57px;
           border-radius: 50%;
@@ -145,11 +144,18 @@ export default function LessonsPage() {
           align-items: center;
           justify-content: center;
           text-decoration: none;
-          font: 400 32px/1 Arial, sans-serif;
           box-sizing: border-box;
-          padding-bottom: 4px;
-          box-shadow: 0 3px 10px rgba(0, 0, 0, .35);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
           pointer-events: auto;
+          isolation: isolate;
+        }
+
+        .lessons-back-button span {
+          display: block;
+          color: #fff;
+          font: 400 32px/1 Arial, sans-serif;
+          transform: translateY(-2px);
+          pointer-events: none;
         }
 
         .lessons-viewport {
@@ -160,16 +166,16 @@ export default function LessonsPage() {
 
         .lessons-track {
           display: flex;
-          width: 400%;
+          width: 400vw;
           height: 100%;
           transition: transform 520ms cubic-bezier(.22, 1, .36, 1);
           will-change: transform;
         }
 
         .lesson-panel {
-          width: 25%;
+          width: 100vw;
           height: 100%;
-          flex: 0 0 25%;
+          flex: 0 0 100vw;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -229,7 +235,6 @@ export default function LessonsPage() {
           height: 57px;
           display: flex;
           align-items: center;
-          transform: translateX(0);
           transition: transform 520ms cubic-bezier(.22, 1, .36, 1);
           will-change: transform;
         }
