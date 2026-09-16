@@ -111,42 +111,50 @@ export default function LessonsPage() {
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
 
         .lessons-back {
-          position: fixed;
-          top: 18px;
-          left: 18px;
-          z-index: 9999;
-          width: 56px;
-          height: 56px;
-          margin: 0;
-          padding: 0;
-          border: 0;
-          border-radius: 50%;
-          background: #383838;
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
-          box-sizing: border-box;
-          box-shadow: 0 4px 14px rgba(0,0,0,.55);
-          cursor: pointer;
-          pointer-events: auto;
-          overflow: visible;
+          position: fixed !important;
+          top: 18px !important;
+          left: 18px !important;
+          z-index: 2147483647 !important;
+          width: 56px !important;
+          height: 56px !important;
+          min-width: 56px !important;
+          min-height: 56px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: 0 !important;
+          border-radius: 50% !important;
+          background: #3a3a3a !important;
+          color: #fff !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-decoration: none !important;
+          box-sizing: border-box !important;
+          box-shadow: 0 4px 14px rgba(0,0,0,.65) !important;
+          cursor: pointer !important;
+          pointer-events: auto !important;
+          overflow: hidden !important;
+          appearance: none !important;
+          -webkit-appearance: none !important;
         }
 
         .lessons-back-icon {
-          display: block;
-          color: #fff;
-          font-family: Arial, Helvetica, sans-serif;
-          font-size: 32px;
-          font-weight: 400;
-          line-height: 56px;
-          width: 56px;
-          height: 56px;
-          text-align: center;
-          transform: translate(-1px,-2px);
-          pointer-events: none;
-          user-select: none;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          color: #fff !important;
+          font-family: Arial, Helvetica, sans-serif !important;
+          font-size: 32px !important;
+          font-weight: 400 !important;
+          line-height: 1 !important;
+          text-align: center !important;
+          transform: translate(-1px,-2px) !important;
+          pointer-events: none !important;
+          user-select: none !important;
         }
 
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; }
@@ -164,8 +172,8 @@ export default function LessonsPage() {
         .lessons-navigator::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
         @media (max-width:600px) {
-          .lessons-back { top: 14px; left: 14px; width: 54px; height: 54px; }
-          .lessons-back-icon { width: 54px; height: 54px; line-height: 54px; font-size: 31px; }
+          .lessons-back { top: 14px !important; left: 14px !important; width: 54px !important; height: 54px !important; min-width: 54px !important; min-height: 54px !important; }
+          .lessons-back-icon { font-size: 31px !important; }
           .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
           .lessons-navigator-item { font-size: 11px; }
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
