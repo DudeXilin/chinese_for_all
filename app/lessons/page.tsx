@@ -1,6 +1,7 @@
 "use client";
 
 import { PointerEvent, useRef, useState } from "react";
+import { GlassInit } from "@/components/glass-init";
 
 const sections = [
   "Слова по тематикам",
@@ -82,6 +83,16 @@ export default function LessonsPage() {
 
   return (
     <main className="lessons-page">
+      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+      <script src="/scripts/liquidGL.js" />
+      <GlassInit target=".cfa-glass" />
+
+      <a href="/" className="lessons-back-btn" aria-label="На главную">
+        <div className="lessons-back-btn-glass cfa-glass">
+          <span className="lessons-back-btn-label">&lt;</span>
+        </div>
+      </a>
+
       <div
         className={`lessons-viewport${dragging ? " is-dragging" : ""}`}
         onPointerDown={onPointerDown}
@@ -156,6 +167,9 @@ export default function LessonsPage() {
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
         .lessons-viewport.is-dragging { cursor: grabbing; }
+        .lessons-back-btn { position: fixed; top: 1rem; left: 1rem; z-index: 120; text-decoration: none; transform: translateZ(0); will-change: transform; backface-visibility: hidden; }
+        .lessons-back-btn-glass { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .lessons-back-btn-label { color: #f5f5f5; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); line-height: 1; }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 70px 24px 120px; box-sizing: border-box; }
 
