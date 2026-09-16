@@ -1,24 +1,21 @@
-/* ---- Debug helper panel (from scripts/liquidGL-helper.js) ----
-   The library pins its own panel to the top-right via !important
-   inline in its injected stylesheet. This override uses extra
-   (harmless) element selectors purely to win the specificity tie
-   reliably, regardless of whether their <style> tag was inserted
-   before or after this file. */
+/* ---- Debug helper panel ---- */
 html body .lil-gui.root.liquidgl-helper {
-  top: 1rem !important;
+  top: auto !important;
+  bottom: 1rem !important;
   left: 1rem !important;
   right: auto !important;
 }
 
 @media (max-width: 768px) {
   html body .lil-gui.root.liquidgl-helper {
-    top: 0.5rem !important;
+    top: auto !important;
+    bottom: 0.5rem !important;
     left: 0.5rem !important;
     right: auto !important;
   }
 }
 
-/* ===== Profile button + "Start learning" button (Chinese For All) ===== */
+/* ===== Profile button + "Start learning" button ===== */
 
 #cfa-profile-root,
 .cfa-start-btn-link,
@@ -29,7 +26,6 @@ html body .lil-gui.root.liquidgl-helper {
 
 #cfa-profile-root,
 .cfa-start-btn-link,
-.cfa-lessons-back-link,
 canvas[data-liquid-ignore] {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -87,39 +83,67 @@ canvas[data-liquid-ignore] {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
 }
 
-/* ---- Lessons back button ---- */
+/* ---- Lessons back button: deliberately NOT Liquid Glass ---- */
 
 .cfa-lessons-back-link {
-  top: 1rem;
-  left: 1rem;
-  width: 57px;
-  height: 57px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.cfa-lessons-back-link:hover {
-  transform: scale(1.06) translateZ(0);
+  top: 1rem !important;
+  left: 1rem !important;
+  width: 57px !important;
+  height: 57px !important;
+  display: block !important;
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transform: none !important;
 }
 
 .cfa-lessons-back-button {
-  width: 57px;
-  height: 57px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #3a3a3a;
-  color: #fff !important;
-  font-size: 2rem;
-  font-family: Arial, sans-serif;
-  font-weight: 400;
-  line-height: 1;
-  padding: 0 0 3px 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box !important;
+  width: 57px !important;
+  height: 57px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+  background: #3a3a3a !important;
+  background-image: none !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 32px !important;
+  font-weight: 400 !important;
+  line-height: 57px !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35) !important;
+  text-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.cfa-lessons-back-link:hover {
+  transform: scale(1.06) !important;
+}
+
+@media (max-width: 768px) {
+  #cfa-profile-root {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .cfa-lessons-back-link {
+    top: 0.75rem !important;
+    left: 0.75rem !important;
+  }
+
+  .cfa-profile-dropdown {
+    width: 74vw;
+    max-width: 280px;
+  }
 }
 
 /* ---- Profile dropdown ---- */
@@ -182,23 +206,6 @@ canvas[data-liquid-ignore] {
 
 .cfa-profile-link:hover {
   background: rgba(255, 255, 255, 0.18);
-}
-
-@media (max-width: 768px) {
-  #cfa-profile-root {
-    top: 0.75rem;
-    right: 0.75rem;
-  }
-
-  .cfa-lessons-back-link {
-    top: 0.75rem;
-    left: 0.75rem;
-  }
-
-  .cfa-profile-dropdown {
-    width: 74vw;
-    max-width: 280px;
-  }
 }
 
 /* ---- Floating "Start learning" button ---- */
