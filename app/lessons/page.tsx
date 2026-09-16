@@ -62,7 +62,13 @@ export default function LessonsPage() {
 
   return (
     <main className="lessons-page">
-      <div className="lessons-viewport">
+      <div
+        className={`lessons-viewport${dragging ? " is-dragging" : ""}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
         <div
           className="lessons-track"
           style={{ transform: `translate3d(${-active * 100}vw, 0, 0)` }}
@@ -122,11 +128,12 @@ export default function LessonsPage() {
 
       <style jsx>{`
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
-        .lessons-viewport { position: absolute; inset: 0; overflow: hidden; }
+        .lessons-viewport { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
+        .lessons-viewport.is-dragging { cursor: grabbing; }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 70px 24px 120px; box-sizing: border-box; }
 
-        .lesson-list { width: min(760px, 90vw); height: 100%; max-height: calc(100vh - 190px); overflow-y: auto; display: flex; flex-direction: column; align-items: stretch; gap: 16px; padding: 12px 8px 24px; box-sizing: border-box; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.28) transparent; }
+        .lesson-list { width: min(760px, 90vw); height: 100%; max-height: calc(100vh - 190px); overflow-y: auto; display: flex; flex-direction: column; align-items: stretch; gap: 16px; padding: 12px 8px 24px; box-sizing: border-box; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.28) transparent; touch-action: pan-y; }
         .lesson-list::-webkit-scrollbar { width: 7px; }
         .lesson-list::-webkit-scrollbar-track { background: transparent; }
         .lesson-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28); border-radius: 10px; }
