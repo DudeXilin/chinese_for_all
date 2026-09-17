@@ -28,7 +28,10 @@ const grammarExercises = Array.from({ length: 5 }, (_, index) => `Упражне
 // the entire subtree under any `position: fixed` ancestor when
 // building its backdrop snapshot - so with the default "body" target
 // there was nothing real behind the glass to refract at all.
-const GLASS_OPTIONS = { snapshot: ".lessons-canvas" };
+const GLASS_OPTIONS = {
+  snapshot: ".lessons-canvas",
+  helper: true,
+};
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
@@ -132,6 +135,13 @@ export default function LessonsPage() {
     <main className="lessons-page">
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script src="/scripts/liquidGL.js" />
+      {/* liquidGL's own dev/debug GUI (lil-gui panel) - lets you tune
+          refraction/aberration/bevel/frost/etc live on this page and
+          copy the resulting init code. Must load before liquidGL()
+          runs (see GlassInit below) since it registers
+          window.__liquidGLHelper__. */}
+      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+      <script src="/scripts/liquidGL-helper.js" />
       <GlassInit target=".cfa-glass" options={GLASS_OPTIONS} />
 
       <a href="/" className="lessons-back-btn" aria-label="На главную">
@@ -240,6 +250,26 @@ export default function LessonsPage() {
         .lessons-back-btn { position: fixed; top: 1rem; left: 1rem; z-index: 120; text-decoration: none; transform: translateZ(0); will-change: transform; backface-visibility: hidden; }
         .lessons-back-btn-glass { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .lessons-back-btn-label { color: #f5f5f5; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); line-height: 1; }
+
+        /* liquidGL's debug GUI ships pinned top-right (and re-asserts
+           that with !important via its own injected stylesheet), so
+           we out-specify it here (repeating the class is a standard
+           zero-cost specificity bump) to relocate it top-left, just
+           under the back button, on this page only. */
+        :global(.lil-gui.root.liquidgl-helper.liquidgl-helper) {
+          top: calc(1rem + 38px + 12px) !important;
+          left: 1rem !important;
+          right: auto !important;
+          bottom: auto !important;
+          z-index: 119 !important;
+        }
+        @media (max-width: 768px) {
+          :global(.lil-gui.root.liquidgl-helper.liquidgl-helper) {
+            top: calc(1rem + 38px + 10px) !important;
+            left: 0.75rem !important;
+            right: auto !important;
+          }
+        }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 70px 24px 120px; box-sizing: border-box; }
 
