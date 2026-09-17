@@ -137,30 +137,38 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      <div
-        className={`lessons-navigator${dragging ? " is-dragging" : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onClick={onNavigatorClick}
-        role="tablist"
-        aria-label="Тип упражнений"
-      >
-        <div className="lessons-navigator-window">
-          <div
-            className="lessons-navigator-strip"
-            style={{
-              transform: `translateX(calc(-${active} * var(--step) + ${dragRatio} * var(--step)))`,
-              transition: dragging ? "none" : undefined,
-            }}
-          >
-            {sections.map((section) => (
-              <span className="lessons-navigator-item" key={section}>{section}</span>
-            ))}
+      <div className="lessons-navigator-dock">
+        <div
+          className={`lessons-navigator${dragging ? " is-dragging" : ""}`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onClick={onNavigatorClick}
+          role="tablist"
+          aria-label="Тип упражнений"
+        >
+          <div className="lessons-navigator-window">
+            <div
+              className="lessons-navigator-strip"
+              style={{
+                transform: `translateX(calc(-${active} * var(--step) + ${dragRatio} * var(--step)))`,
+                transition: dragging ? "none" : undefined,
+              }}
+            >
+              {sections.map((section) => (
+                <span className="lessons-navigator-item" key={section}>{section}</span>
+              ))}
+            </div>
           </div>
+          <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
         </div>
-        <div className="lessons-navigator-center">{sections[active]}</div>
+
+        <div className="lessons-navigator-label" aria-live="polite">
+          <span className="lessons-navigator-label-text" key={active}>
+            {sections[active]}
+          </span>
+        </div>
       </div>
 
       <style jsx>{`
@@ -183,18 +191,57 @@ export default function LessonsPage() {
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
-        .lessons-navigator { --navigator-width: min(27vw,350px); --step: 74px; position: fixed; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom)); transform: translateX(-50%); width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030; box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden; }
+        .lessons-navigator-dock {
+          --navigator-width: min(27vw,350px);
+          --step: 74px;
+          --indicator-width: min(220px, calc(var(--navigator-width) * .62));
+          position: fixed; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
+          transform: translateX(-50%);
+          display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .lessons-navigator { position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030; box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden; }
         .lessons-navigator.is-dragging { cursor: grabbing; }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
         .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lessons-navigator-item { flex: 0 0 var(--step); width: var(--step); text-align: center; color: rgba(255,255,255,.7); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
-        .lessons-navigator-center { position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px; transform: translate(-50%,-50%); border-radius: 22px; background: #555; box-shadow: 0 3px 12px rgba(0,0,0,.35); pointer-events: none; display: flex; align-items: center; justify-content: center; padding: 0 14px; box-sizing: border-box; text-align: center; color: #fff; font: 600 13px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Pure liquid-glass indicator - acts like a compass needle, no
+           text of its own; the active section name is shown on the
+           shimmering label docked directly beneath it (see below),
+           always sharing the exact same width & center axis. */
+        .lessons-navigator-center { position: absolute; z-index: 2; left: 50%; top: 50%; width: var(--indicator-width); height: 43px; transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none; }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
+        /* Label docked under the glass: identical width & center axis
+           as .lessons-navigator-center (both derive from
+           --indicator-width on the shared dock), so the active
+           section name always lands dead-center beneath the glass. */
+        .lessons-navigator-label { position: relative; width: var(--indicator-width); height: 22px; display: flex; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; }
+        .lessons-navigator-label-text {
+          display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          font: 600 14px/1.1 Arial,sans-serif; letter-spacing: .01em; text-align: center;
+          background: linear-gradient(90deg, rgba(255,255,255,.55) 0%, #fff 22%, #fff 45%, rgba(255,255,255,.55) 68%, rgba(255,255,255,.35) 100%);
+          background-size: 220% 100%;
+          -webkit-background-clip: text; background-clip: text; color: transparent;
+          -webkit-text-fill-color: transparent;
+          animation: lessons-label-shimmer 2.6s ease-in-out infinite, lessons-label-in 360ms cubic-bezier(.22,1,.36,1);
+        }
+
+        @keyframes lessons-label-shimmer {
+          0% { background-position: 130% 0; }
+          55% { background-position: -30% 0; }
+          100% { background-position: -30% 0; }
+        }
+        @keyframes lessons-label-in {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width:600px) {
-          .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
+          .lessons-navigator-dock { --navigator-width: min(78vw,350px); --step: 68px; }
           .lessons-navigator-item { font-size: 11px; }
+          .lessons-navigator-label-text { font-size: 13px; }
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
           .lesson-list { width: 94vw; max-height: calc(100vh - 170px); gap: 12px; padding-left: 4px; padding-right: 4px; }
           .lesson-island { flex-basis: 82px; border-radius: 24px; font-size: 20px; }
