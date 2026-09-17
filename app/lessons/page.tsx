@@ -1,6 +1,6 @@
 "use client";
 
-import { PointerEvent, useRef, useState } from "react";
+import { PointerEvent, useEffect, useRef, useState } from "react";
 import { GlassInit } from "@/components/glass-init";
 
 const sections = [
@@ -13,6 +13,23 @@ const sections = [
 const topics = Array.from({ length: 10 }, (_, index) => `Тема ${index + 1}`);
 const grammarExercises = Array.from({ length: 5 }, (_, index) => `Упражнение ${index + 1}`);
 
+// Stable object reference (module scope, never recreated) so GlassInit's
+// effect dependency array doesn't see a "new" options object on every
+// LessonsPage re-render. This page re-renders on every pointermove
+// while dragging the navigator (dragRatio changes ~60x/s) - an inline
+// `options={{ ... }}` literal here would re-run liquidGL() init that
+// often, which is what was actually causing the severe lag and visual
+// corruption ("black halo"), not the glass effect itself.
+//
+// `snapshot: ".lessons-canvas"` points liquidGL at that specific,
+// normally-positioned wrapper (see below) instead of the default
+// "body": .lessons-page itself is `position: fixed` (needed to lock
+// the page from iOS rubber-band scrolling), and liquidGL always skips
+// the entire subtree under any `position: fixed` ancestor when
+// building its backdrop snapshot - so with the default "body" target
+// there was nothing real behind the glass to refract at all.
+const GLASS_OPTIONS = { snapshot: ".lessons-canvas" };
+
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -20,6 +37,36 @@ export default function LessonsPage() {
   const dragStart = useRef<number | null>(null);
   const dragDelta = useRef(0);
   const moved = useRef(false);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  // Once liquidGL has initialised (see GlassInit below), mark the
+  // sliding ribbon as "dynamic" so the glass keeps re-sampling it as
+  // it moves - this is what makes whichever word ends up under the
+  // glass actually appear magnified/refracted through it, instead of
+  // showing a frozen first-paint snapshot.
+  useEffect(() => {
+    let cancelled = false;
+    let attempts = 0;
+    const tryRegister = () => {
+      if (cancelled || !stripRef.current) return;
+      const w = window as unknown as {
+        liquidGL?: ((opts: Record<string, unknown>) => unknown) & {
+          registerDynamic?: (el: Element) => void;
+        };
+        __liquidGLRenderer__?: unknown;
+      };
+      if (w.__liquidGLRenderer__ && w.liquidGL?.registerDynamic) {
+        w.liquidGL.registerDynamic(stripRef.current);
+        return;
+      }
+      attempts += 1;
+      if (attempts < 60) setTimeout(tryRegister, 50);
+    };
+    tryRegister();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const goTo = (index: number) => {
     setActive(Math.max(0, Math.min(sections.length - 1, index)));
@@ -85,15 +132,7 @@ export default function LessonsPage() {
     <main className="lessons-page">
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script src="/scripts/liquidGL.js" />
-      {/* liquidGL's own dev/debug GUI (lil-gui panel) - lets you tune
-          refraction/aberration/bevel/frost/etc live on this page and
-          copy the resulting init code. Must load before liquidGL()
-          runs (see GlassInit below) since it registers
-          window.__liquidGLHelper__. Harmless to ship; remove this
-          line + the `helper: true` option below to hide it. */}
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-      <script src="/scripts/liquidGL-helper.js" />
-      <GlassInit target=".cfa-glass" options={{ helper: true }} />
+      <GlassInit target=".cfa-glass" options={GLASS_OPTIONS} />
 
       <a href="/" className="lessons-back-btn" aria-label="На главную">
         <div className="lessons-back-btn-glass cfa-glass">
@@ -101,51 +140,62 @@ export default function LessonsPage() {
         </div>
       </a>
 
-      <div
-        className={`lessons-viewport${dragging ? " is-dragging" : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      >
+      {/* Everything liquidGL is meant to actually refract lives in here.
+          Deliberately NOT position:fixed (see GLASS_OPTIONS comment above) -
+          it's pinned to the same rect via absolute+inset:0 inside the
+          fixed .lessons-page shell instead, so it looks identical but stays
+          capturable as the glass's backdrop. */}
+      <div className="lessons-canvas">
         <div
-          className="lessons-track"
-          style={{
-            transform: `translate3d(calc(${-active * 100}vw + ${dragRatio * 100}vw), 0, 0)`,
-            transition: dragging ? "none" : undefined,
-          }}
+          className={`lessons-viewport${dragging ? " is-dragging" : ""}`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         >
-          <section className="lesson-panel">
-            <div className="lesson-list">
-              {topics.map((topic) => (
-                <button className="lesson-island" key={topic} type="button">
-                  {topic}
-                </button>
-              ))}
-            </div>
-          </section>
+          <div
+            className="lessons-track"
+            style={{
+              transform: `translate3d(calc(${-active * 100}vw + ${dragRatio * 100}vw), 0, 0)`,
+              transition: dragging ? "none" : undefined,
+            }}
+          >
+            <section className="lesson-panel">
+              <div className="lesson-list">
+                {topics.map((topic) => (
+                  <button className="lesson-island" key={topic} type="button">
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          <section className="lesson-panel">
-            <div className="lesson-list grammar-list">
-              {grammarExercises.map((exercise) => (
-                <button className="lesson-island" key={exercise} type="button">
-                  {exercise}
-                </button>
-              ))}
-            </div>
-          </section>
+            <section className="lesson-panel">
+              <div className="lesson-list grammar-list">
+                {grammarExercises.map((exercise) => (
+                  <button className="lesson-island" key={exercise} type="button">
+                    {exercise}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          <section className="lesson-panel">
-            <div className="lesson-placeholder"><span>Здесь будет 3 тип упражнений</span></div>
-          </section>
+            <section className="lesson-panel">
+              <div className="lesson-placeholder"><span>Здесь будет 3 тип упражнений</span></div>
+            </section>
 
-          <section className="lesson-panel">
-            <div className="lesson-placeholder"><span>Здесь будет 4 тип упражнений</span></div>
-          </section>
+            <section className="lesson-panel">
+              <div className="lesson-placeholder"><span>Здесь будет 4 тип упражнений</span></div>
+            </section>
+          </div>
         </div>
-      </div>
 
-      <div className="lessons-navigator-dock">
+        {/* The navigator itself has no name written on it anywhere. The
+            static glass window (.lessons-navigator-center) sits fixed in
+            place, front of the sliding ribbon, and liquidGL refracts
+            whatever ribbon word is currently underneath it - like a
+            magnifying loupe over a ruler. Selection is communicated purely
+            by which word ends up magnified under the glass. */}
         <div
           className={`lessons-navigator${dragging ? " is-dragging" : ""}`}
           onPointerDown={onPointerDown}
@@ -158,6 +208,7 @@ export default function LessonsPage() {
         >
           <div className="lessons-navigator-window">
             <div
+              ref={stripRef}
               className="lessons-navigator-strip"
               style={{
                 transform: `translateX(calc(-${active} * var(--step) + ${dragRatio} * var(--step)))`,
@@ -169,43 +220,26 @@ export default function LessonsPage() {
               ))}
             </div>
           </div>
-          <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
-        </div>
-
-        <div className="lessons-navigator-label" aria-live="polite">
-          <span className="lessons-navigator-label-text" key={active}>
-            {sections[active]}
-          </span>
+          {/* data-liquid-ignore: without it, this element would end up
+              inside its own backdrop snapshot (it's a normal, capturable
+              descendant now) and refract itself frame over frame - the
+              feedback loop that showed up as a dark, laggy halo. */}
+          <div
+            className="lessons-navigator-center cfa-glass"
+            data-liquid-ignore=""
+            aria-hidden="true"
+          />
         </div>
       </div>
 
       <style jsx>{`
         .lessons-page { position: fixed; inset: 0; background: #000; color: #fff; overflow: hidden; touch-action: none; }
+        .lessons-canvas { position: absolute; inset: 0; }
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
         .lessons-viewport.is-dragging { cursor: grabbing; }
         .lessons-back-btn { position: fixed; top: 1rem; left: 1rem; z-index: 120; text-decoration: none; transform: translateZ(0); will-change: transform; backface-visibility: hidden; }
         .lessons-back-btn-glass { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .lessons-back-btn-label { color: #f5f5f5; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); line-height: 1; }
-
-        /* liquidGL's debug GUI ships pinned top-right (and re-asserts
-           that with !important via its own injected stylesheet), so
-           we out-specify it here (repeating the class is a standard
-           zero-cost specificity bump) to relocate it top-left, just
-           under the back button, on this page only. */
-        :global(.lil-gui.root.liquidgl-helper.liquidgl-helper) {
-          top: calc(1rem + 38px + 12px) !important;
-          left: 1rem !important;
-          right: auto !important;
-          bottom: auto !important;
-          z-index: 119 !important;
-        }
-        @media (max-width: 768px) {
-          :global(.lil-gui.root.liquidgl-helper.liquidgl-helper) {
-            top: calc(1rem + 38px + 10px) !important;
-            left: 0.75rem !important;
-            right: auto !important;
-          }
-        }
         .lessons-track { display: flex; width: 400vw; height: 100%; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lesson-panel { width: 100vw; height: 100%; flex: 0 0 100vw; display: flex; align-items: center; justify-content: center; padding: 70px 24px 120px; box-sizing: border-box; }
 
@@ -219,57 +253,30 @@ export default function LessonsPage() {
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
-        .lessons-navigator-dock {
+        .lessons-navigator {
           --navigator-width: min(27vw,350px);
           --step: 74px;
-          --indicator-width: min(220px, calc(var(--navigator-width) * .62));
-          position: fixed; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
+          position: absolute; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
           transform: translateX(-50%);
-          display: flex; flex-direction: column; align-items: center; gap: 12px;
+          width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
+          box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden;
         }
-        .lessons-navigator { position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030; box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden; }
         .lessons-navigator.is-dragging { cursor: grabbing; }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
         .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
         .lessons-navigator-item { flex: 0 0 var(--step); width: var(--step); text-align: center; color: rgba(255,255,255,.7); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
+        .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        /* Pure liquid-glass indicator - acts like a compass needle, no
-           text of its own; the active section name is shown on the
-           shimmering label docked directly beneath it (see below),
-           always sharing the exact same width & center axis. */
-        .lessons-navigator-center { position: absolute; z-index: 2; left: 50%; top: 50%; width: var(--indicator-width); height: 43px; transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none; }
-        .lessons-navigator::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
-
-        /* Label docked under the glass: identical width & center axis
-           as .lessons-navigator-center (both derive from
-           --indicator-width on the shared dock), so the active
-           section name always lands dead-center beneath the glass. */
-        .lessons-navigator-label { position: relative; width: var(--indicator-width); height: 22px; display: flex; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; }
-        .lessons-navigator-label-text {
-          display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          font: 600 14px/1.1 Arial,sans-serif; letter-spacing: .01em; text-align: center;
-          background: linear-gradient(90deg, rgba(255,255,255,.55) 0%, #fff 22%, #fff 45%, rgba(255,255,255,.55) 68%, rgba(255,255,255,.35) 100%);
-          background-size: 220% 100%;
-          -webkit-background-clip: text; background-clip: text; color: transparent;
-          -webkit-text-fill-color: transparent;
-          animation: lessons-label-shimmer 2.6s ease-in-out infinite, lessons-label-in 360ms cubic-bezier(.22,1,.36,1);
-        }
-
-        @keyframes lessons-label-shimmer {
-          0% { background-position: 130% 0; }
-          55% { background-position: -30% 0; }
-          100% { background-position: -30% 0; }
-        }
-        @keyframes lessons-label-in {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        /* Pure liquid-glass window, no text of its own - it sits in
+           front of the ribbon and magnifies/refracts whichever word is
+           currently sliding underneath it (see GLASS_OPTIONS +
+           registerDynamic in the component). */
+        .lessons-navigator-center { position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px; transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none; }
 
         @media (max-width:600px) {
-          .lessons-navigator-dock { --navigator-width: min(78vw,350px); --step: 68px; }
+          .lessons-navigator { --navigator-width: min(78vw,350px); --step: 68px; }
           .lessons-navigator-item { font-size: 11px; }
-          .lessons-navigator-label-text { font-size: 13px; }
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
           .lesson-list { width: 94vw; max-height: calc(100vh - 170px); gap: 12px; padding-left: 4px; padding-right: 4px; }
           .lesson-island { flex-basis: 82px; border-radius: 24px; font-size: 20px; }
