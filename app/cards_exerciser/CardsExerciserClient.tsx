@@ -59,13 +59,20 @@ export default function CardsExerciserClient({ title, words }: Props) {
 
   useEffect(() => {
     if (side !== "front" || finished) return;
-    const focus = () => inputRef.current?.focus();
-    const timer = window.setTimeout(focus, 120);
-    return () => window.clearTimeout(timer);
+
+    const focusInput = () => inputRef.current?.focus();
+    const timer = window.setTimeout(focusInput, 120);
+    window.addEventListener("focus", focusInput);
+    window.addEventListener("pointerdown", focusInput);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", focusInput);
+      window.removeEventListener("pointerdown", focusInput);
+    };
   }, [index, side, finished]);
 
   function reveal() {
-    if (!answer.trim()) return;
     setSide("back");
     inputRef.current?.blur();
   }
@@ -115,8 +122,12 @@ export default function CardsExerciserClient({ title, words }: Props) {
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
-                    <div className="mt-2 min-h-8 border-b border-white/10 pb-1 text-lg tracking-wide text-white/75">{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
-                    <input ref={inputRef} value={answer} onChange={(e) => setAnswer(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute h-px w-px opacity-0" />
+                    <div
+                      className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75"
+                      onMouseDown={() => inputRef.current?.focus()}
+                      onTouchStart={() => inputRef.current?.focus()}
+                    >{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
+                    <input ref={inputRef} value={answer} onChange={(e) => setAnswer(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" />
                   </div>
                   <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
                 </div>
