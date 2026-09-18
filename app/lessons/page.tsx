@@ -1,6 +1,6 @@
 "use client";
 
-import { PointerEvent, useLayoutEffect, useRef, useState } from "react";
+import { PointerEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
 
@@ -22,29 +22,8 @@ const currentStep = () => (typeof window !== "undefined" && window.innerWidth <=
 // effect dependency array doesn't see a "new" options object on every
 // LessonsPage re-render (this page re-renders on every pointermove while
 // dragging - an inline `options={{ ... }}` literal would re-run liquidGL()
-// init that often). No custom `snapshot` override here on purpose - see
-// the .lessons-page comment below for why plain defaults are what actually
-// make this work, same as public/index.html.
-//
-// on.init registers the ribbon as "dynamic" the moment liquidGL is ready,
-// exactly like public/js/main.js does for its GSAP SplitText lines - per
-// the library's own docs, real-time refraction of something under a lens
-// only works for GSAP/JS-driven movement ("text animations"), NOT plain
-// CSS transitions ("CSS animations" is explicitly unsupported). The
-// ribbon used to slide via a CSS transition, which is exactly why the
-// glass never showed it moving - it's now driven by GSAP instead (see
-// the layout effect below), which is the supported case.
-const GLASS_OPTIONS = {
-  helper: true,
-  on: {
-    init(instance: { el?: Element }) {
-      if (!instance.el || !instance.el.classList.contains("lessons-navigator-center")) return;
-      const strip = document.querySelector(".lessons-navigator-strip");
-      const w = window as unknown as { liquidGL?: { registerDynamic?: (el: Element) => void } };
-      if (strip && w.liquidGL?.registerDynamic) w.liquidGL.registerDynamic(strip);
-    },
-  },
-};
+// init that often).
+const GLASS_OPTIONS = { helper: true };
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
@@ -135,6 +114,25 @@ export default function LessonsPage() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [active, dragRatio, dragging]);
+
+  // TEMPORARY diagnostics - remove once the glass is confirmed working.
+  // Logs what liquidGL actually created for this page 1.5s after mount, so
+  // we can see from devtools whether the navigator's lens exists at all
+  // (vs. silently failing to register) without guessing further.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const w = window as unknown as {
+        __liquidGLRenderer__?: { lenses?: { el?: Element }[] };
+      };
+      const lenses = w.__liquidGLRenderer__?.lenses ?? [];
+      console.log(
+        "[liquidGL debug] lens count:",
+        lenses.length,
+        lenses.map((l) => l.el?.className),
+      );
+    }, 1500);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
     <main className="lessons-page">
