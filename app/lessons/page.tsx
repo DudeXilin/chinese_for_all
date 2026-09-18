@@ -161,15 +161,16 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {/* Compass-needle glass: a small, purely decorative liquidGL chip -
-          same setup as the back button and public/index.html's "Начать
-          обучение" button (default options, no text of its own, no
-          snapshot override). It sits ABOVE the ribbon, not on top of it,
-          so it never has to refract fast-moving text - liquidGL only
-          reliably shows a live view of content that isn't constantly
-          changing underneath it. The actual lesson-type name lives in the
-          ribbon right below it, in plain text, always crisp and always
-          centered under this chip - see .lessons-navigator-item.is-active. */}
+      {/* Compass-needle glass: sits ON TOP of the ribbon (same spot, front
+          layer - like a clock hand hovering over the numbers, not a
+          separate row above them). Follows docs Rule #1: the active
+          section's name lives as a normal DOM child INSIDE the .cfa-glass
+          target itself, so it's always crisp and always correct - it
+          doesn't rely on liquidGL refracting the fast-moving ribbon text
+          underneath (which the library's snapshot model can't do
+          reliably). The ribbon still slides behind it showing the other
+          (dimmed) items for the wheel feel; the one currently under the
+          glass is simply covered by it. */}
       <div
         className={`lessons-navigator-dock${dragging ? " is-dragging" : ""}`}
         onPointerDown={onPointerDown}
@@ -180,8 +181,6 @@ export default function LessonsPage() {
         role="tablist"
         aria-label="Тип упражнений"
       >
-        <div className="lessons-navigator-glass-cap cfa-glass" aria-hidden="true" />
-
         <div className="lessons-navigator">
           <div className="lessons-navigator-window">
             <div
@@ -191,15 +190,15 @@ export default function LessonsPage() {
                 transition: dragging ? "none" : undefined,
               }}
             >
-              {sections.map((section, index) => (
-                <span
-                  className={`lessons-navigator-item${index === active ? " is-active" : ""}`}
-                  key={section}
-                >
-                  {section}
-                </span>
+              {sections.map((section) => (
+                <span className="lessons-navigator-item" key={section}>{section}</span>
               ))}
             </div>
+          </div>
+          <div className="lessons-navigator-center cfa-glass">
+            <span className="lessons-navigator-center-label" key={active}>
+              {sections[active]}
+            </span>
           </div>
         </div>
       </div>
@@ -271,14 +270,19 @@ export default function LessonsPage() {
         }
         .lessons-navigator-dock.is-dragging { cursor: grabbing; }
 
-        /* The "compass needle" itself: a small pure-glass chip, no text,
-           default liquidGL options - exactly the .cfa-start-btn-link
-           pattern. It never overlaps the ribbon's text, so it never needs
-           to show anything that's moving. */
-        .lessons-navigator-glass-cap { width: min(58%,190px); height: 34px; border-radius: 17px; overflow: hidden; pointer-events: none; }
-
+        /* The compass-needle glass now sits ON TOP of the ribbon (same
+           spot, front layer - like a clock hand over the numbers, not a
+           separate row above them). Per docs Rule #1, the active
+           section's name lives as a normal DOM child INSIDE the
+           .cfa-glass target itself (see .lessons-navigator-center-label
+           below) - always crisp and correct, since it doesn't depend on
+           liquidGL refracting the fast-moving ribbon underneath (the
+           library's snapshot model can't do that reliably). The ribbon
+           still slides behind it showing the other (dimmed) items for the
+           wheel feel; the one currently under the glass is simply covered
+           by it. */
         .lessons-navigator {
-          position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
+          position: relative; z-index: 120; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
           box-shadow: 0 8px 30px rgba(0,0,0,.45); overflow: hidden;
         }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
@@ -286,28 +290,40 @@ export default function LessonsPage() {
         .lessons-navigator-item {
           flex: 0 0 var(--step); width: var(--step); min-width: 0; text-align: center;
           color: rgba(255,255,255,.55); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          transition: color 200ms ease;
         }
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        /* The one and only place the active section's name is rendered.
-           It's always exactly centered under the glass chip above (both
-           share --navigator-width's center axis via the shared dock), and
-           gets a shimmering gradient-text treatment while it's active -
-           plain CSS, no WebGL involved, so it's always crisp. */
-        .lessons-navigator-item.is-active {
+        /* The lens itself, centered over the ribbon. */
+        .lessons-navigator-center {
+          position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px;
+          transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
+        }
+
+        /* The one and only place the active section's name is rendered -
+           a normal DOM child of the glass target, so it's always exactly
+           centered and always shows the current selection. Shimmering
+           gradient-text, plain CSS, no WebGL involved. */
+        .lessons-navigator-center-label {
+          display: inline-block; max-width: calc(100% - 20px); padding: 0 4px; box-sizing: border-box;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          text-align: center; font: 600 13px/1.1 Arial,sans-serif; letter-spacing: .01em;
           color: transparent;
           background: linear-gradient(90deg, rgba(255,255,255,.55) 0%, #fff 22%, #fff 45%, rgba(255,255,255,.55) 68%, rgba(255,255,255,.35) 100%);
           background-size: 220% 100%;
           -webkit-background-clip: text; background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: lessons-item-shimmer 2.6s ease-in-out infinite;
+          animation: lessons-item-shimmer 2.6s ease-in-out infinite, lessons-item-in 320ms cubic-bezier(.22,1,.36,1);
         }
         @keyframes lessons-item-shimmer {
           0% { background-position: 130% 0; }
           55% { background-position: -30% 0; }
           100% { background-position: -30% 0; }
+        }
+        @keyframes lessons-item-in {
+          from { opacity: 0; transform: translateY(3px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width:600px) {
