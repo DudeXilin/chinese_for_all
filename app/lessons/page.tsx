@@ -10,8 +10,8 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = Array.from({ length: 10 }, (_, index) => `Тема ${index + 1}`);
-const grammarExercises = ["Места", ...Array.from({ length: 4 }, (_, index) => `Упражнение ${index + 2}`)];
+const topics = ["Места", ...Array.from({ length: 9 }, (_, index) => `Тема ${index + 2}`)];
+const grammarExercises = ["Вопросительные слова", ...Array.from({ length: 4 }, (_, index) => `Упражнение ${index + 2}`)];
 
 // Stable object reference (module scope, never recreated) so GlassInit's
 // effect dependency array doesn't see a "new" options object on every
@@ -138,7 +138,7 @@ export default function LessonsPage() {
                   className="lesson-island"
                   key={exercise}
                   type="button"
-                  onClick={() => exercise === "Места" && (window.location.href = "/cards_exerciser?topic=places")}
+                  onClick={() => exercise === "Вопросительные слова" && (window.location.href = "/cards_exerciser?topic=question-words")}
                 >
                   {exercise}
                 </button>
