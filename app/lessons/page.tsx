@@ -124,7 +124,12 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => (
-                <button className="lesson-island" key={topic} type="button">
+                <button
+                  className="lesson-island"
+                  key={topic}
+                  type="button"
+                  onClick={() => topic === "Места" && (window.location.href = "/cards_exerciser?topic=places")}
+                >
                   {topic}
                 </button>
               ))}
