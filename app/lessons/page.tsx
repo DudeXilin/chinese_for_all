@@ -256,7 +256,7 @@ export default function LessonsPage() {
           --step: 74px;
           position: fixed; z-index: 120; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
           transform: translateX(-50%);
-          display: flex; flex-direction: column; align-items: center; gap: 8px;
+          display: flex; flex-direction: column; align-items: center; gap: 6px;
           user-select: none; cursor: grab; touch-action: pan-x;
         }
         .lessons-navigator-dock.is-dragging { cursor: grabbing; }
@@ -265,7 +265,7 @@ export default function LessonsPage() {
            default liquidGL options - exactly the .cfa-start-btn-link
            pattern. It never overlaps the ribbon's text, so it never needs
            to show anything that's moving. */
-        .lessons-navigator-glass-cap { width: min(58%,190px); height: 16px; border-radius: 999px; overflow: hidden; pointer-events: none; }
+        .lessons-navigator-glass-cap { width: min(58%,190px); height: 34px; border-radius: 17px; overflow: hidden; pointer-events: none; }
 
         .lessons-navigator {
           position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
