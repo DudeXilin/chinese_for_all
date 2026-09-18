@@ -286,7 +286,7 @@ export default function LessonsPage() {
         .lessons-navigator {
           --navigator-width: min(27vw,350px);
           --step: 74px;
-          position: absolute; z-index: 110; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
+          position: absolute; z-index: 120; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
           transform: translateX(-50%);
           width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
           box-shadow: 0 8px 30px rgba(0,0,0,.45); user-select: none; cursor: grab; touch-action: pan-x; overflow: hidden;
@@ -294,7 +294,7 @@ export default function LessonsPage() {
         .lessons-navigator.is-dragging { cursor: grabbing; }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
         .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
-        .lessons-navigator-item { flex: 0 0 var(--step); width: var(--step); text-align: center; color: rgba(255,255,255,.7); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lessons-navigator-item { flex: 0 0 var(--step); width: var(--step); min-width: 0; text-align: center; color: rgba(255,255,255,.7); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
