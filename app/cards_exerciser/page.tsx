@@ -1,3 +1,4 @@
+import CardsExerciserClient from "./CardsExerciserClient";
 import lessonWords from "@/data/lesson-words.json";
 
 export default async function CardsExerciserPage({
@@ -11,31 +12,18 @@ export default async function CardsExerciserPage({
 
   if (!lesson) {
     return (
-      <main className="cards-exerciser-page">
-        <a href="/lessons" className="cards-exerciser-back" aria-label="Назад">&lt;</a>
-        <div className="cards-exerciser-card">
-          <h1>Тема не найдена</h1>
-          <p>Выберите тему на странице уроков.</p>
+      <main className="cards-exerciser-page min-h-screen px-4 py-6 text-white">
+        <a href="/lessons" className="fixed left-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-2xl text-white/80 backdrop-blur-xl" aria-label="Назад">&lt;</a>
+        <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center">
+          <div className="w-full rounded-[32px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">Cards exerciser</p>
+            <h1 className="text-2xl font-semibold">Тема не найдена</h1>
+            <p className="mt-3 text-sm text-white/50">Выберите тему на странице уроков.</p>
+          </div>
         </div>
       </main>
     );
   }
 
-  return (
-    <main className="cards-exerciser-page">
-      <a href="/lessons" className="cards-exerciser-back" aria-label="Назад">&lt;</a>
-      <section className="cards-exerciser-content">
-        <h1>{lesson.title}</h1>
-        <p className="cards-exerciser-subtitle">Слова из этой колоды</p>
-        <div className="cards-word-list">
-          {lesson.words.map((word, index) => (
-            <div className="cards-word" key={word}>
-              <span className="cards-word-number">{index + 1}</span>
-              <span>{word}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+  return <CardsExerciserClient title={lesson.title} words={lesson.words} />;
 }
