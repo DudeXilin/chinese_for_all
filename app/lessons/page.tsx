@@ -1,6 +1,7 @@
 "use client";
 
-import { PointerEvent, useRef, useState } from "react";
+import { PointerEvent, useLayoutEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
 
 const sections = [
@@ -13,6 +14,10 @@ const sections = [
 const topics = ["Места", ...Array.from({ length: 9 }, (_, index) => `Тема ${index + 2}`)];
 const grammarExercises = ["Вопросительные слова", ...Array.from({ length: 4 }, (_, index) => `Упражнение ${index + 2}`)];
 
+const NAVIGATOR_STEP_DESKTOP = 74;
+const NAVIGATOR_STEP_MOBILE = 68;
+const currentStep = () => (typeof window !== "undefined" && window.innerWidth <= 600 ? NAVIGATOR_STEP_MOBILE : NAVIGATOR_STEP_DESKTOP);
+
 // Stable object reference (module scope, never recreated) so GlassInit's
 // effect dependency array doesn't see a "new" options object on every
 // LessonsPage re-render (this page re-renders on every pointermove while
@@ -20,12 +25,32 @@ const grammarExercises = ["Вопросительные слова", ...Array.fr
 // init that often). No custom `snapshot` override here on purpose - see
 // the .lessons-page comment below for why plain defaults are what actually
 // make this work, same as public/index.html.
-const GLASS_OPTIONS = { helper: true };
+//
+// on.init registers the ribbon as "dynamic" the moment liquidGL is ready,
+// exactly like public/js/main.js does for its GSAP SplitText lines - per
+// the library's own docs, real-time refraction of something under a lens
+// only works for GSAP/JS-driven movement ("text animations"), NOT plain
+// CSS transitions ("CSS animations" is explicitly unsupported). The
+// ribbon used to slide via a CSS transition, which is exactly why the
+// glass never showed it moving - it's now driven by GSAP instead (see
+// the layout effect below), which is the supported case.
+const GLASS_OPTIONS = {
+  helper: true,
+  on: {
+    init(instance: { el?: Element }) {
+      if (!instance.el || !instance.el.classList.contains("lessons-navigator-center")) return;
+      const strip = document.querySelector(".lessons-navigator-strip");
+      const w = window as unknown as { liquidGL?: { registerDynamic?: (el: Element) => void } };
+      if (strip && w.liquidGL?.registerDynamic) w.liquidGL.registerDynamic(strip);
+    },
+  },
+};
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
+  const stripRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<number | null>(null);
   const dragDelta = useRef(0);
   const moved = useRef(false);
@@ -89,6 +114,27 @@ export default function LessonsPage() {
     if (event.clientX < rect.left + rect.width / 2) goTo(active - 1);
     if (event.clientX > rect.left + rect.width / 2) goTo(active + 1);
   };
+
+  // Drives the ribbon with GSAP instead of a CSS transition. liquidGL's
+  // real-time refraction only supports JS/GSAP-driven movement ("text
+  // animations" per its docs) - plain CSS transitions are explicitly not
+  // supported for live refraction. useLayoutEffect (not useEffect) so this
+  // runs before GlassInit's own effect calls liquidGL(), satisfying the
+  // library's "set the initial state before calling liquidGL()" rule.
+  useLayoutEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const apply = (animate: boolean) => {
+      const x = -active * currentStep() + dragRatio * currentStep();
+      if (animate) gsap.to(el, { x, duration: 0.52, ease: "expo.out" });
+      else gsap.set(el, { x });
+    };
+    apply(!dragging);
+    if (dragging) return undefined;
+    const onResize = () => apply(false);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [active, dragRatio, dragging]);
 
   return (
     <main className="lessons-page">
@@ -163,14 +209,12 @@ export default function LessonsPage() {
 
       {/* Compass-needle glass: sits ON TOP of the ribbon (same spot, front
           layer - like a clock hand hovering over the numbers, not a
-          separate row above them). Follows docs Rule #1: the active
-          section's name lives as a normal DOM child INSIDE the .cfa-glass
-          target itself, so it's always crisp and always correct - it
-          doesn't rely on liquidGL refracting the fast-moving ribbon text
-          underneath (which the library's snapshot model can't do
-          reliably). The ribbon still slides behind it showing the other
-          (dimmed) items for the wheel feel; the one currently under the
-          glass is simply covered by it. */}
+          separate row above them). No text of its own - it's a pure lens.
+          The ribbon slides via GSAP (see the layout effect above) and is
+          registered with liquidGL.registerDynamic (see GLASS_OPTIONS.on.init
+          above), so the word currently under the glass genuinely refracts/
+          magnifies through it in real time - that's the actual highlight,
+          there's no separate label anywhere. */}
       <div
         className={`lessons-navigator-dock${dragging ? " is-dragging" : ""}`}
         onPointerDown={onPointerDown}
@@ -183,23 +227,13 @@ export default function LessonsPage() {
       >
         <div className="lessons-navigator">
           <div className="lessons-navigator-window">
-            <div
-              className="lessons-navigator-strip"
-              style={{
-                transform: `translateX(calc(-${active} * var(--step) + ${dragRatio} * var(--step)))`,
-                transition: dragging ? "none" : undefined,
-              }}
-            >
+            <div className="lessons-navigator-strip" ref={stripRef}>
               {sections.map((section) => (
                 <span className="lessons-navigator-item" key={section}>{section}</span>
               ))}
             </div>
           </div>
-          <div className="lessons-navigator-center cfa-glass">
-            <span className="lessons-navigator-center-label" key={active}>
-              {sections[active]}
-            </span>
-          </div>
+          <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
         </div>
       </div>
 
@@ -270,23 +304,23 @@ export default function LessonsPage() {
         }
         .lessons-navigator-dock.is-dragging { cursor: grabbing; }
 
-        /* The compass-needle glass now sits ON TOP of the ribbon (same
-           spot, front layer - like a clock hand over the numbers, not a
-           separate row above them). Per docs Rule #1, the active
-           section's name lives as a normal DOM child INSIDE the
-           .cfa-glass target itself (see .lessons-navigator-center-label
-           below) - always crisp and correct, since it doesn't depend on
-           liquidGL refracting the fast-moving ribbon underneath (the
-           library's snapshot model can't do that reliably). The ribbon
-           still slides behind it showing the other (dimmed) items for the
-           wheel feel; the one currently under the glass is simply covered
-           by it. */
+        /* The compass-needle glass sits ON TOP of the ribbon (same spot,
+           front layer - like a clock hand over the numbers, not a
+           separate row above them). It has no text of its own - it's a
+           pure lens; the ribbon (driven by GSAP, see the layout effect in
+           the component) is registered as "dynamic" so liquidGL
+           genuinely refracts whichever word is currently underneath it in
+           real time. That live magnification IS the highlight. */
         .lessons-navigator {
           position: relative; z-index: 120; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
           box-shadow: 0 8px 30px rgba(0,0,0,.45); overflow: hidden;
         }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
-        .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; transition: transform 520ms cubic-bezier(.22,1,.36,1); will-change: transform; }
+        /* No CSS transition here - the ribbon's position is driven by GSAP
+           (see the useLayoutEffect above) instead, since liquidGL's docs
+           say real-time refraction supports JS/GSAP-driven movement but
+           explicitly not plain CSS transitions/animations. */
+        .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; will-change: transform; }
         .lessons-navigator-item {
           flex: 0 0 var(--step); width: var(--step); min-width: 0; text-align: center;
           color: rgba(255,255,255,.55); font: 600 12px/1.1 Arial,sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -294,36 +328,10 @@ export default function LessonsPage() {
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        /* The lens itself, centered over the ribbon. */
+        /* The lens itself, centered over the ribbon - empty, no content. */
         .lessons-navigator-center {
           position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px;
-          transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden;
-          display: flex; align-items: center; justify-content: center;
-        }
-
-        /* The one and only place the active section's name is rendered -
-           a normal DOM child of the glass target, so it's always exactly
-           centered and always shows the current selection. Shimmering
-           gradient-text, plain CSS, no WebGL involved. */
-        .lessons-navigator-center-label {
-          display: inline-block; max-width: calc(100% - 20px); padding: 0 4px; box-sizing: border-box;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          text-align: center; font: 600 13px/1.1 Arial,sans-serif; letter-spacing: .01em;
-          color: transparent;
-          background: linear-gradient(90deg, rgba(255,255,255,.55) 0%, #fff 22%, #fff 45%, rgba(255,255,255,.55) 68%, rgba(255,255,255,.35) 100%);
-          background-size: 220% 100%;
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: lessons-item-shimmer 2.6s ease-in-out infinite, lessons-item-in 320ms cubic-bezier(.22,1,.36,1);
-        }
-        @keyframes lessons-item-shimmer {
-          0% { background-position: 130% 0; }
-          55% { background-position: -30% 0; }
-          100% { background-position: -30% 0; }
-        }
-        @keyframes lessons-item-in {
-          from { opacity: 0; transform: translateY(3px); }
-          to { opacity: 1; transform: translateY(0); }
+          transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none;
         }
 
         @media (max-width:600px) {
