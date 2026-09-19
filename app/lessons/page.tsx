@@ -208,11 +208,20 @@ export default function LessonsPage() {
       {/* Compass-needle glass: sits ON TOP of the ribbon (same spot, front
           layer - like a clock hand hovering over the numbers, not a
           separate row above them). No text of its own - it's a pure lens.
-          The ribbon slides via GSAP (see the layout effect above) and is
-          registered with liquidGL.registerDynamic (see GLASS_OPTIONS.on.init
-          above), so the word currently under the glass genuinely refracts/
-          magnifies through it in real time - that's the actual highlight,
-          there's no separate label anywhere. */}
+          IMPORTANT: it's a SIBLING of the pill, not a child of it. The
+          shared liquidGL canvas is hard-coded to z-index:0 and lives in
+          <body> (see docs Rule #5) - if the glass sat inside the pill,
+          the pill's own opaque #303030 background (immediately behind it
+          in that local stacking context) would paint over the canvas
+          before it ever reaches the screen, which is exactly why it used
+          to render as a plain transparent box with a shadow and never
+          react to the Helper. As a sibling positioned on top of the
+          (non-opaque) dock, there's nothing opaque between it and the
+          canvas. The ribbon slides via GSAP (see the layout effect above)
+          and is registered with liquidGL.registerDynamic (see
+          GLASS_OPTIONS.on.init above), so the word currently under the
+          glass genuinely refracts/magnifies through it in real time -
+          that's the actual highlight, there's no separate label anywhere. */}
       <div
         className={`lessons-navigator-dock${dragging ? " is-dragging" : ""}`}
         onPointerDown={onPointerDown}
@@ -231,8 +240,8 @@ export default function LessonsPage() {
               ))}
             </div>
           </div>
-          <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
         </div>
+        <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
       </div>
 
       <style jsx>{`
@@ -292,25 +301,23 @@ export default function LessonsPage() {
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
+        /* Centered with left/right + margin (no transform on this
+           ancestor) - keeps things simple and matches the back button's
+           plain top/left positioning; not itself the fix for the "lens
+           exists but doesn't render" bug (see .lessons-navigator-center
+           below for that), just tidy. */
         .lessons-navigator-dock {
           --navigator-width: min(27vw,350px);
           --step: 74px;
-          position: fixed; z-index: 120; left: 50%; bottom: max(22px,env(safe-area-inset-bottom));
-          transform: translateX(-50%);
+          position: fixed; z-index: 120; left: 0; right: 0; width: var(--navigator-width); margin-inline: auto;
+          bottom: max(22px,env(safe-area-inset-bottom));
           display: flex; flex-direction: column; align-items: center; gap: 6px;
           user-select: none; cursor: grab; touch-action: pan-x;
         }
         .lessons-navigator-dock.is-dragging { cursor: grabbing; }
 
-        /* The compass-needle glass sits ON TOP of the ribbon (same spot,
-           front layer - like a clock hand over the numbers, not a
-           separate row above them). It has no text of its own - it's a
-           pure lens; the ribbon (driven by GSAP, see the layout effect in
-           the component) is registered as "dynamic" so liquidGL
-           genuinely refracts whichever word is currently underneath it in
-           real time. That live magnification IS the highlight. */
         .lessons-navigator {
-          position: relative; z-index: 120; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
+          position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
           box-shadow: 0 8px 30px rgba(0,0,0,.45); overflow: hidden;
         }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
@@ -326,7 +333,13 @@ export default function LessonsPage() {
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        /* The lens itself, centered over the ribbon - empty, no content. */
+        /* The lens itself - empty, no content, no background of its own.
+           Positioned as a SIBLING of .lessons-navigator (see docs Rule #5
+           for why: the shared liquidGL canvas is z-index:0 in <body>, so
+           an opaque parent directly behind the target blocks it from ever
+           showing). Sized/placed to visually overlap the pill exactly,
+           since .lessons-navigator-dock's own box is the same size as the
+           pill (the pill is its only normal-flow child). */
         .lessons-navigator-center {
           position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px;
           transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none;
