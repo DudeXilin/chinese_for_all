@@ -23,7 +23,30 @@ const currentStep = () => (typeof window !== "undefined" && window.innerWidth <=
 // LessonsPage re-render (this page re-renders on every pointermove while
 // dragging - an inline `options={{ ... }}` literal would re-run liquidGL()
 // init that often).
-const GLASS_OPTIONS = { helper: true };
+//
+// on.init registers the ribbon as "dynamic" the moment the navigator's own
+// lens instance is ready (per docs Rule #4: real-time refraction needs
+// liquidGL.registerDynamic on JS/GSAP-driven content, not plain CSS
+// transitions - the ribbon is GSAP-driven, see the layout effect below).
+// Wrapped in try/catch: _TriggerInit() (which calls this) has no
+// try/catch of its own in the library and runs inside a forEach over all
+// lenses, so an uncaught error here could abort processing for lenses
+// that come after this one in that loop.
+const GLASS_OPTIONS = {
+  helper: true,
+  on: {
+    init(instance: { el?: Element }) {
+      try {
+        if (!instance.el || !instance.el.classList.contains("lessons-navigator-center")) return;
+        const strip = document.querySelector(".lessons-navigator-strip");
+        const w = window as unknown as { liquidGL?: { registerDynamic?: (el: Element) => void } };
+        if (strip && w.liquidGL?.registerDynamic) w.liquidGL.registerDynamic(strip);
+      } catch (err) {
+        console.error("liquidGL registerDynamic failed:", err);
+      }
+    },
+  },
+};
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
@@ -309,7 +332,14 @@ export default function LessonsPage() {
         .lessons-navigator-dock {
           --navigator-width: min(27vw,350px);
           --step: 74px;
-          position: fixed; z-index: 120; left: 0; right: 0; width: var(--navigator-width); margin-inline: auto;
+          /* position:absolute, NOT fixed - same reasoning as docs Rule #3
+             for .lessons-page itself: a position:fixed ancestor makes
+             liquidGL's snapshot walk skip this entire subtree, so the
+             ribbon inside would never be capturable no matter what else
+             is fixed. .lessons-page never scrolls (overflow:hidden on
+             html/body), so anchoring to its own bottom edge looks
+             identical to position:fixed without breaking the snapshot. */
+          position: absolute; z-index: 120; left: 0; right: 0; width: var(--navigator-width); margin-inline: auto;
           bottom: max(22px,env(safe-area-inset-bottom));
           display: flex; flex-direction: column; align-items: center; gap: 6px;
           user-select: none; cursor: grab; touch-action: pan-x;
