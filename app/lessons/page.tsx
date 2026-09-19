@@ -335,14 +335,20 @@ export default function LessonsPage() {
 
         /* The lens itself - empty, no content, no background of its own.
            Positioned as a SIBLING of .lessons-navigator (see docs Rule #5
-           for why: the shared liquidGL canvas is z-index:0 in <body>, so
-           an opaque parent directly behind the target blocks it from ever
-           showing). Sized/placed to visually overlap the pill exactly,
-           since .lessons-navigator-dock's own box is the same size as the
-           pill (the pill is its only normal-flow child). */
+           for why). Centered with left/top + negative margins, NOT
+           transform: translate(-50%,-50%) - liquidGL takes ownership of
+           the target's own el.style.transform for its mouse-tilt/parallax
+           effect and overwrites it outright, which silently destroyed a
+           translate()-based centering trick (see docs Rule #6) and made
+           the lens render shifted down-right by roughly half its own
+           size. None of the library's own working demo elements
+           (.cfa-start-btn, .cfa-profile-button-glass) use transform for
+           their own layout for exactly this reason. */
         .lessons-navigator-center {
-          position: absolute; z-index: 2; left: 50%; top: 50%; width: min(62%,220px); height: 43px;
-          transform: translate(-50%,-50%); border-radius: 22px; overflow: hidden; pointer-events: none;
+          position: absolute; z-index: 2; left: 50%; top: 50%;
+          width: min(62%, 220px); height: 43px;
+          margin-left: calc(min(62%, 220px) / -2); margin-top: -21.5px;
+          border-radius: 22px; overflow: hidden; pointer-events: none;
         }
 
         @media (max-width:600px) {
