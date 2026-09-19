@@ -1,8 +1,31 @@
 "use client";
 
-import { PointerEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { PointerEvent, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
+
+// See docs/LIQUIDGL.md for the six ground rules this page is built around
+// (Rules #1-#6). Summary, since this page leans on all of them at once:
+//
+// #1 content that must stay readable goes INSIDE a .cfa-glass target as a
+//    real DOM child, never beside it - N/A here, our lens carries no text.
+// #2 every .cfa-glass target's nearest positioned ancestor must share one
+//    z-index across the whole page (the shared canvas sits at that max
+//    value minus 1).
+// #3 no position:fixed anywhere on the path from <body> down to content
+//    that needs to be captured - liquidGL's snapshot walk skips the
+//    entire subtree of any fixed element, full stop. This applies at
+//    every level, not just the page root.
+// #4 real-time refraction of something that's moving only works for
+//    JS/GSAP-driven movement, not CSS transitions/animations - and the
+//    moving element must be registered with liquidGL.registerDynamic().
+// #5 a .cfa-glass target must not be nested inside a DOM parent with its
+//    own opaque background - the shared canvas is z-index:0 in <body>,
+//    so an opaque ancestor immediately behind the target paints over it.
+// #6 never position a .cfa-glass target with `transform` - liquidGL owns
+//    the target's own el.style.transform for its mouse-tilt effect and
+//    will silently overwrite anything a CSS class put there. Center with
+//    left/top + negative margin instead.
 
 const sections = [
   "Слова по тематикам",
@@ -18,26 +41,24 @@ const NAVIGATOR_STEP_DESKTOP = 74;
 const NAVIGATOR_STEP_MOBILE = 68;
 const currentStep = () => (typeof window !== "undefined" && window.innerWidth <= 600 ? NAVIGATOR_STEP_MOBILE : NAVIGATOR_STEP_DESKTOP);
 
-// Stable object reference (module scope, never recreated) so GlassInit's
-// effect dependency array doesn't see a "new" options object on every
-// LessonsPage re-render (this page re-renders on every pointermove while
-// dragging - an inline `options={{ ... }}` literal would re-run liquidGL()
-// init that often).
+// Stable module-level reference - GlassInit's effect depends on this object
+// by identity, and this page re-renders on every pointermove while
+// dragging the navigator. An inline `options={{ ... }}` literal would be a
+// "new" object each of those renders and would re-run liquidGL() init
+// dozens of times a second.
 //
-// on.init registers the ribbon as "dynamic" the moment the navigator's own
-// lens instance is ready (per docs Rule #4: real-time refraction needs
-// liquidGL.registerDynamic on JS/GSAP-driven content, not plain CSS
-// transitions - the ribbon is GSAP-driven, see the layout effect below).
-// Wrapped in try/catch: _TriggerInit() (which calls this) has no
-// try/catch of its own in the library and runs inside a forEach over all
-// lenses, so an uncaught error here could abort processing for lenses
-// that come after this one in that loop.
+// on.init (Rule #4) registers the ribbon strip as "dynamic" the moment the
+// navigator's own lens is ready, so liquidGL keeps re-sampling it as it
+// moves. Wrapped in try/catch: the library calls this from inside a
+// forEach over all lenses with no error handling of its own, so a thrown
+// error here could silently stop lenses after this one from finishing
+// their own setup.
 const GLASS_OPTIONS = {
   helper: true,
   on: {
     init(instance: { el?: Element }) {
       try {
-        if (!instance.el || !instance.el.classList.contains("lessons-navigator-center")) return;
+        if (!instance.el || !instance.el.classList.contains("lessons-navigator-lens")) return;
         const strip = document.querySelector(".lessons-navigator-strip");
         const w = window as unknown as { liquidGL?: { registerDynamic?: (el: Element) => void } };
         if (strip && w.liquidGL?.registerDynamic) w.liquidGL.registerDynamic(strip);
@@ -117,11 +138,9 @@ export default function LessonsPage() {
     if (event.clientX > rect.left + rect.width / 2) goTo(active + 1);
   };
 
-  // Drives the ribbon with GSAP instead of a CSS transition. liquidGL's
-  // real-time refraction only supports JS/GSAP-driven movement ("text
-  // animations" per its docs) - plain CSS transitions are explicitly not
-  // supported for live refraction. useLayoutEffect (not useEffect) so this
-  // runs before GlassInit's own effect calls liquidGL(), satisfying the
+  // Drives the ribbon with GSAP instead of a CSS transition (Rule #4).
+  // useLayoutEffect (not useEffect) so this runs - and sets the initial
+  // transform - before GlassInit's own effect calls liquidGL(), per the
   // library's "set the initial state before calling liquidGL()" rule.
   useLayoutEffect(() => {
     const el = stripRef.current;
@@ -138,25 +157,6 @@ export default function LessonsPage() {
     return () => window.removeEventListener("resize", onResize);
   }, [active, dragRatio, dragging]);
 
-  // TEMPORARY diagnostics - remove once the glass is confirmed working.
-  // Logs what liquidGL actually created for this page 1.5s after mount, so
-  // we can see from devtools whether the navigator's lens exists at all
-  // (vs. silently failing to register) without guessing further.
-  useEffect(() => {
-    const id = setTimeout(() => {
-      const w = window as unknown as {
-        __liquidGLRenderer__?: { lenses?: { el?: Element }[] };
-      };
-      const lenses = w.__liquidGLRenderer__?.lenses ?? [];
-      console.log(
-        "[liquidGL debug] lens count:",
-        lenses.length,
-        lenses.map((l) => l.el?.className),
-      );
-    }, 1500);
-    return () => clearTimeout(id);
-  }, []);
-
   return (
     <main className="lessons-page">
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
@@ -168,6 +168,10 @@ export default function LessonsPage() {
       <script src="/scripts/liquidGL-helper.js" />
       <GlassInit target=".cfa-glass" options={GLASS_OPTIONS} />
 
+      {/* Decorative only - doesn't need to refract anything specific, so
+          position:fixed here is fine (Rule #3 only bites when something
+          that MUST be captured, like the ribbon below, lives inside a
+          fixed ancestor). */}
       <a href="/" className="lessons-back-btn" aria-label="На главную">
         <div className="lessons-back-btn-glass cfa-glass">
           <span className="lessons-back-btn-label">&lt;</span>
@@ -191,12 +195,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => (
-                <button
-                  className="lesson-island"
-                  key={topic}
-                  type="button"
-                  onClick={() => topic === "Места" && (window.location.href = "/cards_exerciser?topic=places")}
-                >
+                <button className="lesson-island" key={topic} type="button">
                   {topic}
                 </button>
               ))}
@@ -206,12 +205,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list grammar-list">
               {grammarExercises.map((exercise) => (
-                <button
-                  className="lesson-island"
-                  key={exercise}
-                  type="button"
-                  onClick={() => exercise === "Вопросительные слова" && (window.location.href = "/cards_exerciser?topic=question-words")}
-                >
+                <button className="lesson-island" key={exercise} type="button">
                   {exercise}
                 </button>
               ))}
@@ -228,23 +222,14 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {/* Compass-needle glass: sits ON TOP of the ribbon (same spot, front
-          layer - like a clock hand hovering over the numbers, not a
-          separate row above them). No text of its own - it's a pure lens.
-          IMPORTANT: it's a SIBLING of the pill, not a child of it. The
-          shared liquidGL canvas is hard-coded to z-index:0 and lives in
-          <body> (see docs Rule #5) - if the glass sat inside the pill,
-          the pill's own opaque #303030 background (immediately behind it
-          in that local stacking context) would paint over the canvas
-          before it ever reaches the screen, which is exactly why it used
-          to render as a plain transparent box with a shadow and never
-          react to the Helper. As a sibling positioned on top of the
-          (non-opaque) dock, there's nothing opaque between it and the
-          canvas. The ribbon slides via GSAP (see the layout effect above)
-          and is registered with liquidGL.registerDynamic (see
-          GLASS_OPTIONS.on.init above), so the word currently under the
-          glass genuinely refracts/magnifies through it in real time -
-          that's the actual highlight, there's no separate label anywhere. */}
+      {/* Compass-needle glass: a static lens sitting over a sliding ribbon
+          of lesson-type names, like a loupe over a ruler - whichever name
+          is centered under it is the selection, shown by genuinely
+          refracting/magnifying that word live (no text is ever drawn on
+          the lens itself, and no separate label exists anywhere).
+          position:absolute (Rule #3), not nested inside the pill's opaque
+          background (Rule #5), no transform on the lens (Rule #6), ribbon
+          moved by GSAP + registered dynamic (Rule #4). */}
       <div
         className={`lessons-navigator-dock${dragging ? " is-dragging" : ""}`}
         onPointerDown={onPointerDown}
@@ -264,35 +249,27 @@ export default function LessonsPage() {
             </div>
           </div>
         </div>
-        <div className="lessons-navigator-center cfa-glass" aria-hidden="true" />
+        <div className="lessons-navigator-lens cfa-glass" aria-hidden="true" />
       </div>
 
       <style jsx>{`
-        /* .lessons-page is deliberately NOT position:fixed. That was the
-           actual bug behind the broken navigator glass: liquidGL's
-           snapshot walk starts at <body> and, per its own source
-           (buildNode/collect), completely skips the subtree of any
-           element with computed position:fixed - it never even descends
-           into its children. public/index.html's real content
-           (.main-content) is a normal, non-fixed sibling of its two fixed
-           overlay buttons, so liquidGL's default snapshot: "body" finds
-           real pixels there. Our whole page used to BE that one fixed
-           element, so the snapshot had nothing to work with at all
-           (a "baked" near-empty frame, no matter what settings were
-           tuned). Scroll/bounce locking now happens on html/body instead
-           (see :global rule below), so this element can stay a normal,
+        /* Rule #3: not position:fixed. The whole page needs to fill the
+           screen without scrolling (this is an app-like, not a scrolling,
+           page), so that lock is applied to html/body instead - see the
+           :global rule below - leaving this element itself a normal,
            capturable box. */
         .lessons-page { position: relative; width: 100%; height: 100vh; height: 100dvh; background: #000; color: #fff; overflow: hidden; touch-action: none; }
         :global(html), :global(body) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
         .lessons-viewport { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
         .lessons-viewport.is-dragging { cursor: grabbing; }
+
         .lessons-back-btn { position: fixed; top: 1rem; left: 1rem; z-index: 120; text-decoration: none; transform: translateZ(0); will-change: transform; backface-visibility: hidden; }
         .lessons-back-btn-glass { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .lessons-back-btn-label { color: #f5f5f5; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); line-height: 1; }
 
-        /* liquidGL's debug GUI ships pinned top-right (and re-asserts
-           that with !important via its own injected stylesheet), so we
+        /* liquidGL's debug GUI ships pinned top-right (and re-asserts that
+           with !important via its own injected stylesheet), so we
            out-specify it here (repeating the class is a standard
            zero-cost specificity bump) to relocate it top-left, under the
            back button, on this page only. */
@@ -324,37 +301,27 @@ export default function LessonsPage() {
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
-        /* Centered with left/right + margin (no transform on this
-           ancestor) - keeps things simple and matches the back button's
-           plain top/left positioning; not itself the fix for the "lens
-           exists but doesn't render" bug (see .lessons-navigator-center
-           below for that), just tidy. */
+        /* Rule #3: position:absolute, not fixed - .lessons-page never
+           scrolls, so anchoring to its bottom edge looks identical to
+           fixed without excluding the ribbon inside from liquidGL's
+           snapshot. Rule #2: z-index:120 matches .lessons-back-btn - this
+           is the nearest positioned ancestor of .lessons-navigator-lens. */
         .lessons-navigator-dock {
           --navigator-width: min(27vw,350px);
           --step: 74px;
-          /* position:absolute, NOT fixed - same reasoning as docs Rule #3
-             for .lessons-page itself: a position:fixed ancestor makes
-             liquidGL's snapshot walk skip this entire subtree, so the
-             ribbon inside would never be capturable no matter what else
-             is fixed. .lessons-page never scrolls (overflow:hidden on
-             html/body), so anchoring to its own bottom edge looks
-             identical to position:fixed without breaking the snapshot. */
           position: absolute; z-index: 120; left: 0; right: 0; width: var(--navigator-width); margin-inline: auto;
           bottom: max(22px,env(safe-area-inset-bottom));
-          display: flex; flex-direction: column; align-items: center; gap: 6px;
           user-select: none; cursor: grab; touch-action: pan-x;
         }
         .lessons-navigator-dock.is-dragging { cursor: grabbing; }
 
         .lessons-navigator {
-          position: relative; width: var(--navigator-width); height: 57px; border-radius: 29px; background: #303030;
+          position: relative; width: 100%; height: 57px; border-radius: 29px; background: #303030;
           box-shadow: 0 8px 30px rgba(0,0,0,.45); overflow: hidden;
         }
         .lessons-navigator-window { position: absolute; inset: 0; overflow: hidden; }
-        /* No CSS transition here - the ribbon's position is driven by GSAP
-           (see the useLayoutEffect above) instead, since liquidGL's docs
-           say real-time refraction supports JS/GSAP-driven movement but
-           explicitly not plain CSS transitions/animations. */
+        /* No CSS transition here - GSAP owns this element's transform
+           (Rule #4), driven by the useLayoutEffect above. */
         .lessons-navigator-strip { position: absolute; left: 50%; top: 0; height: 57px; display: flex; align-items: center; will-change: transform; }
         .lessons-navigator-item {
           flex: 0 0 var(--step); width: var(--step); min-width: 0; text-align: center;
@@ -363,18 +330,11 @@ export default function LessonsPage() {
         .lessons-navigator-item:first-child { margin-left: calc(var(--step) * -.5); }
         .lessons-navigator::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 20px 0 18px -22px rgba(0,0,0,.9), inset -20px 0 18px -22px rgba(0,0,0,.9); }
 
-        /* The lens itself - empty, no content, no background of its own.
-           Positioned as a SIBLING of .lessons-navigator (see docs Rule #5
-           for why). Centered with left/top + negative margins, NOT
-           transform: translate(-50%,-50%) - liquidGL takes ownership of
-           the target's own el.style.transform for its mouse-tilt/parallax
-           effect and overwrites it outright, which silently destroyed a
-           translate()-based centering trick (see docs Rule #6) and made
-           the lens render shifted down-right by roughly half its own
-           size. None of the library's own working demo elements
-           (.cfa-start-btn, .cfa-profile-button-glass) use transform for
-           their own layout for exactly this reason. */
-        .lessons-navigator-center {
+        /* The lens: empty, no background, no text (Rule #1 N/A - nothing
+           to keep readable). A SIBLING of .lessons-navigator, not nested
+           inside its opaque background (Rule #5). Centered with left/top
+           + negative margin, never transform (Rule #6). */
+        .lessons-navigator-lens {
           position: absolute; z-index: 2; left: 50%; top: 50%;
           width: min(62%, 220px); height: 43px;
           margin-left: calc(min(62%, 220px) / -2); margin-top: -21.5px;
