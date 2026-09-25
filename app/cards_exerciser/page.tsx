@@ -1,6 +1,9 @@
 import CardsExerciserClient from "./CardsExerciserClient";
 import lessonWords from "@/data/lesson-words.json";
 import measureWords from "@/data/measure-words.json";
+import lessonTheory from "@/data/lesson-theory.json";
+
+type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
 export default async function CardsExerciserPage({
   searchParams,
@@ -12,6 +15,7 @@ export default async function CardsExerciserPage({
   const lesson = topic === "measure_words"
     ? { title: "Счётные слова", words: Object.keys(measureWords) }
     : lessonWords[topic as keyof typeof lessonWords];
+  const theory = lessonTheory[topic as keyof typeof lessonTheory] as Theory | undefined;
 
   if (!lesson) {
     return (
@@ -28,5 +32,11 @@ export default async function CardsExerciserPage({
     );
   }
 
-  return <CardsExerciserClient title={lesson.title} words={lesson.words} />;
+  return (
+    <CardsExerciserClient
+      title={lesson.title}
+      words={lesson.words}
+      theory={theory}
+    />
+  );
 }
