@@ -166,8 +166,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                 </div>
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
-                  <div className="mx-auto max-w-[360px]">
-                    <HanziWriterDrawing character={currentWord} mode="preview" />
+                  <div className={`mx-auto grid max-w-2xl gap-3 ${Array.from(currentWord).length === 1 ? "max-w-[360px] grid-cols-1" : "grid-cols-2"}`}>
+                    {Array.from(currentWord).map((character, slot) => (
+                      <HanziWriterDrawing key={`preview-${character}-${slot}`} character={character} mode="preview" />
+                    ))}
                   </div>
                   <div className="mt-5 text-center text-xl tracking-wide text-white/65">{correctPinyin}</div>
                   <div className="mt-2 text-center text-sm text-white/35">{translation}</div>
