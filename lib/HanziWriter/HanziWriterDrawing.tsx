@@ -106,6 +106,7 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
           padding: isPractice ? 18 : 14,
           showCharacter: !isPractice,
           showOutline: false,
+          renderer: "svg",
           outlineColor: "transparent",
           drawingColor: "rgba(255, 231, 216, 0.9)",
           drawingWidth: 5,
@@ -164,13 +165,6 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
     writerRef.current?.animateCharacter();
   }
 
-  // Hanzi Writer renders its own SVG/canvas inside this target.
-  // The paper guide is kept as a CSS background underneath it.
-  const characterPaperBackground = [
-    "repeating-linear-gradient(to bottom, rgba(90,90,90,0.48) 0 5px, transparent 5px 11px) 50% 0 / 2px 100% no-repeat",
-    "repeating-linear-gradient(to right, rgba(90,90,90,0.48) 0 5px, transparent 5px 11px) 0 50% / 100% 2px no-repeat",
-  ].join(", ");
-
   return (
     <div
       className={[
@@ -178,7 +172,6 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
         "border-white/[0.11] bg-[#080808] shadow-inner shadow-black/40",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
-      style={{ backgroundImage: characterPaperBackground }}
       onClick={mode === "preview" ? animatePreview : undefined}
       aria-label={
         mode === "preview"
@@ -187,8 +180,29 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
       }
     >
       <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10"
+      >
+        <div
+          className="absolute left-1/2 top-0 h-full -translate-x-1/2"
+          style={{
+            width: "1px",
+            backgroundImage:
+              "repeating-linear-gradient(to bottom, rgba(130,130,130,0.48) 0 5px, transparent 5px 11px)",
+          }}
+        />
+        <div
+          className="absolute left-0 top-1/2 w-full -translate-y-1/2"
+          style={{
+            height: "1px",
+            backgroundImage:
+              "repeating-linear-gradient(to right, rgba(130,130,130,0.48) 0 5px, transparent 5px 11px)",
+          }}
+        />
+      </div>
+      <div
         ref={targetRef}
-        className="absolute inset-0 flex h-full w-full items-center justify-center"
+        className="absolute inset-0 z-0 flex h-full w-full items-center justify-center"
       />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
