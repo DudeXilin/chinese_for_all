@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import HanziWriterDrawing from "@/lib/HanziWriter/HanziWriterDrawing";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -156,8 +157,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
                   <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
-                  <div className="mx-auto mt-7 grid max-w-xl grid-cols-2 gap-3">
-                    {[0, 1].map((slot) => <div key={slot} className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-black/20"><div className="absolute left-3 top-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Hanzi 0{slot + 1}</div><span className="text-center text-xs text-white/25">здесь будем<br />рисовать</span></div>)}
+                  <div className={`mx-auto mt-7 grid max-w-xl gap-3 ${Array.from(currentWord).length === 1 ? "grid-cols-1 max-w-[320px]" : "grid-cols-2"}`}>
+                    {Array.from(currentWord).map((character, slot) => (
+                      <HanziWriterDrawing key={`${character}-${slot}`} character={character} />
+                    ))}
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
