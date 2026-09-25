@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import HanziWriterDrawing from "@/lib/HanziWriter/HanziWriterDrawing";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -156,8 +157,12 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
                   <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
-                  <div className="mx-auto mt-7 grid max-w-xl grid-cols-2 gap-3">
-                    {[0, 1].map((slot) => <div key={slot} className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-black/20"><div className="absolute left-3 top-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Hanzi 0{slot + 1}</div><span className="text-center text-xs text-white/25">здесь будем<br />рисовать</span></div>)}
+                  <div className="mx-auto mt-7 flex max-w-xl flex-wrap items-center justify-center gap-3">
+                    {Array.from(currentWord).map((char, charIndex) => (
+                      <div key={`${index}-${charIndex}-${char}`} className="w-[150px] sm:w-[170px]">
+                        <HanziWriterDrawing character={char} mode="practice" resetKey={`${index}-${charIndex}`} />
+                      </div>
+                    ))}
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
@@ -168,7 +173,17 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                 </div>
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
-                  <div className="text-center"><div className="text-6xl font-medium tracking-tight sm:text-7xl">{currentWord}</div><div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div><div className="mt-2 text-sm text-white/35">{translation}</div></div>
+                  <div className="text-center">
+                    <div className="mx-auto flex max-w-xl flex-wrap items-center justify-center gap-3">
+                      {Array.from(currentWord).map((char, charIndex) => (
+                        <div key={`${index}-${charIndex}-${char}-back`} className="w-[130px] sm:w-[150px]">
+                          <HanziWriterDrawing character={char} mode="preview" resetKey={`${index}-${charIndex}-back`} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div>
+                    <div className="mt-2 text-sm text-white/35">{translation}</div>
+                  </div>
                   <div className="mx-auto mt-7 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Сравнение Pinyin</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Your answer</span></div>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">

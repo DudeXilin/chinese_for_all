@@ -80,9 +80,11 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
 type Props = {
   character: string;
   mode?: "practice" | "preview";
+  /** Forces a fresh writer instance (e.g. pass a new key when the card changes). */
+  resetKey?: string | number;
 };
 
-export default function HanziWriterDrawing({ character, mode = "practice" }: Props) {
+export default function HanziWriterDrawing({ character, mode = "practice", resetKey }: Props) {
   const targetRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -96,23 +98,29 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
     target.replaceChildren();
     setStatus("loading");
 
+    // Size the writer to whatever box it actually occupies, so 1..N character
+    // squares in a row all stay square and legible instead of using a fixed px size.
+    const measured = Math.round(target.clientWidth || target.getBoundingClientRect().width || 0);
+    const isPractice = mode === "practice";
+    const size = measured > 0 ? measured : isPractice ? 210 : 250;
+    const padding = Math.round(size * (isPractice ? 0.09 : 0.06));
+
     loadLocalHanziWriter()
       .then((HanziWriter) => {
         if (cancelled || !target.isConnected) return;
 
-        const isPractice = mode === "practice";
         const writer = HanziWriter.create(target, character, {
-          width: isPractice ? 210 : 250,
-          height: isPractice ? 210 : 250,
-          padding: isPractice ? 18 : 14,
+          width: size,
+          height: size,
+          padding,
           showCharacter: !isPractice,
           showOutline: false,
           renderer: "svg",
           outlineColor: "transparent",
-          drawingColor: "rgba(255, 231, 216, 0.9)",
+          drawingColor: "rgba(255, 236, 222, 0.9)",
           drawingWidth: 5,
-          strokeColor: "rgba(255, 232, 218, 0.78)",
-          highlightColor: "rgba(214, 137, 145, 0.58)",
+          strokeColor: "rgba(255, 236, 222, 0.9)",
+          highlightColor: "rgba(224, 120, 120, 0.68)",
           highlightOnComplete: false,
           showHintAfterMisses: isPractice ? 5 : false,
           strokeAnimationSpeed: 1.15,
@@ -160,7 +168,7 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
       writerRef.current = null;
       target.replaceChildren();
     };
-  }, [character, mode]);
+  }, [character, mode, resetKey]);
 
   function animatePreview() {
     writerRef.current?.animateCharacter();
@@ -169,10 +177,21 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
   return (
     <div
       className={[
-        "relative mx-auto flex aspect-square w-full max-w-[320px] items-center justify-center overflow-hidden rounded-[26px] border",
-        "border-white/[0.11] bg-[#080808] shadow-inner shadow-black/40",
+        "relative mx-auto flex aspect-square w-full items-center justify-center overflow-hidden rounded-[22px]",
+        "shadow-inner shadow-black/50",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
+      style={{
+        // Dark "rice paper" (米字格) look: warm-black base, a faint vignette,
+        // and a very subtle fiber texture instead of a flat fill.
+        background:
+          "radial-gradient(120% 120% at 50% 38%, rgba(255,244,232,0.05), transparent 60%)," +
+          "repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px)," +
+          "#0b0a09",
+        // The solid cell border is the writing-cell boundary — it should read
+        // slightly *lighter* than the dashed guide lines inside it.
+        border: "1px solid rgba(255,255,255,0.24)",
+      }}
       onClick={mode === "preview" ? animatePreview : undefined}
       aria-label={
         mode === "preview"
@@ -180,16 +199,13 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
           : "Напишите иероглиф " + character
       }
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-10"
-      >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10">
         <div
           className="absolute left-1/2 top-0 h-full -translate-x-1/2"
           style={{
             width: "1px",
             backgroundImage:
-              "repeating-linear-gradient(to bottom, rgba(130,130,130,0.48) 0 5px, transparent 5px 11px)",
+              "repeating-linear-gradient(to bottom, rgba(255,255,255,0.14) 0 4px, transparent 4px 9px)",
           }}
         />
         <div
@@ -197,7 +213,7 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
           style={{
             height: "1px",
             backgroundImage:
-              "repeating-linear-gradient(to right, rgba(130,130,130,0.48) 0 5px, transparent 5px 11px)",
+              "repeating-linear-gradient(to right, rgba(255,255,255,0.14) 0 4px, transparent 4px 9px)",
           }}
         />
       </div>
