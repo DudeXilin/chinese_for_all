@@ -15,7 +15,7 @@ export default async function CardsExerciserPage({
   const lesson = topic === "measure_words"
     ? { title: "Счётные слова", words: Object.keys(measureWords) }
     : lessonWords[topic as keyof typeof lessonWords];
-  const theory = lessonTheory[topic as keyof typeof lessonTheory] as Theory | undefined;
+  const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
 
   if (!lesson) {
     return (
