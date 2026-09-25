@@ -12,6 +12,11 @@ type HanziWriterOptions = {
   drawingColor: string;
   drawingWidth: number;
   strokeColor: string;
+  highlightColor: string;
+  highlightOnComplete: boolean;
+  showHintAfterMisses?: number | false;
+  strokeAnimationSpeed?: number;
+  delayBetweenStrokes?: number;
   charDataLoader: (character: string, onComplete: (data: unknown) => void) => void;
   onLoadCharDataError?: (reason: unknown) => void;
 };
@@ -19,8 +24,11 @@ type HanziWriterOptions = {
 type HanziWriterInstance = {
   quiz: (options?: {
     onComplete?: (summary: { totalMistakes: number }) => void;
+    showHintAfterMisses?: number | false;
+    highlightOnComplete?: boolean;
   }) => void;
   cancelQuiz: () => void;
+  animateCharacter: () => Promise<unknown> | void;
 };
 
 type HanziWriterFactory = {
@@ -74,12 +82,15 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
   return window.__cfaLocalHanziWriter;
 }
 
-type Props = { character: string };
+type Props = {
+  character: string;
+  mode?: "practice" | "preview";
+};
 
-export default function HanziWriterDrawing({ character }: Props) {
+export default function HanziWriterDrawing({ character, mode = "practice" }: Props) {
   const targetRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error" | "done">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     const target = targetRef.current;
@@ -94,16 +105,22 @@ export default function HanziWriterDrawing({ character }: Props) {
       .then((HanziWriter) => {
         if (cancelled || !target.isConnected) return;
 
+        const isPractice = mode === "practice";
         const writer = HanziWriter.create(target, character, {
-          width: 230,
-          height: 230,
-          padding: 18,
-          showCharacter: false,
-          showOutline: true,
-          outlineColor: "rgba(255,255,255,0.16)",
-          drawingColor: "rgba(255,255,255,0.9)",
+          width: isPractice ? 210 : 250,
+          height: isPractice ? 210 : 250,
+          padding: isPractice ? 18 : 14,
+          showCharacter: !isPractice,
+          showOutline: false,
+          outlineColor: "transparent",
+          drawingColor: "rgba(255, 231, 216, 0.9)",
           drawingWidth: 5,
-          strokeColor: "rgba(255,255,255,0.72)",
+          strokeColor: "rgba(255, 232, 218, 0.78)",
+          highlightColor: "rgba(214, 137, 145, 0.58)",
+          highlightOnComplete: false,
+          showHintAfterMisses: isPractice ? 5 : false,
+          strokeAnimationSpeed: 1.15,
+          delayBetweenStrokes: 420,
           charDataLoader: (char, onComplete) => {
             fetch("/api/hanzi-writer/data/" + encodeURIComponent(char) + ".json")
               .then((response) => {
@@ -127,11 +144,12 @@ export default function HanziWriterDrawing({ character }: Props) {
         writerRef.current = writer;
         if (!cancelled) setStatus("ready");
 
-        writer.quiz({
-          onComplete: () => {
-            if (!cancelled) setStatus("done");
-          },
-        });
+        if (isPractice) {
+          writer.quiz({
+            showHintAfterMisses: 5,
+            highlightOnComplete: false,
+          });
+        }
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -146,14 +164,48 @@ export default function HanziWriterDrawing({ character }: Props) {
       writerRef.current = null;
       target.replaceChildren();
     };
-  }, [character]);
+  }, [character, mode]);
+
+  function animatePreview() {
+    writerRef.current?.animateCharacter();
+  }
+
+  const practiceBackground =
+    "repeating-linear-gradient(to right, rgba(118,118,118,0.26) 0 2px, transparent 2px 7px), repeating-linear-gradient(to bottom, rgba(118,118,118,0.26) 0 2px, transparent 2px 7px)";
 
   return (
-    <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl border border-white/[0.12] bg-black/20">
-      <div className="absolute left-3 top-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">
-        Hanzi
-      </div>
-      <div ref={targetRef} className="h-full w-full" aria-label={"Напишите иероглиф " + character} />
+    <div
+      className={[
+        "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[26px] border",
+        "border-white/[0.16] bg-[#080808] shadow-inner shadow-black/40",
+        mode === "preview" ? "cursor-pointer select-none" : "",
+      ].join(" ")}
+      style={
+        mode === "practice"
+          ? {
+              backgroundImage: practiceBackground,
+              backgroundSize: "100% 1px, 1px 100%",
+              backgroundPosition: "center, center",
+              backgroundRepeat: "no-repeat",
+            }
+          : undefined
+      }
+      onClick={mode === "preview" ? animatePreview : undefined}
+      onContextMenu={
+        mode === "preview"
+          ? (event) => {
+              event.preventDefault();
+              animatePreview();
+            }
+          : undefined
+      }
+      aria-label={
+        mode === "preview"
+          ? "Нажмите, чтобы посмотреть порядок написания " + character
+          : "Напишите иероглиф " + character
+      }
+    >
+      <div ref={targetRef} className="h-full w-full" />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
@@ -162,11 +214,6 @@ export default function HanziWriterDrawing({ character }: Props) {
       {status === "error" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-xs text-red-200/70">
           Не удалось загрузить данные иероглифа
-        </div>
-      )}
-      {status === "done" && (
-        <div className="pointer-events-none absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.12] text-xs text-white/70">
-          ✓
         </div>
       )}
     </div>
