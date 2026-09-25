@@ -32,11 +32,7 @@ type HanziWriterInstance = {
 };
 
 type HanziWriterFactory = {
-  create: (
-    target: HTMLElement,
-    character: string,
-    options: HanziWriterOptions,
-  ) => HanziWriterInstance;
+  create: (target: HTMLElement, character: string, options: HanziWriterOptions) => HanziWriterInstance;
 };
 
 declare global {
@@ -50,7 +46,6 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Hanzi Writer is available only in the browser."));
   }
-
   if (window.HanziWriter) return Promise.resolve(window.HanziWriter);
   if (window.__cfaLocalHanziWriter) return window.__cfaLocalHanziWriter;
 
@@ -65,7 +60,6 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
       if (writer) resolve(writer);
       else reject(new Error("Hanzi Writer loaded, but its API was not found."));
     };
-
     script.onerror = () => {
       reject(new Error("Не удалось загрузить Hanzi Writer."));
       delete window.__cfaLocalHanziWriter;
@@ -170,42 +164,32 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
     writerRef.current?.animateCharacter();
   }
 
-  const practiceBackground =
-    "repeating-linear-gradient(to right, rgba(118,118,118,0.26) 0 2px, transparent 2px 7px), repeating-linear-gradient(to bottom, rgba(118,118,118,0.26) 0 2px, transparent 2px 7px)";
+  // Hanzi Writer renders its own SVG/canvas inside this target.
+  // The paper guide is kept as a CSS background underneath it.
+  const characterPaperBackground = [
+    "repeating-linear-gradient(to bottom, rgba(90,90,90,0.48) 0 5px, transparent 5px 11px) 50% 0 / 2px 100% no-repeat",
+    "repeating-linear-gradient(to right, rgba(90,90,90,0.48) 0 5px, transparent 5px 11px) 0 50% / 100% 2px no-repeat",
+  ].join(", ");
 
   return (
     <div
       className={[
-        "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[26px] border",
+        "relative mx-auto flex aspect-square w-full max-w-[320px] items-center justify-center overflow-hidden rounded-[26px] border",
         "border-white/[0.11] bg-[#080808] shadow-inner shadow-black/40",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
-      style={
-        mode === "practice"
-          ? {
-              backgroundImage: "linear-gradient(to right, transparent calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% + 0.5px), transparent calc(50% + 0.5px)), linear-gradient(to bottom, transparent calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% + 0.5px), transparent calc(50% + 0.5px)), repeating-linear-gradient(to right, transparent 0 6px, rgba(90,90,90,0.5) 6px 8px), repeating-linear-gradient(to bottom, transparent 0 6px, rgba(90,90,90,0.5) 6px 8px)",
-              backgroundSize: "100% 100%, 100% 100%, 100% 1px, 1px 100%",
-              backgroundPosition: "center, center, center, center",
-              backgroundRepeat: "no-repeat",
-            }
-          : undefined
-      }
+      style={{ backgroundImage: characterPaperBackground }}
       onClick={mode === "preview" ? animatePreview : undefined}
-      onContextMenu={
-        mode === "preview"
-          ? (event) => {
-              event.preventDefault();
-              animatePreview();
-            }
-          : undefined
-      }
       aria-label={
         mode === "preview"
           ? "Нажмите, чтобы посмотреть порядок написания " + character
           : "Напишите иероглиф " + character
       }
     >
-      <div ref={targetRef} className="absolute inset-0 flex h-full w-full items-center justify-center" />
+      <div
+        ref={targetRef}
+        className="absolute inset-0 flex h-full w-full items-center justify-center"
+      />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
