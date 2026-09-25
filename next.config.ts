@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: "/", destination: "/index.html" }];
   },
+  outputFileTracingIncludes: {
+    "/api/hanzi-writer/*": ["./lib/HanziWriter/**/*"],
+  },
 };
 
 export default nextConfig;
