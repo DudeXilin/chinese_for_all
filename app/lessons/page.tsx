@@ -35,7 +35,7 @@ const sections = [
 ];
 
 const topics = ["Места", ...Array.from({ length: 9 }, (_, index) => `Тема ${index + 2}`)];
-const grammarExercises = ["Вопросительные слова", ...Array.from({ length: 4 }, (_, index) => `Упражнение ${index + 2}`)];
+const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const NAVIGATOR_STEP_DESKTOP = 74;
 const NAVIGATOR_STEP_MOBILE = 68;
@@ -218,6 +218,7 @@ export default function LessonsPage() {
                   type="button"
                   onClick={() => {
                     if (exercise === "Вопросительные слова") window.location.href = "/cards_exerciser?topic=question-words";
+                    if (exercise === "Счётные слова") window.location.href = "/counting_words";
                   }}
                 >
                   {exercise}
