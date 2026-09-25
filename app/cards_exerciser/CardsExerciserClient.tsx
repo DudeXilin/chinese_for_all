@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
+type TheoryItem = string | { label?: string; text: string };
+
 type TheorySection = {
   type: string;
   title: string;
   text?: string;
   rows?: string[][];
-  items?: Array<{ label?: string; text: string }>;
+  items?: TheoryItem[];
   note?: string;
   highlight?: string;
 };
@@ -249,12 +251,16 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
                     {section.type === "comparison" && section.items && (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {section.items.map((item) => (
-                          <div key={item.label} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
-                            {item.label && <h3 className="font-medium text-white/85">{item.label}</h3>}
-                            <p className="mt-2 text-sm leading-6 text-white/55">{item.text}</p>
-                          </div>
-                        ))}
+                        {section.items.map((item, itemIndex) => {
+                          const itemText = typeof item === "string" ? item : item.text;
+                          const itemLabel = typeof item === "string" ? undefined : item.label;
+                          return (
+                            <div key={itemIndex} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
+                              {itemLabel && <h3 className="font-medium text-white/85">{itemLabel}</h3>}
+                              <p className="mt-2 text-sm leading-6 text-white/55">{itemText}</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -263,7 +269,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         {section.items.map((item, itemIndex) => (
                           <div key={itemIndex} className="flex gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3.5 text-sm leading-6 text-white/65">
                             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-xs text-white/60">{itemIndex + 1}</span>
-                            <span>{item.text}</span>
+                            <span>{typeof item === "string" ? item : item.text}</span>
                           </div>
                         ))}
                       </div>
