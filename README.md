@@ -69,6 +69,10 @@ The GitHub repository contains only the application code and database structure.
 - [Vercel](https://vercel.com/) - deployment platform
 
 
-## HUGE THANKS TO NAUGHTYDUK AND PEOPLE WHO HELPED HIM
-https://github.com/naughtyduk/liquidgl
-for a stunning liquid glass effect implementation and making it free for everyone to use.
+## HUGE THANKS TO:
+- https://github.com/naughtyduk/liquidgl
+for a free stunning liquid glass effect implementation and making it free for everyone to use.
+
+- https://github.com/chanind/hanzi-writer
+for a free script that let's you write Chinese characters. 
+
