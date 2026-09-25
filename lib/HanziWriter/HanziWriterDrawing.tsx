@@ -177,15 +177,15 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
     <div
       className={[
         "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[26px] border",
-        "border-white/[0.16] bg-[#080808] shadow-inner shadow-black/40",
+        "border-white/[0.11] bg-[#080808] shadow-inner shadow-black/40",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
       style={
         mode === "practice"
           ? {
-              backgroundImage: practiceBackground,
-              backgroundSize: "100% 1px, 1px 100%",
-              backgroundPosition: "center, center",
+              backgroundImage: "linear-gradient(to right, transparent calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% + 0.5px), transparent calc(50% + 0.5px)), linear-gradient(to bottom, transparent calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% - 0.5px), rgba(110,110,110,0.28) calc(50% + 0.5px), transparent calc(50% + 0.5px)), repeating-linear-gradient(to right, transparent 0 6px, rgba(90,90,90,0.5) 6px 8px), repeating-linear-gradient(to bottom, transparent 0 6px, rgba(90,90,90,0.5) 6px 8px)",
+              backgroundSize: "100% 100%, 100% 100%, 100% 1px, 1px 100%",
+              backgroundPosition: "center, center, center, center",
               backgroundRepeat: "no-repeat",
             }
           : undefined
@@ -205,7 +205,7 @@ export default function HanziWriterDrawing({ character, mode = "practice" }: Pro
           : "Напишите иероглиф " + character
       }
     >
-      <div ref={targetRef} className="h-full w-full" />
+      <div ref={targetRef} className="absolute inset-0 flex h-full w-full items-center justify-center" />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
