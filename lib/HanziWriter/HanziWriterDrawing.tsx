@@ -33,7 +33,7 @@ type HanziWriterInstance = {
 };
 
 type HanziWriterFactory = {
-  create: (target: HTMLElement, character: string, options: HanziWriterOptions) => HanziWriterInstance;
+  create: (target: SVGElement | HTMLElement, character: string, options: HanziWriterOptions) => HanziWriterInstance;
 };
 
 declare global {
@@ -77,6 +77,62 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
   return window.__cfaLocalHanziWriter;
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+// Canonical coordinate space for the grid + character. This is NOT a pixel
+// size — the <svg viewBox> maps it onto whatever box the browser lays the
+// element out at (via CSS), so the writer is always crisp and never
+// stretched/flattened regardless of the container's actual rendered size.
+const CANON = 200;
+
+function buildGridSvg(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, "svg") as SVGSVGElement;
+  svg.setAttribute("viewBox", `0 0 ${CANON} ${CANON}`);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  // Hanzi Writer itself sets width/height *attributes* to CANON (a plain px
+  // number) once it mounts — see HanziWriter.create() below. Inline CSS style
+  // always wins over presentation attributes, so pinning these via .style
+  // (not setAttribute) keeps the box responsive to its actual CSS-driven
+  // size instead of snapping to a fixed 200x200 canvas.
+  svg.style.display = "block";
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+
+  // Solid border marking the single writing cell — kept slightly *lighter*
+  // than the dashed guide lines inside it, per the "rice paper" (田字格) look.
+  const border = document.createElementNS(SVG_NS, "rect");
+  border.setAttribute("x", "1");
+  border.setAttribute("y", "1");
+  border.setAttribute("width", String(CANON - 2));
+  border.setAttribute("height", String(CANON - 2));
+  border.setAttribute("fill", "none");
+  border.setAttribute("stroke", "rgba(255,255,255,0.26)");
+  border.setAttribute("stroke-width", "1");
+  svg.appendChild(border);
+
+  // Thin, unobtrusive dashed cross splitting the cell into 4 equal quarters.
+  const vertical = document.createElementNS(SVG_NS, "line");
+  vertical.setAttribute("x1", String(CANON / 2));
+  vertical.setAttribute("y1", "0");
+  vertical.setAttribute("x2", String(CANON / 2));
+  vertical.setAttribute("y2", String(CANON));
+  vertical.setAttribute("stroke", "rgba(255,255,255,0.15)");
+  vertical.setAttribute("stroke-width", "1");
+  vertical.setAttribute("stroke-dasharray", "4 5");
+  svg.appendChild(vertical);
+
+  const horizontal = document.createElementNS(SVG_NS, "line");
+  horizontal.setAttribute("x1", "0");
+  horizontal.setAttribute("y1", String(CANON / 2));
+  horizontal.setAttribute("x2", String(CANON));
+  horizontal.setAttribute("y2", String(CANON / 2));
+  horizontal.setAttribute("stroke", "rgba(255,255,255,0.15)");
+  horizontal.setAttribute("stroke-width", "1");
+  horizontal.setAttribute("stroke-dasharray", "4 5");
+  svg.appendChild(horizontal);
+
+  return svg;
+}
+
 type Props = {
   character: string;
   mode?: "practice" | "preview";
@@ -85,33 +141,36 @@ type Props = {
 };
 
 export default function HanziWriterDrawing({ character, mode = "practice", resetKey }: Props) {
-  const targetRef = useRef<HTMLDivElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    const target = targetRef.current;
-    if (!target || !character) return;
+    const host = hostRef.current;
+    if (!host || !character) return;
 
     let cancelled = false;
     writerRef.current = null;
-    target.replaceChildren();
+    host.replaceChildren();
     setStatus("loading");
 
-    // Size the writer to whatever box it actually occupies, so 1..N character
-    // squares in a row all stay square and legible instead of using a fixed px size.
-    const measured = Math.round(target.clientWidth || target.getBoundingClientRect().width || 0);
+    // Draw the grid straight into the SVG that will also hold the character —
+    // see Hanzi Writer's "Custom backgrounds" docs. Because the SVG scales via
+    // viewBox instead of JS-measured pixel dimensions, it can never end up
+    // squashed/clipped by the surrounding CSS box, whatever size that box is.
+    const gridSvg = buildGridSvg();
+    host.appendChild(gridSvg);
+
     const isPractice = mode === "practice";
-    const size = measured > 0 ? measured : isPractice ? 210 : 250;
-    const padding = Math.round(size * (isPractice ? 0.09 : 0.06));
+    const padding = Math.round(CANON * (isPractice ? 0.09 : 0.06));
 
     loadLocalHanziWriter()
       .then((HanziWriter) => {
-        if (cancelled || !target.isConnected) return;
+        if (cancelled || !host.isConnected) return;
 
-        const writer = HanziWriter.create(target, character, {
-          width: size,
-          height: size,
+        const writer = HanziWriter.create(gridSvg, character, {
+          width: CANON,
+          height: CANON,
           padding,
           showCharacter: !isPractice,
           showOutline: false,
@@ -166,7 +225,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
       cancelled = true;
       writerRef.current?.cancelQuiz();
       writerRef.current = null;
-      target.replaceChildren();
+      host.replaceChildren();
     };
   }, [character, mode, resetKey]);
 
@@ -188,9 +247,6 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
           "radial-gradient(120% 120% at 50% 38%, rgba(255,244,232,0.05), transparent 60%)," +
           "repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px)," +
           "#0b0a09",
-        // The solid cell border is the writing-cell boundary — it should read
-        // slightly *lighter* than the dashed guide lines inside it.
-        border: "1px solid rgba(255,255,255,0.24)",
       }}
       onClick={mode === "preview" ? animatePreview : undefined}
       aria-label={
@@ -199,28 +255,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
           : "Напишите иероглиф " + character
       }
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10">
-        <div
-          className="absolute left-1/2 top-0 h-full -translate-x-1/2"
-          style={{
-            width: "1px",
-            backgroundImage:
-              "repeating-linear-gradient(to bottom, rgba(255,255,255,0.14) 0 4px, transparent 4px 9px)",
-          }}
-        />
-        <div
-          className="absolute left-0 top-1/2 w-full -translate-y-1/2"
-          style={{
-            height: "1px",
-            backgroundImage:
-              "repeating-linear-gradient(to right, rgba(255,255,255,0.14) 0 4px, transparent 4px 9px)",
-          }}
-        />
-      </div>
-      <div
-        ref={targetRef}
-        className="absolute inset-0 z-0 flex h-full w-full items-center justify-center"
-      />
+      <div ref={hostRef} className="absolute inset-0 z-0" />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
