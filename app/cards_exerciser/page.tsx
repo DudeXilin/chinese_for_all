@@ -1,7 +1,7 @@
 import CardsExerciserClient from "./CardsExerciserClient";
 import lessonWords from "@/data/lesson-words.json";
 import measureWords from "@/data/measure-words.json";
-import lessonTheory from "@/data/lesson-theory.json";
+import lessonTheory from "@/data/theory/measure_words_theory.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
