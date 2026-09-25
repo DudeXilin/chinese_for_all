@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 type HanziWriterOptions = {
   width: number;
   height: number;
+  renderer?: "svg" | "canvas";
   padding: number;
   showCharacter: boolean;
   showOutline: boolean;
