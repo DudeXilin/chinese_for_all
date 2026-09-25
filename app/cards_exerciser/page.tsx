@@ -1,5 +1,6 @@
 import CardsExerciserClient from "./CardsExerciserClient";
 import lessonWords from "@/data/lesson-words.json";
+import measureWords from "@/data/measure-words.json";
 
 export default async function CardsExerciserPage({
   searchParams,
@@ -8,7 +9,9 @@ export default async function CardsExerciserPage({
 }) {
   const { topic: topicParam } = await searchParams;
   const topic = topicParam ?? "places";
-  const lesson = lessonWords[topic as keyof typeof lessonWords];
+  const lesson = topic === "measure_words"
+    ? { title: "Счётные слова", words: Object.keys(measureWords) }
+    : lessonWords[topic as keyof typeof lessonWords];
 
   if (!lesson) {
     return (
