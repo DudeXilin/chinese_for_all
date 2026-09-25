@@ -2,8 +2,6 @@
 
 Локальная копия Hanzi Writer и его character data.
 
-В этой папке не нужен собственный `index.tsx`: Hanzi Writer — готовая браузерная библиотека, а `hanzi-writer.min.js` можно подключать напрямую.
-
 ## Документация
 
 Официальное руководство Hanzi Writer:
