@@ -195,7 +195,14 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => (
-                <button className="lesson-island" key={topic} type="button">
+                <button
+                  className="lesson-island"
+                  key={topic}
+                  type="button"
+                  onClick={() => {
+                    if (topic === "Места") window.location.href = "/cards_exerciser?topic=places";
+                  }}
+                >
                   {topic}
                 </button>
               ))}
@@ -205,7 +212,14 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list grammar-list">
               {grammarExercises.map((exercise) => (
-                <button className="lesson-island" key={exercise} type="button">
+                <button
+                  className="lesson-island"
+                  key={exercise}
+                  type="button"
+                  onClick={() => {
+                    if (exercise === "Вопросительные слова") window.location.href = "/cards_exerciser?topic=question-words";
+                  }}
+                >
                   {exercise}
                 </button>
               ))}
