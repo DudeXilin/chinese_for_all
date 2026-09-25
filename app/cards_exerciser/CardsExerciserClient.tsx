@@ -247,7 +247,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-white/60">{section.text}</div>
                     )}
 
-                    {section.items && (
+                    {section.type === "comparison" && section.items && (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {section.items.map((item) => (
                           <div key={item.label} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
