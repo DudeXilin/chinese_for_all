@@ -218,7 +218,7 @@ export default function LessonsPage() {
                   type="button"
                   onClick={() => {
                     if (exercise === "Вопросительные слова") window.location.href = "/cards_exerciser?topic=question-words";
-                    if (exercise === "Счётные слова") window.location.href = "/counting_words";
+                    if (exercise === "Счётные слова") window.location.href = "/cards_exerciser?topic=measure_words";
                   }}
                 >
                   {exercise}
