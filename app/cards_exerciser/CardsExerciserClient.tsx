@@ -17,7 +17,7 @@ type Theory = {
   sections: TheorySection[];
 };
 
-type Props = { title: string; words: string[]; theory?: { title: string; sections: Array<Record<string, unknown>> } };
+type Props = { title: string; words: string[]; theory?: Theory };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
