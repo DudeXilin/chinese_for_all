@@ -152,26 +152,25 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
           <section className="mx-auto mt-5 w-full max-w-3xl">
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
-              <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3"><span className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/30">{side === "front" ? "Front" : "Back"}</span><span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[9px] text-white/35">карточка {index + 1}</span></div>
-
               {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
-                  <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
-                  <div className={`mx-auto mt-7 grid max-w-xl gap-3 ${Array.from(currentWord).length === 1 ? "grid-cols-1 max-w-[320px]" : "grid-cols-2"}`}>
+                  <div className="mx-auto grid max-w-2xl gap-3 sm:grid-cols-2">
                     {Array.from(currentWord).map((character, slot) => (
                       <HanziWriterDrawing key={`${character}-${slot}`} character={character} />
                     ))}
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
-                    <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
-                    <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
+                    <div className="min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
                     <input ref={inputRef} value={answer} onChange={(e) => setAnswer(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
                   </div>
-                  <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
                 </div>
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
-                  <div className="text-center"><div className="text-6xl font-medium tracking-tight sm:text-7xl">{currentWord}</div><div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div><div className="mt-2 text-sm text-white/35">{translation}</div></div>
+                  <div className="mx-auto max-w-[360px]">
+                    <HanziWriterDrawing character={currentWord} mode="preview" />
+                  </div>
+                  <div className="mt-5 text-center text-xl tracking-wide text-white/65">{correctPinyin}</div>
+                  <div className="mt-2 text-center text-sm text-white/35">{translation}</div>
                   <div className="mx-auto mt-7 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Сравнение Pinyin</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Your answer</span></div>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -193,8 +192,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
           </section>
 
           {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{[1,2,3,4].map((rating)=><button key={rating} type="button" onClick={rate} className="flex min-h-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] text-base transition hover:-translate-y-0.5 hover:bg-white/[0.08]">{rating}</button>)}</div></div></section>}
-
-          <footer className="mx-auto mt-3 flex w-full max-w-3xl items-center justify-between px-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/20"><span>Card {index + 1} of {words.length}</span><span>{side === "front" ? "type pinyin → Enter" : "rating → next card"}</span></footer>
         </div>
       )}
 
@@ -233,7 +230,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                     <h2 className="text-xl font-semibold tracking-tight text-white/90 sm:text-2xl">{section.title}</h2>
                     <div className="mt-1 h-px w-16 bg-gradient-to-r from-white/60 to-transparent" />
                     {section.text && <p className="mt-3 text-[15px] leading-7 text-white/65">{section.text}</p>}
-
                     {section.rows && (
                       <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.09]">
                         <div className="divide-y divide-white/[0.07]">
@@ -247,26 +243,16 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         </div>
                       </div>
                     )}
-
-                    {section.type === "note" && (
-                      <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-white/60">{section.text}</div>
-                    )}
-
+                    {section.type === "note" && <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-white/60">{section.text}</div>}
                     {section.type === "comparison" && section.items && (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {section.items.map((item, itemIndex) => {
                           const itemText = typeof item === "string" ? item : item.text;
                           const itemLabel = typeof item === "string" ? undefined : item.label;
-                          return (
-                            <div key={itemIndex} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
-                              {itemLabel && <h3 className="font-medium text-white/85">{itemLabel}</h3>}
-                              <p className="mt-2 text-sm leading-6 text-white/55">{itemText}</p>
-                            </div>
-                          );
+                          return <div key={itemIndex} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">{itemLabel && <h3 className="font-medium text-white/85">{itemLabel}</h3>}<p className="mt-2 text-sm leading-6 text-white/55">{itemText}</p></div>;
                         })}
                       </div>
                     )}
-
                     {section.type === "practice" && section.items && (
                       <div className="mt-4 space-y-2">
                         {section.items.map((item, itemIndex) => (
@@ -277,7 +263,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         ))}
                       </div>
                     )}
-
                     {section.note && <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-white/55"><span className="text-white/75">Важно:</span> {section.note}</div>}
                     {section.highlight && <p className="mt-4 text-base font-medium leading-7 text-white/85">{section.highlight}</p>}
                   </section>
