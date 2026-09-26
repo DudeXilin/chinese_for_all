@@ -18,7 +18,7 @@ type HanziWriterOptions = {
   showHintAfterMisses?: number | false;
   strokeAnimationSpeed?: number;
   delayBetweenStrokes?: number;
-  charDataLoader: (character: string, onComplete: (data: unknown) => void) => void;
+  charDataLoader?: (character: string, onComplete: (data: unknown) => void) => void;
   onLoadCharDataError?: (reason: unknown) => void;
 };
 
@@ -39,20 +39,20 @@ type HanziWriterFactory = {
 declare global {
   interface Window {
     HanziWriter?: HanziWriterFactory;
-    __cfaLocalHanziWriter?: Promise<HanziWriterFactory>;
+    __cfaHanziWriterLoader?: Promise<HanziWriterFactory>;
   }
 }
 
-function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
+function loadHanziWriter(): Promise<HanziWriterFactory> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Hanzi Writer is available only in the browser."));
   }
   if (window.HanziWriter) return Promise.resolve(window.HanziWriter);
-  if (window.__cfaLocalHanziWriter) return window.__cfaLocalHanziWriter;
+  if (window.__cfaHanziWriterLoader) return window.__cfaHanziWriterLoader;
 
-  window.__cfaLocalHanziWriter = new Promise((resolve, reject) => {
+  window.__cfaHanziWriterLoader = new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-cfa-local-hanzi-writer="true"]',
+      'script[data-cfa-hanzi-writer="true"]',
     );
     const script = existing ?? document.createElement("script");
 
@@ -62,19 +62,25 @@ function loadLocalHanziWriter(): Promise<HanziWriterFactory> {
       else reject(new Error("Hanzi Writer loaded, but its API was not found."));
     };
     script.onerror = () => {
-      reject(new Error("Не удалось загрузить Hanzi Writer."));
-      delete window.__cfaLocalHanziWriter;
+      reject(new Error("Не удалось загрузить Hanzi Writer с CDN."));
+      delete window.__cfaHanziWriterLoader;
     };
 
     if (!existing) {
-      script.src = "/api/hanzi-writer/library.js";
+      // TEMPORARY, for debugging: load straight from the jsdelivr CDN per
+      // https://hanziwriter.org/docs.html#script-loading-link, instead of our
+      // local /api/hanzi-writer/library.js. Nothing under lib/HanziWriter/
+      // (the local library file + the ~9575 character JSON files) was removed —
+      // once we confirm the CDN path renders correctly we can point this (and
+      // charDataLoader below) back at the local copies.
+      script.src = "https://cdn.jsdelivr.net/npm/hanzi-writer@3.7.3/dist/hanzi-writer.min.js";
       script.async = true;
-      script.dataset.cfaLocalHanziWriter = "true";
+      script.dataset.cfaHanziWriter = "true";
       document.head.appendChild(script);
     }
   });
 
-  return window.__cfaLocalHanziWriter;
+  return window.__cfaHanziWriterLoader;
 }
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -164,7 +170,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
     const isPractice = mode === "practice";
     const padding = Math.round(CANON * (isPractice ? 0.09 : 0.06));
 
-    loadLocalHanziWriter()
+    loadHanziWriter()
       .then((HanziWriter) => {
         if (cancelled || !host.isConnected) return;
 
@@ -184,22 +190,14 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
           showHintAfterMisses: isPractice ? 5 : false,
           strokeAnimationSpeed: 1.15,
           delayBetweenStrokes: 420,
-          charDataLoader: (char, onComplete) => {
-            fetch("/api/hanzi-writer/data/" + encodeURIComponent(char) + ".json")
-              .then((response) => {
-                if (!response.ok) throw new Error("Character data unavailable: " + char);
-                return response.json();
-              })
-              .then((data) => onComplete(data))
-              .catch((error) => {
-                if (!cancelled) setStatus("error");
-                console.error("Local Hanzi Writer data error:", error);
-              });
-          },
+          // TEMPORARY, for debugging: no charDataLoader override here means
+          // Hanzi Writer uses its own built-in default, which fetches each
+          // character's stroke data from the jsdelivr CDN (hanzi-writer-data)
+          // instead of our local /api/hanzi-writer/data/<char>.json route.
           onLoadCharDataError: (reason) => {
             if (!cancelled) {
               setStatus("error");
-              console.error("Local Hanzi Writer character error:", reason);
+              console.error("Hanzi Writer character data error:", reason);
             }
           },
         });
@@ -217,7 +215,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
       .catch((error: unknown) => {
         if (!cancelled) {
           setStatus("error");
-          console.error("Local Hanzi Writer error:", error);
+          console.error("Hanzi Writer (CDN) load error:", error);
         }
       });
 
