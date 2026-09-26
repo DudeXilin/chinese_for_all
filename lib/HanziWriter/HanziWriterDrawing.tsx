@@ -18,7 +18,16 @@ type HanziWriterOptions = {
   leniency?: number;
   acceptBackwardsStrokes?: boolean;
   markStrokeCorrectAfterMisses?: number | false;
+  // Hanzi Writer's real signature is (character, onComplete, onError) — a
+  // callback-style loader, not a 2-arg one. Getting this wrong means the
+  // library silently never resolves (no error, no data, no visible failure).
+  charDataLoader?: (
+    character: string,
+    onComplete: (data: unknown) => void,
+    onError: (reason: unknown) => void,
+  ) => void;
   onLoadCharDataError?: (reason: unknown) => void;
+  onLoadCharDataSuccess?: (data: unknown) => void;
 };
 
 type HanziWriterInstance = {
@@ -106,6 +115,7 @@ export default function HanziWriterDrawing({
   const hostRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [debug, setDebug] = useState<string>("");
 
   useEffect(() => {
     const host = hostRef.current;
@@ -115,13 +125,39 @@ export default function HanziWriterDrawing({
     writerRef.current = null;
     host.replaceChildren();
     setStatus("loading");
+    setDebug("script…");
 
     const isPractice = mode === "practice";
     const padding = Math.round(size * (isPractice ? 0.09 : 0.06));
 
+    // Explicit fetch-based loader (same idea as the Anki deck) instead of the
+    // library's built-in XHR loader, so we can see exactly what happens.
+    const charDataLoader = (
+      char: string,
+      onComplete: (data: unknown) => void,
+      onError: (reason: unknown) => void,
+    ) => {
+      setDebug("fetch " + char + "…");
+      fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/${encodeURIComponent(char)}.json`)
+        .then((response) => {
+          if (!response.ok) throw new Error("HTTP " + response.status + " for " + char);
+          return response.json();
+        })
+        .then((data) => {
+          if (!cancelled) setDebug("data ok: " + char);
+          onComplete(data);
+        })
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : String(err);
+          if (!cancelled) setDebug("fetch error: " + message);
+          onError(err);
+        });
+    };
+
     loadHanziWriter()
       .then((HanziWriter) => {
         if (cancelled || !host.isConnected) return;
+        setDebug("script ok, creating…");
 
         const writer = HanziWriter.create(host, character, {
           width: size,
@@ -148,9 +184,15 @@ export default function HanziWriterDrawing({
           leniency: 2.2,
           acceptBackwardsStrokes: true,
           markStrokeCorrectAfterMisses: 6,
+          charDataLoader,
+          onLoadCharDataSuccess: () => {
+            if (!cancelled) setDebug("rendered: " + character);
+          },
           onLoadCharDataError: (reason) => {
             if (!cancelled) {
               setStatus("error");
+              const message = reason instanceof Error ? reason.message : String(reason);
+              setDebug("onLoadCharDataError: " + message);
               console.error("Hanzi Writer character data error:", reason);
             }
           },
@@ -170,6 +212,8 @@ export default function HanziWriterDrawing({
       .catch((error: unknown) => {
         if (!cancelled) {
           setStatus("error");
+          const message = error instanceof Error ? error.message : String(error);
+          setDebug("script load error: " + message);
           console.error("Hanzi Writer (CDN) load error:", error);
         }
       });
@@ -246,6 +290,10 @@ export default function HanziWriterDrawing({
           Не удалось загрузить данные иероглифа
         </div>
       )}
+      {/* TEMPORARY debug readout — remove once we find the actual failure. */}
+      <div className="pointer-events-none absolute bottom-0.5 left-0.5 right-0.5 z-40 truncate text-center text-[8px] leading-tight text-lime-300/80">
+        {debug}
+      </div>
     </div>
   );
 }
