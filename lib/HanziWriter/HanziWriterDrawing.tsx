@@ -15,11 +15,15 @@ type HanziWriterOptions = {
   highlightColor?: string;
   highlightOnComplete?: boolean;
   showHintAfterMisses?: number | false;
+  leniency?: number;
+  acceptBackwardsStrokes?: boolean;
+  markStrokeCorrectAfterMisses?: number | false;
   onLoadCharDataError?: (reason: unknown) => void;
 };
 
 type HanziWriterInstance = {
   quiz: (options?: {
+    onMistake?: () => void;
     onComplete?: (summary: { totalMistakes: number }) => void;
     showHintAfterMisses?: number | false;
     highlightOnComplete?: boolean;
@@ -79,23 +83,25 @@ type Props = {
   mode?: "practice" | "preview";
   /** Forces a fresh writer instance (e.g. pass a new key when the card changes). */
   resetKey?: string | number;
-  /** Square side length in px. Passed as-is to both the wrapper box and the
-   * writer's own width/height so the two can never disagree and produce a
-   * non-square box. */
+  /** Square side length in px. Passed as-is to the writer's own width/height
+   * AND used to explicitly size (not flex-center) the mount div, the same way
+   * the working Anki template does it — no flexbox/aspect-ratio in the loop. */
   size?: number;
+  onMistake?: () => void;
 };
 
 // Warm-white, ~90% opacity — used for anything the user should clearly see:
 // their own drawn strokes, and the fully-shown character on the card back.
 const WARM_WHITE = "rgba(255, 244, 230, 0.9)";
 // A visible red tint for the stroke hint shown after repeated mistakes.
-const HINT_RED = "rgba(224, 90, 90, 0.78)";
+const HINT_RED = "rgba(224, 60, 70, 0.85)";
 
 export default function HanziWriterDrawing({
   character,
   mode = "practice",
   resetKey,
   size = 150,
+  onMistake,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
@@ -129,7 +135,7 @@ export default function HanziWriterDrawing({
           // What the user physically draws, and the fully-shown character on
           // the back, are both warm-white — clearly visible on the dark theme.
           drawingColor: WARM_WHITE,
-          drawingWidth: 5,
+          drawingWidth: Math.max(4, Math.round(size * 0.035)),
           strokeColor: WARM_WHITE,
           // The hint stroke shown after repeated misses is red, not the
           // library's default blue.
@@ -138,6 +144,10 @@ export default function HanziWriterDrawing({
           // themselves when the character is done, not get an extra tell.
           highlightOnComplete: false,
           showHintAfterMisses: isPractice ? 5 : false,
+          // More forgiving matching, same as the working Anki deck template.
+          leniency: 2.2,
+          acceptBackwardsStrokes: true,
+          markStrokeCorrectAfterMisses: 6,
           onLoadCharDataError: (reason) => {
             if (!cancelled) {
               setStatus("error");
@@ -150,7 +160,11 @@ export default function HanziWriterDrawing({
         if (!cancelled) setStatus("ready");
 
         if (isPractice) {
-          writer.quiz({ showHintAfterMisses: 5, highlightOnComplete: false });
+          writer.quiz({
+            showHintAfterMisses: 5,
+            highlightOnComplete: false,
+            onMistake: onMistake,
+          });
         }
       })
       .catch((error: unknown) => {
@@ -166,6 +180,7 @@ export default function HanziWriterDrawing({
       writerRef.current = null;
       host.replaceChildren();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character, mode, resetKey, size]);
 
   function animatePreview() {
@@ -174,12 +189,12 @@ export default function HanziWriterDrawing({
 
   return (
     <div
-      // Explicit, equal width/height in px (not aspect-ratio CSS) — this is
-      // the one thing that *guarantees* a real square regardless of any
-      // flexbox/aspect-ratio quirks in the surrounding layout.
-      style={{ width: size, height: size, background: "#111110" }}
+      // Explicit, equal width/height in px — guarantees a real square
+      // regardless of any flexbox/aspect-ratio quirks in the surrounding
+      // layout, same principle as the GRID_SIZE-based divs in the Anki deck.
+      style={{ width: size, height: size, background: "#26221f" }}
       className={[
-        "relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/20",
+        "relative mx-auto shrink-0 overflow-hidden rounded-2xl",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
       onClick={mode === "preview" ? animatePreview : undefined}
@@ -189,13 +204,20 @@ export default function HanziWriterDrawing({
           : "Напишите иероглиф " + character
       }
     >
+      {/* Solid cell border, a touch lighter than the dashed cross below it. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-20 rounded-2xl"
+        style={{ boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.32)" }}
+      />
+      {/* Thin dashed cross splitting the cell into 4 equal quarters. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
         <div
           className="absolute left-1/2 top-0 h-full -translate-x-1/2"
           style={{
             width: 1,
             backgroundImage:
-              "repeating-linear-gradient(to bottom, rgba(255,255,255,0.13) 0 4px, transparent 4px 9px)",
+              "repeating-linear-gradient(to bottom, rgba(255,255,255,0.22) 0 4px, transparent 4px 9px)",
           }}
         />
         <div
@@ -203,18 +225,24 @@ export default function HanziWriterDrawing({
           style={{
             height: 1,
             backgroundImage:
-              "repeating-linear-gradient(to right, rgba(255,255,255,0.13) 0 4px, transparent 4px 9px)",
+              "repeating-linear-gradient(to right, rgba(255,255,255,0.22) 0 4px, transparent 4px 9px)",
           }}
         />
       </div>
-      <div ref={hostRef} className="relative z-10 flex items-center justify-center" />
+      {/* Explicit position+size (not flex-centering) so the writer's own SVG
+          (also sized to `size`x`size`) lines up pixel-for-pixel every time. */}
+      <div
+        ref={hostRef}
+        className="absolute left-0 top-0 z-10"
+        style={{ width: size, height: size }}
+      />
       {status === "loading" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center text-xs text-white/25">
           загрузка…
         </div>
       )}
       {status === "error" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-xs text-red-300/70">
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-6 text-center text-xs text-red-300/70">
           Не удалось загрузить данные иероглифа
         </div>
       )}
