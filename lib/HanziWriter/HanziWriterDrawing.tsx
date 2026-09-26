@@ -179,7 +179,7 @@ export default function HanziWriterDrawing({
       // flexbox/aspect-ratio quirks in the surrounding layout.
       style={{ width: size, height: size, background: "#111110" }}
       className={[
-        "relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10",
+        "relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/20",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
       onClick={mode === "preview" ? animatePreview : undefined}
@@ -189,7 +189,25 @@ export default function HanziWriterDrawing({
           : "Напишите иероглиф " + character
       }
     >
-      <div ref={hostRef} className="flex items-center justify-center" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+        <div
+          className="absolute left-1/2 top-0 h-full -translate-x-1/2"
+          style={{
+            width: 1,
+            backgroundImage:
+              "repeating-linear-gradient(to bottom, rgba(255,255,255,0.13) 0 4px, transparent 4px 9px)",
+          }}
+        />
+        <div
+          className="absolute left-0 top-1/2 w-full -translate-y-1/2"
+          style={{
+            height: 1,
+            backgroundImage:
+              "repeating-linear-gradient(to right, rgba(255,255,255,0.13) 0 4px, transparent 4px 9px)",
+          }}
+        />
+      </div>
+      <div ref={hostRef} className="relative z-10 flex items-center justify-center" />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
