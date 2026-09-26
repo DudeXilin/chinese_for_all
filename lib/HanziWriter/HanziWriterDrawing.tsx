@@ -8,6 +8,12 @@ type HanziWriterOptions = {
   padding: number;
   showCharacter?: boolean;
   showOutline?: boolean;
+  outlineColor?: string;
+  drawingColor?: string;
+  drawingWidth?: number;
+  strokeColor?: string;
+  highlightColor?: string;
+  highlightOnComplete?: boolean;
   showHintAfterMisses?: number | false;
   onLoadCharDataError?: (reason: unknown) => void;
 };
@@ -16,6 +22,7 @@ type HanziWriterInstance = {
   quiz: (options?: {
     onComplete?: (summary: { totalMistakes: number }) => void;
     showHintAfterMisses?: number | false;
+    highlightOnComplete?: boolean;
   }) => void;
   cancelQuiz: () => void;
   animateCharacter: () => Promise<unknown> | void;
@@ -56,7 +63,7 @@ function loadHanziWriter(): Promise<HanziWriterFactory> {
     };
 
     if (!existing) {
-      // Bare-minimum CDN load per https://hanziwriter.org/docs.html#script-loading-link
+      // Loading from the jsdelivr CDN per https://hanziwriter.org/docs.html#script-loading-link
       script.src = "https://cdn.jsdelivr.net/npm/hanzi-writer@3.7.3/dist/hanzi-writer.min.js";
       script.async = true;
       script.dataset.cfaHanziWriter = "true";
@@ -72,13 +79,24 @@ type Props = {
   mode?: "practice" | "preview";
   /** Forces a fresh writer instance (e.g. pass a new key when the card changes). */
   resetKey?: string | number;
+  /** Square side length in px. Passed as-is to both the wrapper box and the
+   * writer's own width/height so the two can never disagree and produce a
+   * non-square box. */
+  size?: number;
 };
 
-// Stripped down to the simplest possible thing that could work: a plain div
-// target, default rendering (no custom SVG/grid, no custom colors), library +
-// character data both loaded from the jsdelivr CDN. Nothing fancy — just
-// trying to get *a* character to show up at all.
-export default function HanziWriterDrawing({ character, mode = "practice", resetKey }: Props) {
+// Warm-white, ~90% opacity — used for anything the user should clearly see:
+// their own drawn strokes, and the fully-shown character on the card back.
+const WARM_WHITE = "rgba(255, 244, 230, 0.9)";
+// A visible red tint for the stroke hint shown after repeated mistakes.
+const HINT_RED = "rgba(224, 90, 90, 0.78)";
+
+export default function HanziWriterDrawing({
+  character,
+  mode = "practice",
+  resetKey,
+  size = 150,
+}: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -93,16 +111,32 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
     setStatus("loading");
 
     const isPractice = mode === "practice";
+    const padding = Math.round(size * (isPractice ? 0.09 : 0.06));
 
     loadHanziWriter()
       .then((HanziWriter) => {
         if (cancelled || !host.isConnected) return;
 
         const writer = HanziWriter.create(host, character, {
-          width: 200,
-          height: 200,
-          padding: 15,
+          width: size,
+          height: size,
+          padding,
+          // Front (practice): nothing is shown until the user draws it — no
+          // filled-in character, no faint outline guide either.
           showCharacter: !isPractice,
+          showOutline: false,
+          outlineColor: "transparent",
+          // What the user physically draws, and the fully-shown character on
+          // the back, are both warm-white — clearly visible on the dark theme.
+          drawingColor: WARM_WHITE,
+          drawingWidth: 5,
+          strokeColor: WARM_WHITE,
+          // The hint stroke shown after repeated misses is red, not the
+          // library's default blue.
+          highlightColor: HINT_RED,
+          // No success flash on finishing the quiz — the user should judge for
+          // themselves when the character is done, not get an extra tell.
+          highlightOnComplete: false,
           showHintAfterMisses: isPractice ? 5 : false,
           onLoadCharDataError: (reason) => {
             if (!cancelled) {
@@ -116,7 +150,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
         if (!cancelled) setStatus("ready");
 
         if (isPractice) {
-          writer.quiz({ showHintAfterMisses: 5 });
+          writer.quiz({ showHintAfterMisses: 5, highlightOnComplete: false });
         }
       })
       .catch((error: unknown) => {
@@ -132,7 +166,7 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
       writerRef.current = null;
       host.replaceChildren();
     };
-  }, [character, mode, resetKey]);
+  }, [character, mode, resetKey, size]);
 
   function animatePreview() {
     writerRef.current?.animateCharacter();
@@ -140,8 +174,12 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
 
   return (
     <div
+      // Explicit, equal width/height in px (not aspect-ratio CSS) — this is
+      // the one thing that *guarantees* a real square regardless of any
+      // flexbox/aspect-ratio quirks in the surrounding layout.
+      style={{ width: size, height: size, background: "#111110" }}
       className={[
-        "relative mx-auto flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-white",
+        "relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10",
         mode === "preview" ? "cursor-pointer select-none" : "",
       ].join(" ")}
       onClick={mode === "preview" ? animatePreview : undefined}
@@ -153,12 +191,12 @@ export default function HanziWriterDrawing({ character, mode = "practice", reset
     >
       <div ref={hostRef} className="flex items-center justify-center" />
       {status === "loading" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-black/40">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/25">
           загрузка…
         </div>
       )}
       {status === "error" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-xs text-red-600">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-xs text-red-300/70">
           Не удалось загрузить данные иероглифа
         </div>
       )}

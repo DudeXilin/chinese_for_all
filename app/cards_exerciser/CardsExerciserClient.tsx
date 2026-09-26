@@ -159,9 +159,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                   <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
                   <div className="mx-auto mt-7 flex max-w-xl flex-wrap items-center justify-center gap-3">
                     {Array.from(currentWord).map((char, charIndex) => (
-                      <div key={`${index}-${charIndex}-${char}`} className="w-[150px] sm:w-[170px]">
-                        <HanziWriterDrawing character={char} mode="practice" resetKey={`${index}-${charIndex}`} />
-                      </div>
+                      <HanziWriterDrawing
+                        key={`${index}-${charIndex}-${char}`}
+                        character={char}
+                        mode="practice"
+                        resetKey={`${index}-${charIndex}`}
+                        size={150}
+                      />
                     ))}
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
@@ -176,9 +180,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                   <div className="text-center">
                     <div className="mx-auto flex max-w-xl flex-wrap items-center justify-center gap-3">
                       {Array.from(currentWord).map((char, charIndex) => (
-                        <div key={`${index}-${charIndex}-${char}-back`} className="w-[130px] sm:w-[150px]">
-                          <HanziWriterDrawing character={char} mode="preview" resetKey={`${index}-${charIndex}-back`} />
-                        </div>
+                        <HanziWriterDrawing
+                          key={`${index}-${charIndex}-${char}-back`}
+                          character={char}
+                          mode="preview"
+                          resetKey={`${index}-${charIndex}-back`}
+                          size={130}
+                        />
                       ))}
                     </div>
                     <div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div>
