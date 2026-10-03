@@ -19,6 +19,7 @@ type HanziWriterOptions = {
   leniency?: number;
   acceptBackwardsStrokes?: boolean;
   markStrokeCorrectAfterMisses?: number | false;
+  strokeAnimationSpeed?: number;
   // Hanzi Writer's real signature is (character, onComplete, onError) — a
   // callback-style loader, not a 2-arg one. Getting this wrong means the
   // library silently never resolves (no error, no data, no visible failure).
@@ -100,13 +101,12 @@ type Props = {
   onMistake?: () => void;
 };
 
-// Warm-white, ~90% opacity — used for anything the user should clearly see:
+// Warm-white, 75% opacity — used for anything the user should clearly see:
 // their own drawn strokes, and the fully-shown character on the card back.
-// Opacity raised +15% from the original 0.9 (0.9 * 1.15 → clamped to fully opaque).
-const WARM_WHITE = "rgba(255, 244, 230, 1)";
-// Same warm hue as WARM_WHITE, ~30% darker (RGB channels scaled by 0.7) —
-// used for the strip's single outer frame and the dividers between characters.
-export const WARM_WHITE_DARK_30 = "rgb(179, 171, 161)";
+const WARM_WHITE = "rgba(255, 244, 230, 0.75)";
+// Same warm hue as WARM_WHITE (at full opacity), ~30% darker again — used for
+// the thin dividers between characters in HanziWriterStrip.
+export const WARM_WHITE_DARK_30 = "rgb(125, 120, 113)";
 // A visible red tint for the stroke hint shown after repeated mistakes.
 const HINT_RED = "rgba(224, 60, 70, 0.85)";
 
@@ -205,6 +205,8 @@ export default function HanziWriterDrawing({
           leniency: 2.2,
           acceptBackwardsStrokes: true,
           markStrokeCorrectAfterMisses: 6,
+          // +50% speed for the stroke-order animation on the card back.
+          strokeAnimationSpeed: 1.5,
             charDataLoader,
             onLoadCharDataSuccess: () => {
               logHanzi(tag, `onLoadCharDataSuccess fired for "${character}"`);
