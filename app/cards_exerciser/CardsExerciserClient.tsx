@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import HanziWriterDrawing from "@/lib/HanziWriter/HanziWriterDrawing";
 import HanziWriterDebugPanel from "@/lib/HanziWriter/HanziWriterDebugPanel";
+import { convertPinyin } from "@/lib/neat_pinyin_converter";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -172,7 +173,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
                     <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
-                    <input ref={inputRef} value={answer} onChange={(e) => setAnswer(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
+                    <input ref={inputRef} value={answer} onChange={(e) => setAnswer(convertPinyin(e.target.value))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
                   </div>
                   <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
                 </div>
