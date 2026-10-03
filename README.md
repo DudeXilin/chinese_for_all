@@ -1,4 +1,4 @@
-# CHINESE FOR ALL
+# CHINESE FOR ALL. A vibe-coding project.
 
 A Next.js application for learning Chinese with Supabase authentication and user data management.
 
