@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import HanziWriterDrawing from "@/lib/HanziWriter/HanziWriterDrawing";
+import HanziWriterDebugPanel from "@/lib/HanziWriter/HanziWriterDebugPanel";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -311,6 +312,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
           </div>
         </div>
       )}
+      <HanziWriterDebugPanel />
     </main>
   );
 }

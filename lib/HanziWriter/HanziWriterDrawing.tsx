@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { logHanzi } from "./debugLog";
 
 type HanziWriterOptions = {
   width: number;
@@ -115,7 +116,7 @@ export default function HanziWriterDrawing({
   const hostRef = useRef<HTMLDivElement>(null);
   const writerRef = useRef<HanziWriterInstance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [debug, setDebug] = useState<string>("");
+  const tag = `${character}/${mode}`;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -125,7 +126,7 @@ export default function HanziWriterDrawing({
     writerRef.current = null;
     host.replaceChildren();
     setStatus("loading");
-    setDebug("script…");
+    logHanzi(tag, `mount start — size=${size} resetKey=${String(resetKey)} isConnected=${host.isConnected}`);
 
     const isPractice = mode === "practice";
     const padding = Math.round(size * (isPractice ? 0.09 : 0.06));
@@ -137,29 +138,40 @@ export default function HanziWriterDrawing({
       onComplete: (data: unknown) => void,
       onError: (reason: unknown) => void,
     ) => {
-      setDebug("fetch " + char + "…");
+      logHanzi(tag, `charDataLoader called for "${char}" — fetching…`);
       fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/${encodeURIComponent(char)}.json`)
         .then((response) => {
+          logHanzi(tag, `fetch response: HTTP ${response.status} ${response.ok ? "OK" : "NOT OK"} (${response.type}, url=${response.url})`);
           if (!response.ok) throw new Error("HTTP " + response.status + " for " + char);
           return response.json();
         })
-        .then((data) => {
-          if (!cancelled) setDebug("data ok: " + char);
+        .then((data: unknown) => {
+          const keys = data && typeof data === "object" ? Object.keys(data as object) : [];
+          const strokesLen =
+            data && typeof data === "object" && Array.isArray((data as Record<string, unknown>).strokes)
+              ? ((data as Record<string, unknown>).strokes as unknown[]).length
+              : "n/a";
+          logHanzi(tag, `data parsed ok for "${char}": keys=[${keys.join(",")}] strokes.length=${strokesLen}`);
           onComplete(data);
         })
         .catch((err: unknown) => {
           const message = err instanceof Error ? err.message : String(err);
-          if (!cancelled) setDebug("fetch error: " + message);
+          logHanzi(tag, `fetch/parse FAILED for "${char}": ${message}`);
           onError(err);
         });
     };
 
     loadHanziWriter()
       .then((HanziWriter) => {
-        if (cancelled || !host.isConnected) return;
-        setDebug("script ok, creating…");
+        if (cancelled || !host.isConnected) {
+          logHanzi(tag, `script loaded, but aborting (cancelled=${cancelled}, isConnected=${host.isConnected})`);
+          return;
+        }
+        logHanzi(tag, "script loaded ok — calling HanziWriter.create()");
 
-        const writer = HanziWriter.create(host, character, {
+        let writer: HanziWriterInstance;
+        try {
+          writer = HanziWriter.create(host, character, {
           width: size,
           height: size,
           padding,
@@ -184,41 +196,49 @@ export default function HanziWriterDrawing({
           leniency: 2.2,
           acceptBackwardsStrokes: true,
           markStrokeCorrectAfterMisses: 6,
-          charDataLoader,
-          onLoadCharDataSuccess: () => {
-            if (!cancelled) setDebug("rendered: " + character);
-          },
-          onLoadCharDataError: (reason) => {
-            if (!cancelled) {
-              setStatus("error");
+            charDataLoader,
+            onLoadCharDataSuccess: () => {
+              logHanzi(tag, `onLoadCharDataSuccess fired for "${character}"`);
+            },
+            onLoadCharDataError: (reason) => {
               const message = reason instanceof Error ? reason.message : String(reason);
-              setDebug("onLoadCharDataError: " + message);
-              console.error("Hanzi Writer character data error:", reason);
-            }
-          },
-        });
+              logHanzi(tag, `onLoadCharDataError fired: ${message}`);
+              if (!cancelled) setStatus("error");
+            },
+          });
+        } catch (syncError: unknown) {
+          const message = syncError instanceof Error ? syncError.message : String(syncError);
+          logHanzi(tag, `HanziWriter.create() THREW synchronously: ${message}`);
+          if (!cancelled) setStatus("error");
+          return;
+        }
 
+        logHanzi(tag, "HanziWriter.create() returned without throwing");
         writerRef.current = writer;
         if (!cancelled) setStatus("ready");
 
         if (isPractice) {
-          writer.quiz({
-            showHintAfterMisses: 5,
-            highlightOnComplete: false,
-            onMistake: onMistake,
-          });
+          try {
+            writer.quiz({
+              showHintAfterMisses: 5,
+              highlightOnComplete: false,
+              onMistake: onMistake,
+            });
+            logHanzi(tag, "writer.quiz() called");
+          } catch (quizError: unknown) {
+            const message = quizError instanceof Error ? quizError.message : String(quizError);
+            logHanzi(tag, `writer.quiz() THREW: ${message}`);
+          }
         }
       })
       .catch((error: unknown) => {
-        if (!cancelled) {
-          setStatus("error");
-          const message = error instanceof Error ? error.message : String(error);
-          setDebug("script load error: " + message);
-          console.error("Hanzi Writer (CDN) load error:", error);
-        }
+        const message = error instanceof Error ? error.message : String(error);
+        logHanzi(tag, `script load promise REJECTED: ${message}`);
+        if (!cancelled) setStatus("error");
       });
 
     return () => {
+      logHanzi(tag, "cleanup — unmounting/resetting this square");
       cancelled = true;
       writerRef.current?.cancelQuiz();
       writerRef.current = null;
@@ -290,10 +310,6 @@ export default function HanziWriterDrawing({
           Не удалось загрузить данные иероглифа
         </div>
       )}
-      {/* TEMPORARY debug readout — remove once we find the actual failure. */}
-      <div className="pointer-events-none absolute bottom-0.5 left-0.5 right-0.5 z-40 truncate text-center text-[8px] leading-tight text-lime-300/80">
-        {debug}
-      </div>
     </div>
   );
 }
