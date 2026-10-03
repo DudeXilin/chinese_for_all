@@ -102,7 +102,11 @@ type Props = {
 
 // Warm-white, ~90% opacity — used for anything the user should clearly see:
 // their own drawn strokes, and the fully-shown character on the card back.
-const WARM_WHITE = "rgba(255, 244, 230, 0.9)";
+// Opacity raised +15% from the original 0.9 (0.9 * 1.15 → clamped to fully opaque).
+const WARM_WHITE = "rgba(255, 244, 230, 1)";
+// Same warm hue as WARM_WHITE, ~30% darker (RGB channels scaled by 0.7) —
+// used for the strip's single outer frame and the dividers between characters.
+export const WARM_WHITE_DARK_30 = "rgb(179, 171, 161)";
 // A visible red tint for the stroke hint shown after repeated mistakes.
 const HINT_RED = "rgba(224, 60, 70, 0.85)";
 

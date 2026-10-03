@@ -1,6 +1,6 @@
 "use client";
 
-import HanziWriterDrawing from "./HanziWriterDrawing";
+import HanziWriterDrawing, { WARM_WHITE_DARK_30 } from "./HanziWriterDrawing";
 
 type Props = {
   characters: string[];
@@ -18,8 +18,11 @@ type Props = {
 export default function HanziWriterStrip({ characters, mode, size, keyPrefix, onMistake }: Props) {
   return (
     <div
-      className="mx-auto flex w-fit flex-col divide-y divide-white/20 overflow-hidden rounded-[28px] sm:flex-row sm:divide-x sm:divide-y-0"
-      style={{ boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.32)" }}
+      // Same warm hue as the strokes, ~30% darker — one shared frame for the
+      // whole word (any number of characters) and the same tone for the thin
+      // dividers between characters, instead of plain white.
+      className="mx-auto flex w-fit flex-col divide-y divide-[rgb(179,171,161)] overflow-hidden rounded-[28px] sm:flex-row sm:divide-x sm:divide-y-0"
+      style={{ boxShadow: `inset 0 0 0 1.5px ${WARM_WHITE_DARK_30}` }}
     >
       {characters.map((char, i) => (
         <HanziWriterDrawing
