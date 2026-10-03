@@ -179,7 +179,12 @@ export default function HanziWriterDrawing({
           // filled-in character, no faint outline guide either.
           showCharacter: !isPractice,
           showOutline: false,
-          outlineColor: "transparent",
+          // Hanzi Writer's own color parser does NOT accept the CSS keyword
+          // "transparent" — it throws ("Invalid color: transparent") inside an
+          // internal promise, which silently aborted all further rendering on
+          // every stroke/animation attempt. rgba(...,0) is the valid way to
+          // say "fully transparent" to this library.
+          outlineColor: "rgba(0,0,0,0)",
           // What the user physically draws, and the fully-shown character on
           // the back, are both warm-white — clearly visible on the dark theme.
           drawingColor: WARM_WHITE,
