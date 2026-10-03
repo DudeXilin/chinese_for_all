@@ -16,11 +16,25 @@ function timestamp(): string {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
 }
 
+declare global {
+  interface Window {
+    // Provided by public/js/debug-overlay.js (loaded in app/layout.tsx),
+    // which already has its own working floating bug button + full-screen
+    // copyable log and catches window.onerror/unhandledrejection/fetch
+    // globally. We feed it our Hanzi-specific entries too instead of
+    // maintaining a second, separate overlay.
+    __cfaDebugLogEvent?: (type: string, data?: Record<string, unknown>) => void;
+  }
+}
+
 export function logHanzi(tag: string, message: string): void {
   const line = `[${timestamp()}] [${tag}] ${message}`;
   logs.push(line);
   if (logs.length > MAX_LOGS) logs = logs.slice(logs.length - MAX_LOGS);
   console.log("[HanziWriter]", tag, message);
+  if (typeof window !== "undefined" && window.__cfaDebugLogEvent) {
+    window.__cfaDebugLogEvent("hanzi", { tag, message });
+  }
   listeners.forEach((listener) => listener());
 }
 
