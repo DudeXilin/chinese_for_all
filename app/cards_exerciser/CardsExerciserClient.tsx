@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import HanziWriterDrawing from "@/lib/HanziWriter/HanziWriterDrawing";
+import HanziWriterStrip from "@/lib/HanziWriter/HanziWriterStrip";
 import HanziWriterDebugPanel from "@/lib/HanziWriter/HanziWriterDebugPanel";
 import { convertPinyin } from "@/lib/neat_pinyin_converter";
 
@@ -159,16 +159,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
                   <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
-                  <div className="mx-auto mt-7 flex max-w-xl flex-wrap items-center justify-center gap-3">
-                    {Array.from(currentWord).map((char, charIndex) => (
-                      <HanziWriterDrawing
-                        key={`${index}-${charIndex}-${char}`}
-                        character={char}
-                        mode="practice"
-                        resetKey={`${index}-${charIndex}`}
-                        size={150}
-                      />
-                    ))}
+                  <div className="mt-7 flex justify-center">
+                    <HanziWriterStrip
+                      characters={Array.from(currentWord)}
+                      mode="practice"
+                      size={240}
+                      keyPrefix={`${index}-front`}
+                    />
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
@@ -180,16 +177,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center">
-                    <div className="mx-auto flex max-w-xl flex-wrap items-center justify-center gap-3">
-                      {Array.from(currentWord).map((char, charIndex) => (
-                        <HanziWriterDrawing
-                          key={`${index}-${charIndex}-${char}-back`}
-                          character={char}
-                          mode="preview"
-                          resetKey={`${index}-${charIndex}-back`}
-                          size={130}
-                        />
-                      ))}
+                    <div className="flex justify-center">
+                      <HanziWriterStrip
+                        characters={Array.from(currentWord)}
+                        mode="preview"
+                        size={208}
+                        keyPrefix={`${index}-back`}
+                      />
                     </div>
                     <div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div>
                     <div className="mt-2 text-sm text-white/35">{translation}</div>

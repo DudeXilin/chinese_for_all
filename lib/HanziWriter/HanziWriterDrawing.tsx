@@ -262,10 +262,12 @@ export default function HanziWriterDrawing({
       // regardless of any flexbox/aspect-ratio quirks in the surrounding
       // layout, same principle as the GRID_SIZE-based divs in the Anki deck.
       style={{ width: size, height: size, background: "#26221f" }}
-      className={[
-        "relative mx-auto shrink-0 overflow-hidden rounded-2xl",
-        mode === "preview" ? "cursor-pointer select-none" : "",
-      ].join(" ")}
+      // No rounding/border of its own anymore — when several characters form
+      // one word, HanziWriterStrip wraps them in a single rounded+bordered
+      // shape instead of each cell having its own 4 corners.
+      className={["relative shrink-0 overflow-hidden", mode === "preview" ? "cursor-pointer select-none" : ""].join(
+        " ",
+      )}
       onClick={mode === "preview" ? animatePreview : undefined}
       aria-label={
         mode === "preview"
@@ -273,12 +275,6 @@ export default function HanziWriterDrawing({
           : "Напишите иероглиф " + character
       }
     >
-      {/* Solid cell border, a touch lighter than the dashed cross below it. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-20 rounded-2xl"
-        style={{ boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.32)" }}
-      />
       {/* Thin dashed cross splitting the cell into 4 equal quarters. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
         <div
