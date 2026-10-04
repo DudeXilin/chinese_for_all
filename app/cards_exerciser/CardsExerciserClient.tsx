@@ -103,6 +103,9 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [tonePadOpen, setTonePadOpen] = useState(false);
   const [keyboardBottom, setKeyboardBottom] = useState(0);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [ratingBusy, setRatingBusy] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
   const [lastFSRSResult, setLastFSRSResult] = useState<{ word: string; rating: number; result: ReturnType<typeof review> } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -114,6 +117,82 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const correctPinyin = pinyins[currentWord] ?? "pinyin placeholder";
   const translation = translations[currentWord] ?? "перевод placeholder";
   const theoryKey = `cfa-theory-dismissed:${title}`;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function syncServerTime() {
+      const startedAt = Date.now();
+      try {
+        const response = await fetch("/api/time", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const receivedAt = Date.now();
+        if (typeof payload.unixMs !== "number" || cancelled) return;
+
+        const midpoint = (startedAt + receivedAt) / 2;
+        setServerTimeOffsetMs(payload.unixMs - midpoint);
+      } catch {
+        // Local time remains the fallback when the server is unreachable.
+      }
+    }
+
+    syncServerTime();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFSRSCards() {
+      try {
+        const response = await fetch("/api/fsrs/cards", { cache: "no-store" });
+        if (!response.ok) return;
+
+        const payload = await response.json();
+        if (cancelled || !Array.isArray(payload.cards)) return;
+
+        setAuthenticated(payload.authenticated === true);
+
+        const byWord = new Map<string, SerializedCard>();
+        for (const row of payload.cards) {
+          if (!row || typeof row.word !== "string") continue;
+          byWord.set(row.word, {
+            due: row.due,
+            stability: row.stability,
+            difficulty: row.difficulty,
+            elapsed_days: row.elapsed_days,
+            scheduled_days: row.scheduled_days,
+            learning_steps: row.learning_steps,
+            reps: row.reps,
+            lapses: row.lapses,
+            state: row.state,
+            last_review: row.last_review,
+          });
+        }
+
+        setFsrsCards(
+          Object.fromEntries(
+            words
+              .map((word, wordIndex) => {
+                const card = byWord.get(word);
+                return card ? [wordIndex, card] : null;
+              })
+              .filter((entry): entry is [number, SerializedCard] => entry !== null),
+          ),
+        );
+      } catch {
+        // Session-local FSRS remains available if Supabase is unavailable.
+      }
+    }
+
+    loadFSRSCards();
+    return () => {
+      cancelled = true;
+    };
+  }, [words]);
 
   useEffect(() => {
     if (!theory) return;
@@ -196,62 +275,111 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     { value: Rating.Easy, label: "4", name: "Easy", hint: "Легко" },
   ];
 
-  function rate(rating: FSRSRating) {
-    const now = new Date();
-    const card = fsrsCards[index] ?? createCard(now);
+  function getAuthoritativeNow() {
+    return new Date(Date.now() + serverTimeOffsetMs);
+  }
 
-    // Preview all four choices BEFORE applying the user's rating.
-    // The word is one learning item: the rating reflects the complete answer.
-    const beforePreview = preview(card, now);
-    const result = review(card, now, rating);
+  async function rate(rating: FSRSRating) {
+    if (ratingBusy) return;
+    setRatingBusy(true);
+
+    const now = getAuthoritativeNow();
+    const card = fsrsCards[index] ?? createCard(now);
     const ratingName = Rating[rating];
 
-    setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
-    setLastFSRSResult({ word: currentWord, rating, result });
+    try {
+      let beforePreview: ReturnType<typeof preview>;
+      let result: ReturnType<typeof review>;
+      let serverNow = now.toISOString();
 
-    logFSRS("review", {
-      word: currentWord,
-      cardIndex: index,
-      answer: answer || null,
-      rating: ratingName,
-      ratingValue: rating,
-      before: {
-        state: card.state,
-        stability: card.stability,
-        difficulty: card.difficulty,
-        due: card.due,
-        options: {
-          again: {
-            scheduledDays: beforePreview.again.card.scheduled_days,
-            due: beforePreview.again.card.due,
-          },
-          hard: {
-            scheduledDays: beforePreview.hard.card.scheduled_days,
-            due: beforePreview.hard.card.due,
-          },
-          good: {
-            scheduledDays: beforePreview.good.card.scheduled_days,
-            due: beforePreview.good.card.due,
-          },
-          easy: {
-            scheduledDays: beforePreview.easy.card.scheduled_days,
-            due: beforePreview.easy.card.due,
+      if (authenticated) {
+        const response = await fetch("/api/fsrs/review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({
+            word: currentWord,
+            answer: answer || null,
+            rating,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("FSRS server review failed");
+        }
+
+        const payload = await response.json();
+        beforePreview = payload.before;
+        result = { card: payload.card, log: payload.log };
+        serverNow = payload.serverNow ?? serverNow;
+      } else {
+        beforePreview = preview(card, now);
+        result = review(card, now, rating);
+      }
+
+      setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
+      setLastFSRSResult({ word: currentWord, rating, result });
+
+      logFSRS("review", {
+        word: currentWord,
+        cardIndex: index,
+        answer: answer || null,
+        rating: ratingName,
+        ratingValue: rating,
+        time: {
+          source: authenticated ? "server" : "server-synchronized-client",
+          serverNow,
+          clientNow: new Date().toISOString(),
+          offsetMs: Math.round(serverTimeOffsetMs),
+        },
+        before: {
+          state: card.state,
+          stability: card.stability,
+          difficulty: card.difficulty,
+          due: card.due,
+          options: {
+            again: {
+              scheduledDays: beforePreview.again.card.scheduled_days,
+              due: beforePreview.again.card.due,
+            },
+            hard: {
+              scheduledDays: beforePreview.hard.card.scheduled_days,
+              due: beforePreview.hard.card.due,
+            },
+            good: {
+              scheduledDays: beforePreview.good.card.scheduled_days,
+              due: beforePreview.good.card.due,
+            },
+            easy: {
+              scheduledDays: beforePreview.easy.card.scheduled_days,
+              due: beforePreview.easy.card.due,
+            },
           },
         },
-      },
-      result: {
-        card: result.card,
-        log: result.log,
-      },
-    });
+        result: {
+          card: result.card,
+          log: result.log,
+        },
+      });
 
-    if (index >= words.length - 1) {
-      setFinished(true);
-      return;
+      if (index >= words.length - 1) {
+        setFinished(true);
+        return;
+      }
+      setIndex((value) => value + 1);
+      setAnswer("");
+      setSide("front");
+    } catch (error) {
+      console.error("[FSRS-6] review failed", error);
+      logFSRS("review_error", {
+        word: currentWord,
+        cardIndex: index,
+        rating: ratingName,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setRatingBusy(false);
     }
-    setIndex((value) => value + 1);
-    setAnswer("");
-    setSide("front");
   }
 
   useEffect(() => {
@@ -386,7 +514,8 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     key={item.value}
     type="button"
     onClick={() => rate(item.value)}
-    className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] transition hover:-translate-y-0.5 hover:bg-white/[0.08]"
+    disabled={ratingBusy}
+    className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] transition hover:-translate-y-0.5 hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50"
     title={item.name}
   >
     <span className="text-base">{item.label}</span>
