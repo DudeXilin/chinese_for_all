@@ -233,7 +233,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
                             {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
-                  <div className="text-center"><h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1></div>
+                  <div className="text-center"><h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1></div>
                   <div className="mt-7 flex justify-center">
                     <HanziWriterStrip
                       characters={Array.from(currentWord)}
@@ -280,11 +280,12 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center">
-                    <div className="flex justify-center">
+                    <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
+                    <div className="mt-7 flex justify-center">
                       <HanziWriterStrip
                         characters={Array.from(currentWord)}
                         mode="preview"
-                        size={208}
+                        size={240}
                         keyPrefix={`${index}-back`}
                       />
                     </div>
