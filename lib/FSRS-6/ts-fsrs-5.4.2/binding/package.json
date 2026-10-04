@@ -1,0 +1,120 @@
+{
+  "name": "@open-spaced-repetition/binding",
+  "version": "0.5.0",
+  "description": "Node.js bindings for the FSRS Optimizer implemented in Rust and compiled to WASI.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "browser": "dist/browser.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/browser.js",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./emnapi": {
+      "browser": "./dist/browser.js",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/fsrs-binding.wasi.cjs",
+      "default": "./dist/fsrs-binding.wasi-browser.js"
+    },
+    "./dynamic-wasi": {
+      "browser": "./dist/dynamic-wasi-browser.js",
+      "types": "./dist/dynamic-wasi.d.ts",
+      "require": "./dist/dynamic-wasi.cjs",
+      "default": "./dist/dynamic-wasi.cjs"
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "artifacts": "napi artifacts -d ./artifacts --build-output-dir .",
+    "build": "napi build --platform --release -o ./dist",
+    "build:wasm": "napi build --platform --release --target wasm32-wasip1-threads -o ./dist",
+    "build:dynamic": "node copy-dynamic.js",
+    "build:debug": "napi build --platform",
+    "check": "run-p check:biome check:rs check:toml",
+    "check:biome": "biome format",
+    "check:fix": "biome format --write",
+    "check:toml": "taplo format",
+    "check:rs": "cargo fmt && cargo clippy"
+  },
+  "devDependencies": {
+    "@emnapi/core": "^1.10.0",
+    "@emnapi/runtime": "^1.10.0",
+    "@napi-rs/cli": "^3.4.1",
+    "@napi-rs/wasm-runtime": "^1.1.4",
+    "@taplo/cli": "^0.7.0",
+    "@tybys/wasm-util": "^0.10.2",
+    "@types/papaparse": "^5.5.2",
+    "chalk": "^5.4.1",
+    "emnapi": "^1.10.0",
+    "npm-run-all2": "^8.0.4",
+    "papaparse": "^5.5.3",
+    "tinybench": "^6.0.1"
+  },
+  "keywords": [
+    "napi-rs",
+    "NAPI",
+    "N-API",
+    "Rust",
+    "node-addon",
+    "node-addon-api"
+  ],
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "README_CN.md",
+    "README_JA.md",
+    "LICENSE"
+  ],
+  "napi": {
+    "binaryName": "fsrs-binding",
+    "wasm": {
+      "browser": {
+        "errorEvent": true
+      }
+    },
+    "targets": [
+      "i686-pc-windows-msvc",
+      "x86_64-pc-windows-msvc",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-musl",
+      "aarch64-linux-android",
+      "aarch64-pc-windows-msvc",
+      "wasm32-wasip1-threads"
+    ]
+  },
+  "engines": {
+    "node": ">= 20"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/open-spaced-repetition/ts-fsrs.git",
+    "directory": "packages/binding"
+  },
+  "optionalDependencies": {
+    "@open-spaced-repetition/binding-android-arm64": "workspace:^",
+    "@open-spaced-repetition/binding-darwin-arm64": "workspace:^",
+    "@open-spaced-repetition/binding-darwin-x64": "workspace:^",
+    "@open-spaced-repetition/binding-linux-arm64-gnu": "workspace:^",
+    "@open-spaced-repetition/binding-linux-arm64-musl": "workspace:^",
+    "@open-spaced-repetition/binding-linux-x64-gnu": "workspace:^",
+    "@open-spaced-repetition/binding-linux-x64-musl": "workspace:^",
+    "@open-spaced-repetition/binding-wasm32-wasi": "workspace:^",
+    "@open-spaced-repetition/binding-win32-arm64-msvc": "workspace:^",
+    "@open-spaced-repetition/binding-win32-ia32-msvc": "workspace:^",
+    "@open-spaced-repetition/binding-win32-x64-msvc": "workspace:^"
+  }
+}
