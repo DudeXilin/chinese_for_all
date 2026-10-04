@@ -101,51 +101,11 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   }, [index, side, finished]);
 
   function focusAnswerInput() {
-    const isPhone = navigator.maxTouchPoints > 0 && window.innerWidth < 900;
+    // The real input is now the visible text field. On iPhone Safari this is
+    // important: Safari can natively keep the focused control above the
+    // keyboard. We must not move the page ourselves while the keyboard opens
+    // or while the user types.
     inputRef.current?.focus();
-
-    if (!isPhone) return;
-
-    // iOS changes visualViewport several times while the keyboard opens.
-    // Scroll exactly once after it settles. We do not subscribe to viewport
-    // resize/scroll events, because those events fire during typing too and
-    // can fight Safari's native scrolling.
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    let attempts = 0;
-    let timer = 0;
-
-    const revealInput = () => {
-      if (!isFrontRef.current || document.activeElement !== inputRef.current) return;
-
-      const keyboardVisible = viewport.height < window.innerHeight - 120;
-      if (!keyboardVisible && attempts < 12) {
-        attempts += 1;
-        timer = window.setTimeout(revealInput, 50);
-        return;
-      }
-
-      const box = answerBoxRef.current;
-      if (!box) return;
-
-      const safeTop = Math.max(16, viewport.offsetTop + 16);
-      const safeBottom = viewport.offsetTop + viewport.height - 24;
-      const rect = box.getBoundingClientRect();
-      const delta =
-        rect.bottom > safeBottom
-          ? rect.bottom - safeBottom
-          : rect.top < safeTop
-            ? rect.top - safeTop
-            : 0;
-
-      if (delta !== 0) {
-        window.scrollBy({ top: delta, behavior: "smooth" });
-      }
-    };
-
-    timer = window.setTimeout(revealInput, 120);
-    window.setTimeout(() => window.clearTimeout(timer), 900);
   }
 
   function reveal() {
@@ -219,8 +179,26 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                   </div>
                   <div ref={answerBoxRef} className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
-                    <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); focusAnswerInput(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
-                    <input ref={inputRef} value={answer} onChange={(e) => setAnswer(convertPinyin(e.target.value))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
+                    <input
+                      ref={inputRef}
+                      value={answer}
+                      onChange={(e) => setAnswer(convertPinyin(e.target.value))}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          reveal();
+                        }
+                      }}
+                      onFocus={focusAnswerInput}
+                      aria-label="Введите Pinyin"
+                      placeholder="ping2guo3"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      inputMode="text"
+                      className="mt-2 block min-h-8 w-full border-b border-white/10 bg-transparent pb-1 text-lg tracking-wide text-white/75 outline-none placeholder:text-white/20 focus:border-white/20"
+                      onBlur={keepInputFocused}
+                    />
                   </div>
                   <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
                 </div>
