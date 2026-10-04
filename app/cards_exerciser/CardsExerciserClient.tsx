@@ -99,6 +99,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [dontShowTheory, setDontShowTheory] = useState(false);
   const [tonePadOpen, setTonePadOpen] = useState(false);
   const [keyboardBottom, setKeyboardBottom] = useState(0);
+  const [debugOpen, setDebugOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
@@ -190,6 +191,12 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     setSide("front");
   }
 
+  useEffect(() => {
+    const setter = (window as typeof window & { __cfaSetDebugButtonVisible?: (visible: boolean) => void }).__cfaSetDebugButtonVisible;
+    setter?.(debugOpen);
+    return () => setter?.(false);
+  }, [debugOpen]);
+
   function closeTheory() {
     if (dontShowTheory) {
       try {
@@ -204,7 +211,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#090909] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)]" />
-      <a href="/lessons" className="fixed left-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
+      <div className="fixed left-4 top-4 z-[1000] flex flex-col gap-2">
+        <a href="/lessons" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
+        <button type="button" onClick={() => setDebugOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-xl shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label={debugOpen ? "Скрыть debug" : "Показать debug"}>🐞</button>
+      </div>
 
       {finished ? (
         <div className="relative flex min-h-screen items-center justify-center px-6 text-center">
@@ -406,7 +416,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
           </div>
         </div>
       )}
-      <HanziWriterDebugPanel />
+      <HanziWriterDebugPanel visible={debugOpen} />
     </main>
   );
 }
