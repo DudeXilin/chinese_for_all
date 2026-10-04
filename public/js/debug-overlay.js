@@ -210,6 +210,14 @@
 
     document.body.appendChild(overlay);
     render();
+
+    window.__cfaSetDebugButtonVisible = function (visible) {
+      button.style.display = visible ? "block" : "none";
+    };
+
+    if (location.pathname === "/cards_exerciser" || location.pathname.startsWith("/cards_exerciser/")) {
+      button.style.display = "none";
+    }
   }
 
   if (document.body) {
