@@ -98,13 +98,12 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     const viewport = window.visualViewport;
     if (!viewport) return;
 
+    const isPhone = () => navigator.maxTouchPoints > 0 && window.innerWidth < 900;
     let frame = 0;
+    let scrollTimer = 0;
 
     const scrollInputIntoView = (behavior: ScrollBehavior = "smooth") => {
-      const box = answerBoxRef.current;
-      if (!box) return;
-
-      box.scrollIntoView({
+      answerBoxRef.current?.scrollIntoView({
         behavior,
         block: "center",
         inline: "nearest",
@@ -117,6 +116,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
         const box = answerBoxRef.current;
         if (!box) return;
 
+        const keyboardVisible = viewport.height < window.innerHeight - 120;
+        if (!keyboardVisible) {
+          setKeyboardOffset(0);
+          keyboardOpenRef.current = false;
+          return;
+        }
+
         const safeBottom = Math.max(16, viewport.height - 20);
         const bottom = box.getBoundingClientRect().bottom;
         const neededOffset = Math.max(0, bottom - safeBottom);
@@ -127,16 +133,17 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
         if (neededOffset > 0 && !keyboardOpenRef.current) {
           keyboardOpenRef.current = true;
-          window.setTimeout(() => scrollInputIntoView("smooth"), 40);
+          window.clearTimeout(scrollTimer);
+          scrollTimer = window.setTimeout(() => scrollInputIntoView("smooth"), 80);
         }
       });
     };
 
-    const timer = window.setTimeout(() => {
+    // Desktop: keep the existing "type immediately" behavior.
+    // Phone: do not focus on page/card open; focus only after a real tap.
+    if (!isPhone()) {
       inputRef.current?.focus();
-      updateKeyboardOffset();
-      window.setTimeout(() => scrollInputIntoView("smooth"), 220);
-    }, 120);
+    }
 
     viewport.addEventListener("resize", updateKeyboardOffset);
     viewport.addEventListener("scroll", updateKeyboardOffset);
@@ -144,13 +151,29 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
     return () => {
       keyboardOpenRef.current = false;
-      window.clearTimeout(timer);
+      window.clearTimeout(scrollTimer);
       cancelAnimationFrame(frame);
       viewport.removeEventListener("resize", updateKeyboardOffset);
       viewport.removeEventListener("scroll", updateKeyboardOffset);
       window.removeEventListener("resize", updateKeyboardOffset);
     };
   }, [index, side, finished]);
+
+  function focusAnswerInput() {
+    inputRef.current?.focus();
+
+    // iOS updates visualViewport asynchronously after opening the keyboard.
+    // Let Safari resize first, then smoothly reveal the answer field.
+    window.setTimeout(() => {
+      if (!isFrontRef.current) return;
+      inputRef.current?.focus();
+      answerBoxRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }, 180);
+  }
 
   function keepInputFocused() {
     window.setTimeout(() => {
@@ -185,7 +208,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#090909] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#090909] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)]" />
       <a href="/lessons" className="fixed left-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
 
@@ -229,7 +252,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                   </div>
                   <div ref={answerBoxRef} className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
-                    <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
+                    <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); focusAnswerInput(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
                     <input ref={inputRef} value={answer} onChange={(e) => setAnswer(convertPinyin(e.target.value))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
                   </div>
                   <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
