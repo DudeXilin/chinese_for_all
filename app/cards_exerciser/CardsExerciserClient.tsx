@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import HanziWriterStrip from "@/lib/HanziWriter/HanziWriterStrip";
 import HanziWriterDebugPanel from "@/lib/HanziWriter/HanziWriterDebugPanel";
 import { convertPinyin } from "@/lib/neat_pinyin_converter";
+import { createCard, preview, review, Rating, type SerializedCard } from "@/lib/FSRS-6/our_system";
+import FSRS6DebugPanel from "@/lib/FSRS-6/our_system/FSRS6DebugPanel";
+import { logFSRS } from "@/lib/FSRS-6/our_system/debugLog";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -100,11 +103,14 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [tonePadOpen, setTonePadOpen] = useState(false);
   const [keyboardBottom, setKeyboardBottom] = useState(0);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
+  const [lastFSRSResult, setLastFSRSResult] = useState<{ word: string; rating: number; result: ReturnType<typeof review> } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
   const currentWord = words[index] ?? "汉字";
+  const currentFSRSCard = fsrsCards[index] ?? createCard();
   const correctPinyin = pinyins[currentWord] ?? "pinyin placeholder";
   const translation = translations[currentWord] ?? "перевод placeholder";
   const theoryKey = `cfa-theory-dismissed:${title}`;
@@ -181,7 +187,31 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     });
   }
 
-  function rate() {
+  function rate(rating: Rating.Again | Rating.Hard | Rating.Good | Rating.Easy) {
+    const now = new Date();
+    const card = fsrsCards[index] ?? createCard(now);
+    const result = review(card, now, rating);
+    const ratingName = Rating[rating];
+    const nextPreviews = preview(result.card, now);
+
+    setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
+    setLastFSRSResult({ word: currentWord, rating, result });
+    logFSRS("review", {
+      word: currentWord,
+      cardIndex: index,
+      rating: ratingName,
+      ratingValue: rating,
+      answer: answer || null,
+      card: result.card,
+      log: result.log,
+      nextPreview: {
+        again: nextPreviews.again.card.scheduled_days,
+        hard: nextPreviews.hard.card.scheduled_days,
+        good: nextPreviews.good.card.scheduled_days,
+        easy: nextPreviews.easy.card.scheduled_days,
+      },
+    });
+
     if (index >= words.length - 1) {
       setFinished(true);
       return;
@@ -318,7 +348,24 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
             </article>
           </section>
 
-          {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{[1,2,3,4].map((rating)=><button key={rating} type="button" onClick={rate} className="flex min-h-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] text-base transition hover:-translate-y-0.5 hover:bg-white/[0.08]">{rating}</button>)}</div></div></section>}
+          {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{[
+  { value: Rating.Again, label: "1", name: "Again", hint: "Не вспомнил" },
+  { value: Rating.Hard, label: "2", name: "Hard", hint: "С трудом" },
+  { value: Rating.Good, label: "3", name: "Good", hint: "Вспомнил" },
+  { value: Rating.Easy, label: "4", name: "Easy", hint: "Легко" },
+].map((item) => (
+  <button
+    key={item.value}
+    type="button"
+    onClick={() => rate(item.value)}
+    className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] transition hover:-translate-y-0.5 hover:bg-white/[0.08]"
+    title={item.name}
+  >
+    <span className="text-base">{item.label}</span>
+    <span className="text-[8px] uppercase tracking-[0.12em] text-white/30">{item.name}</span>
+    <span className="text-[8px] text-white/20">{item.hint}</span>
+  </button>
+))}</div></div></section>}
 
         </div>
       )}
@@ -417,6 +464,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
         </div>
       )}
       <HanziWriterDebugPanel visible={debugOpen} />
+      <FSRS6DebugPanel visible={debugOpen} />
     </main>
   );
 }
