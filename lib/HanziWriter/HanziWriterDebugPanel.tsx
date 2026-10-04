@@ -7,7 +7,7 @@ import { clearHanziLogs, getHanziLogs, subscribeHanziLogs } from "./debugLog";
 // It renders a small floating button; opening it shows every log line any
 // HanziWriterDrawing instance has written, with a one-tap copy button so it
 // can be pasted straight into chat.
-export default function HanziWriterDebugPanel() {
+export default function HanziWriterDebugPanel({ visible = true }: { visible?: boolean }) {
   const [open, setOpen] = useState(false);
   const [, bump] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -30,7 +30,7 @@ export default function HanziWriterDebugPanel() {
   }
 
   return (
-    <div className="fixed bottom-3 right-3 z-[999] font-mono">
+    <div className={`fixed bottom-3 right-3 z-[999] font-mono ${visible ? "" : "hidden"}`}>
       {open ? (
         <div className="flex w-[min(94vw,480px)] flex-col gap-2 rounded-2xl border border-white/15 bg-[#0a0a09]/97 p-3 shadow-2xl">
           <div className="flex items-center justify-between gap-2">
