@@ -67,6 +67,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [finished, setFinished] = useState(false);
   const [theoryOpen, setTheoryOpen] = useState(false);
   const [dontShowTheory, setDontShowTheory] = useState(false);
+  const [tonePadOpen, setTonePadOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
@@ -116,6 +117,24 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   function reveal() {
     setSide("back");
     inputRef.current?.blur();
+    setTonePadOpen(false);
+  }
+
+  function insertTone(tone: string) {
+    const input = inputRef.current;
+    if (!input) return;
+    const start = input.selectionStart ?? answer.length;
+    const end = input.selectionEnd ?? start;
+    const next = answer.slice(0, start) + tone + answer.slice(end);
+    const converted = convertPinyin(next);
+    setAnswer(converted);
+    requestAnimationFrame(() => {
+      const element = inputRef.current;
+      if (!element) return;
+      const caret = Math.min(start + 1, converted.length);
+      element.focus();
+      element.setSelectionRange(caret, caret);
+    });
   }
 
   function rate() {
@@ -197,9 +216,22 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       autoCorrect="off"
                       spellCheck={false}
                       inputMode="text"
+                      enterKeyHint="done"
                       className="mt-2 block min-h-8 w-full border-b border-white/10 bg-transparent pb-1 text-lg tracking-wide text-white/75 outline-none placeholder:text-white/20 focus:border-white/20"
+                      onFocus={() => {
+                        if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) setTonePadOpen(true);
+                      }}
                       onBlur={keepInputFocused}
                     />
+                    {tonePadOpen && (
+                      <div className="fixed bottom-0 left-0 z-[80] w-full px-2 pb-1 sm:hidden">
+                        <div className="mx-auto grid max-w-md grid-cols-4 gap-1.5 rounded-t-[14px] border border-white/[0.08] bg-[#1c1c1e]/95 p-1.5">
+                          {[1, 2, 3, 4].map((tone) => (
+                            <button key={tone} type="button" onPointerDown={(event) => event.preventDefault()} onClick={() => insertTone(String(tone))} className="flex h-10 items-center justify-center rounded-[9px] bg-[#2c2c2e] text-[17px] font-medium text-white active:bg-[#3a3a3c]">{tone}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
