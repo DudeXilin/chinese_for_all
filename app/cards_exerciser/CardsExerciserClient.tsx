@@ -155,7 +155,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
       ) : (
         <div className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-5 pt-5 sm:px-6">
           <header className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-white/35"><span>Cards exerciser</span><span className="h-1 w-1 rounded-full bg-white/25" /><span>{title}</span></div>
             <div className="mt-5 flex w-full max-w-xl items-center gap-3">
               {theory && (
                 <button type="button" onClick={() => setTheoryOpen(true)} className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-white/45 shadow-lg backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.09] hover:text-white/75" aria-label="Открыть теорию">
@@ -163,17 +162,15 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                 </button>
               )}
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((index + 1) / Math.max(words.length, 1)) * 100}%` }} /></div>
-              <span className="font-mono text-[10px] text-white/35">{index + 1} / {words.length}</span>
+ 
             </div>
           </header>
 
           <section className="mx-auto mt-5 w-full max-w-3xl">
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
-              <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3"><span className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/30">{side === "front" ? "Front" : "Back"}</span><span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[9px] text-white/35">карточка {index + 1}</span></div>
-
-              {side === "front" ? (
+                            {side === "front" ? (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
-                  <div className="text-center"><p className="text-[11px] uppercase tracking-[0.2em] text-white/30">Перевод</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1><p className="mt-2 text-sm text-white/30">Напишите китайское слово</p></div>
+                  <div className="text-center"><h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{translation}</h1></div>
                   <div className="mt-7 flex justify-center">
                     <HanziWriterStrip
                       characters={Array.from(currentWord)}
@@ -183,7 +180,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                     />
                   </div>
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
-                    <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
                     <input
                       ref={inputRef}
                       value={answer}
@@ -204,7 +200,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       onBlur={keepInputFocused}
                     />
                   </div>
-                  <div className="mt-4 text-center text-xs text-white/25">Enter / Return → показать ответ</div>
                 </div>
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
@@ -242,7 +237,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
           {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{[1,2,3,4].map((rating)=><button key={rating} type="button" onClick={rate} className="flex min-h-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] text-base transition hover:-translate-y-0.5 hover:bg-white/[0.08]">{rating}</button>)}</div></div></section>}
 
-          <footer className="mx-auto mt-3 flex w-full max-w-3xl items-center justify-between px-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/20"><span>Card {index + 1} of {words.length}</span><span>{side === "front" ? "type pinyin → Enter" : "rating → next card"}</span></footer>
         </div>
       )}
 
