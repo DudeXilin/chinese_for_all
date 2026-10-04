@@ -5,6 +5,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CHINESE FOR ALL",
   description: "Изучение китайского языка.",
+  themeColor: "#000000",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({
