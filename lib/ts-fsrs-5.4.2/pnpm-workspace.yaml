@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+  - packages/binding/npm/*
+  # - examples/*
+
+supportedArchitectures:
+  cpu: [current, wasm32]

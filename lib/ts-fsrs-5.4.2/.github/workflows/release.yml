@@ -1,0 +1,125 @@
+name: Release
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEBUG: napi:*
+  APP_NAME: optimizer
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+  CARGO_INCREMENTAL: "1"
+  TURBO_API: ${{ secrets.TURBO_API }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+
+on:
+  push:
+    branches:
+      - main
+      - preview
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-napi.yml
+    with:
+      node-version: 20
+    secrets: inherit
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-pc-windows-msvc
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - wasm32-wasip1-threads
+        node:
+          - "20"
+          - "22"
+
+    uses: ./.github/workflows/test.yml
+    with:
+      target: ${{ matrix.target }}
+      node-version: ${{ matrix.node }}
+    secrets: inherit
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: 24
+
+      - name: Run checks
+        run: pnpm run check
+
+      - name: Build Packages
+        uses: ./.github/actions/build-packages
+      - name: Cache test data
+        id: cache-revlog
+        uses: actions/cache@v4
+        with:
+          path: packages/binding-test/src/revlog.csv
+          key: revlog-csv-v1
+
+      - name: Download test data
+        if: steps.cache-revlog.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p packages/binding-test/src
+          curl -L https://github.com/open-spaced-repetition/fsrs-rs/files/15046782/revlog.csv -o packages/binding-test/src/revlog.csv
+      - name: Run tests
+        run: pnpm run test:coverage
+
+      # Ensure npm 11.5.1 or later is installed
+      # https://docs.npmjs.com/trusted-publishers#step-2-configure-your-cicd-workflow
+      - name: Update npm
+        run: npm install -g npm@latest
+      - name: Enter beta prerelease mode (preview only)
+        if: github.ref == 'refs/heads/preview'
+        run: '[ -f .changeset/pre.json ] || pnpm exec changeset pre enter beta'
+
+      - name: Create Release PR or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm run version
+          publish: pnpm run release
+          createGithubReleases: false
+          commit: "chore(release): version packages"
+          title: "chore: release new versions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Releases
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Non-main branch ($GITHUB_REF) — running in dry-run."
+            bash .github/scripts/create-github-releases.sh --dry-run
+          else
+            bash .github/scripts/create-github-releases.sh
+          fi

@@ -1,0 +1,6 @@
+src
+.gitgnore
+test
+.eslintrc.json
+vitest.config.ts
+.prettierrc.json
