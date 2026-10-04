@@ -567,8 +567,8 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
             return (
               <section className="mx-auto mt-3 w-full max-w-3xl">
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl">
-                  <div className="grid grid-cols-4 gap-1.5">
+                <div className="rounded-[18px] border border-white/10 bg-white/[0.045] p-1 shadow-xl backdrop-blur-2xl">
+                  <div className="grid grid-cols-4 gap-3">
                     {fsrsRatings.map((item) => (
                       <button
                         key={item.value}
@@ -581,11 +581,8 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         <span className="text-[17px] font-bold leading-none text-white">
                           {formatInterval(optionByRating[item.value].card.due)}
                         </span>
-                        <span className="mt-2 text-[12px] font-semibold leading-none text-white/90">
+                        <span className="mt-1 text-[11px] font-semibold leading-none text-white/90">
                           {item.name}
-                        </span>
-                        <span className="mt-1 text-[9px] text-white/45">
-                          {item.description}
                         </span>
                       </button>
                     ))}
