@@ -288,12 +288,11 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         keyPrefix={`${index}-back`}
                       />
                     </div>
-                    <div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div>
+                    <div className="mt-4 flex flex-col items-center">
+                      <PinyinAnswer answer={answer} correct={correctPinyin} />
+                      <div className="text-xl tracking-wide text-white/65">{correctPinyin}</div>
+                    </div>
                     <div className="mt-2 text-sm text-white/35">{translation}</div>
-                  </div>
-                  <div className="mt-4 flex flex-col items-center">
-                    <PinyinAnswer answer={answer} correct={correctPinyin} />
-                    <div className="text-xl tracking-wide text-white/65">{correctPinyin}</div>
                   </div>
                   <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Информация</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Details</span></div>
