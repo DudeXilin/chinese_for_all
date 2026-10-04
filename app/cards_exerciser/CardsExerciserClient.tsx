@@ -69,8 +69,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [dontShowTheory, setDontShowTheory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const answerBoxRef = useRef<HTMLDivElement>(null);
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const keyboardOpenRef = useRef(false);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
@@ -90,95 +88,64 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   }, [theory, theoryKey]);
 
   useEffect(() => {
-    if (side !== "front" || finished) {
-      setKeyboardOffset(0);
-      return;
-    }
-
-    const viewport = window.visualViewport;
-    if (!viewport) return;
+    if (side !== "front" || finished) return;
 
     const isPhone = () => navigator.maxTouchPoints > 0 && window.innerWidth < 900;
-    let frame = 0;
-    let scrollTimer = 0;
 
-    const scrollInputIntoView = (behavior: ScrollBehavior = "smooth") => {
-      answerBoxRef.current?.scrollIntoView({
-        behavior,
-        block: "center",
-        inline: "nearest",
-      });
-    };
-
-    const updateKeyboardOffset = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const box = answerBoxRef.current;
-        if (!box) return;
-
-        const keyboardVisible = viewport.height < window.innerHeight - 120;
-        if (!keyboardVisible) {
-          setKeyboardOffset(0);
-          keyboardOpenRef.current = false;
-          return;
-        }
-
-        const safeBottom = Math.max(16, viewport.height - 20);
-        const bottom = box.getBoundingClientRect().bottom;
-        const neededOffset = Math.max(0, bottom - safeBottom);
-
-        setKeyboardOffset((current) =>
-          Math.abs(current - neededOffset) > 1 ? neededOffset : current,
-        );
-
-        if (neededOffset > 0 && !keyboardOpenRef.current) {
-          keyboardOpenRef.current = true;
-          window.clearTimeout(scrollTimer);
-          scrollTimer = window.setTimeout(() => scrollInputIntoView("smooth"), 80);
-        }
-      });
-    };
-
-    // Desktop: keep the existing "type immediately" behavior.
-    // Phone: do not focus on page/card open; focus only after a real tap.
+    // Desktop keeps the existing "type immediately" behavior.
+    // On phones we deliberately do nothing here: opening a card must not move
+    // the page or open the keyboard.
     if (!isPhone()) {
       inputRef.current?.focus();
     }
-
-    viewport.addEventListener("resize", updateKeyboardOffset);
-    viewport.addEventListener("scroll", updateKeyboardOffset);
-    window.addEventListener("resize", updateKeyboardOffset);
-
-    return () => {
-      keyboardOpenRef.current = false;
-      window.clearTimeout(scrollTimer);
-      cancelAnimationFrame(frame);
-      viewport.removeEventListener("resize", updateKeyboardOffset);
-      viewport.removeEventListener("scroll", updateKeyboardOffset);
-      window.removeEventListener("resize", updateKeyboardOffset);
-    };
   }, [index, side, finished]);
 
   function focusAnswerInput() {
+    const isPhone = navigator.maxTouchPoints > 0 && window.innerWidth < 900;
     inputRef.current?.focus();
 
-    // iOS updates visualViewport asynchronously after opening the keyboard.
-    // Let Safari resize first, then smoothly reveal the answer field.
-    window.setTimeout(() => {
-      if (!isFrontRef.current) return;
-      inputRef.current?.focus();
-      answerBoxRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "nearest",
-      });
-    }, 180);
-  }
+    if (!isPhone) return;
 
-  function keepInputFocused() {
-    window.setTimeout(() => {
-      if (isFrontRef.current) inputRef.current?.focus();
-    }, 0);
+    // iOS changes visualViewport several times while the keyboard opens.
+    // Scroll exactly once after it settles. We do not subscribe to viewport
+    // resize/scroll events, because those events fire during typing too and
+    // can fight Safari's native scrolling.
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    let attempts = 0;
+    let timer = 0;
+
+    const revealInput = () => {
+      if (!isFrontRef.current || document.activeElement !== inputRef.current) return;
+
+      const keyboardVisible = viewport.height < window.innerHeight - 120;
+      if (!keyboardVisible && attempts < 12) {
+        attempts += 1;
+        timer = window.setTimeout(revealInput, 50);
+        return;
+      }
+
+      const box = answerBoxRef.current;
+      if (!box) return;
+
+      const safeTop = Math.max(16, viewport.offsetTop + 16);
+      const safeBottom = viewport.offsetTop + viewport.height - 24;
+      const rect = box.getBoundingClientRect();
+      const delta =
+        rect.bottom > safeBottom
+          ? rect.bottom - safeBottom
+          : rect.top < safeTop
+            ? rect.top - safeTop
+            : 0;
+
+      if (delta !== 0) {
+        window.scrollBy({ top: delta, behavior: "smooth" });
+      }
+    };
+
+    timer = window.setTimeout(revealInput, 120);
+    window.setTimeout(() => window.clearTimeout(timer), 900);
   }
 
   function reveal() {
