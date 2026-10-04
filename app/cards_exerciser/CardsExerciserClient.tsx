@@ -40,16 +40,46 @@ const translations: Record<string, string> = {
 };
 
 const pinyins: Record<string, string> = {
-  "这里": "zhe4li3", "那里": "na4li3", "这儿": "zhe4r", "那儿": "na4r", "哪里": "na3li3", "哪儿": "na3r",
-  "里面": "li3mian4", "外面": "wai4mian4", "上面": "shang4mian4", "下面": "xia4mian4", "前面": "qian2mian4",
-  "后面": "hou4mian4", "旁边": "pang2bian1", "附近": "fu4jin4", "中间": "zhong1jian1",
-  "谁": "shei2", "什么": "shen2me", "为什么": "wei4shen2me", "怎么": "zen3me", "怎么样": "zen3me yang4",
-  "哪个": "na3ge", "哪一个": "na3yi1ge", "多少": "duo1shao", "几": "ji3", "什么时候": "shen2me shi2hou",
-  "怎么了": "zen3me le", "谁的": "shei2de", "什么地方": "shen2me di4fang",
-  "个": "ge4", "条": "tiao2", "张": "zhang1", "本": "ben3", "只": "zhi1", "件": "jian4", "台": "tai2",
-  "辆": "liang4", "双": "shuang1", "间": "jian1", "位": "wei4", "把": "ba3", "杯": "bei1", "些": "xie1",
-  "种": "zhong3", "次": "ci4",
+  "这里": "zhèlǐ", "那里": "nàlǐ", "这儿": "zhèr", "那儿": "nàr", "哪里": "nǎlǐ", "哪儿": "nǎr",
+  "里面": "lǐmiàn", "外面": "wàimiàn", "上面": "shàngmiàn", "下面": "xiàmiàn", "前面": "qiánmiàn",
+  "后面": "hòumiàn", "旁边": "pángbiān", "附近": "fùjìn", "中间": "zhōngjiān",
+  "谁": "shéi", "什么": "shénme", "为什么": "wèishénme", "怎么": "zěnme", "怎么样": "zěnme yàng",
+  "哪个": "nǎge", "哪一个": "nǎyīge", "多少": "duōshao", "几": "jǐ", "什么时候": "shénme shíhou",
+  "怎么了": "zěnme le", "谁的": "shéide", "什么地方": "shénme dìfang",
+  "个": "gè", "条": "tiáo", "张": "zhāng", "本": "běn", "只": "zhī", "件": "jiàn", "台": "tái",
+  "辆": "liàng", "双": "shuāng", "间": "jiān", "位": "wèi", "把": "bǎ", "杯": "bēi", "些": "xiē",
+  "种": "zhǒng", "次": "cì",
 };
+
+function compactPinyin(value: string) {
+  return value.replace(/\s+/g, "").toLowerCase();
+}
+
+function PinyinAnswer({ answer, correct }: { answer: string; correct: string }) {
+  const normalizedAnswer = compactPinyin(answer.trim());
+  const normalizedCorrect = compactPinyin(correct.trim());
+  const isCorrect = normalizedAnswer === normalizedCorrect;
+
+  if (isCorrect) return null;
+
+  return (
+    <div className="mt-1 text-lg tracking-wide" aria-label="Ваш ответ с ошибками">
+      {Array.from(answer).map((character, index) => {
+        if (/\s/.test(character)) {
+          return <span key={`space-${index}`}>{character}</span>;
+        }
+        const compactIndex = Array.from(answer.slice(0, index)).filter((item) => !/\s/.test(item)).length;
+        const expected = Array.from(normalizedCorrect)[compactIndex];
+        const wrong = character.toLowerCase() !== expected;
+        return (
+          <span key={`char-${index}`} className={wrong ? "text-red-300/70" : "text-white/45"}>
+            {character}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 function BookIcon() {
   return (
@@ -261,12 +291,9 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                     <div className="mt-4 text-xl tracking-wide text-white/65">{correctPinyin}</div>
                     <div className="mt-2 text-sm text-white/35">{translation}</div>
                   </div>
-                  <div className="mx-auto mt-7 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
-                    <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Сравнение Pinyin</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Your answer</span></div>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3"><div className="text-[9px] uppercase tracking-[0.14em] text-white/25">Ты ввёл</div><div className="mt-2 text-sm text-white/70">{answer || "ничего"}</div></div>
-                      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3"><div className="text-[9px] uppercase tracking-[0.14em] text-white/25">Правильно</div><div className="mt-2 text-sm text-white/70">{correctPinyin}</div></div>
-                    </div>
+                  <div className="mt-4 flex flex-col items-center">
+                    <PinyinAnswer answer={answer} correct={correctPinyin} />
+                    <div className="text-xl tracking-wide text-white/65">{correctPinyin}</div>
                   </div>
                   <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Информация</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Details</span></div>
