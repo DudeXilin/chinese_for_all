@@ -68,6 +68,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [theoryOpen, setTheoryOpen] = useState(false);
   const [dontShowTheory, setDontShowTheory] = useState(false);
   const [tonePadOpen, setTonePadOpen] = useState(false);
+  const [keyboardBottom, setKeyboardBottom] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
@@ -119,6 +120,17 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     inputRef.current?.blur();
     setTonePadOpen(false);
   }
+
+  useEffect(() => {
+    if (!tonePadOpen || !window.visualViewport) return;
+    const update = () => {
+      const viewport = window.visualViewport;
+      setKeyboardBottom(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+    };
+    update();
+    window.visualViewport.addEventListener("resize", update);
+    return () => window.visualViewport?.removeEventListener("resize", update);
+  }, [tonePadOpen]);
 
   function insertTone(tone: string) {
     const input = inputRef.current;
@@ -224,7 +236,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       onBlur={keepInputFocused}
                     />
                     {tonePadOpen && (
-                      <div className="fixed bottom-0 left-0 z-[80] w-full px-2 pb-1 sm:hidden">
+                      <div className="fixed left-0 z-[80] w-full px-2 pb-1 sm:hidden" style={{ bottom: keyboardBottom + "px" }}>
                         <div className="mx-auto grid max-w-md grid-cols-4 gap-1.5 rounded-t-[14px] border border-white/[0.08] bg-[#1c1c1e]/95 p-1.5">
                           {[1, 2, 3, 4].map((tone) => (
                             <button key={tone} type="button" onPointerDown={(event) => event.preventDefault()} onClick={() => insertTone(String(tone))} className="flex h-10 items-center justify-center rounded-[9px] bg-[#2c2c2e] text-[17px] font-medium text-white active:bg-[#3a3a3c]">{tone}</button>
