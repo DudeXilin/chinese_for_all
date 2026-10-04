@@ -114,7 +114,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   isFrontRef.current = side === "front" && !finished;
 
   const currentWord = words[index] ?? "汉字";
-  const currentFSRSCard = fsrsCards[index] ?? createCard();
+  const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
   const correctPinyin = pinyins[currentWord] ?? "pinyin placeholder";
   const translation = translations[currentWord] ?? "перевод placeholder";
   const theoryKey = `cfa-theory-dismissed:${title}`;
@@ -280,11 +280,36 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
   type FSRSRating = Rating.Again | Rating.Hard | Rating.Good | Rating.Easy;
 
-  const fsrsRatings: Array<{ value: FSRSRating; label: string; name: string; hint: string }> = [
-    { value: Rating.Again, label: "1", name: "Again", hint: "Не вспомнил" },
-    { value: Rating.Hard, label: "2", name: "Hard", hint: "С трудом" },
-    { value: Rating.Good, label: "3", name: "Good", hint: "Вспомнил" },
-    { value: Rating.Easy, label: "4", name: "Easy", hint: "Легко" },
+  const fsrsRatings: Array<{
+    value: FSRSRating;
+    name: string;
+    description: string;
+    tone: string;
+  }> = [
+    {
+      value: Rating.Again,
+      name: "Заново",
+      description: "Не вспомнил",
+      tone: "border-blue-400/15 bg-blue-500/[0.08] hover:bg-blue-500/[0.13]",
+    },
+    {
+      value: Rating.Hard,
+      name: "Тяжко",
+      description: "С трудом",
+      tone: "border-emerald-400/15 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.13]",
+    },
+    {
+      value: Rating.Good,
+      name: "Пойдёт",
+      description: "Вспомнил",
+      tone: "border-yellow-400/15 bg-yellow-500/[0.08] hover:bg-yellow-500/[0.13]",
+    },
+    {
+      value: Rating.Easy,
+      name: "Легко",
+      description: "Легко",
+      tone: "border-red-400/15 bg-red-500/[0.09] hover:bg-red-500/[0.14]",
+    },
   ];
 
   function getAuthoritativeNow() {
@@ -521,20 +546,54 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
             </article>
           </section>
 
-          {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{fsrsRatings.map((item) => (
-  <button
-    key={item.value}
-    type="button"
-    onClick={() => rate(item.value)}
-    disabled={ratingBusy || !syncReady}
-    className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] transition hover:-translate-y-0.5 hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50"
-    title={item.name}
-  >
-    <span className="text-base">{item.label}</span>
-    <span className="text-[8px] uppercase tracking-[0.12em] text-white/30">{item.name}</span>
-    <span className="text-[8px] text-white/20">{item.hint}</span>
-  </button>
-))}</div></div></section>}
+          {side === "back" && (() => {
+            const now = getAuthoritativeNow();
+            const options = preview(currentFSRSCard, now);
+            const formatInterval = (due: string) => {
+              const diffMs = Math.max(0, new Date(due).getTime() - now.getTime());
+              const minutes = Math.max(1, Math.round(diffMs / 60000));
+              if (minutes < 60) return `${minutes} мин`;
+              const hours = Math.round(minutes / 60);
+              if (hours < 24) return `${hours} ч`;
+              const days = Math.max(1, Math.round(hours / 24));
+              return `${days} ${days === 1 ? "день" : "дня"}`;
+            };
+            const optionByRating = {
+              [Rating.Again]: options.again,
+              [Rating.Hard]: options.hard,
+              [Rating.Good]: options.good,
+              [Rating.Easy]: options.easy,
+            };
+
+            return (
+              <section className="mx-auto mt-3 w-full max-w-3xl">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl">
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {fsrsRatings.map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => rate(item.value)}
+                        disabled={ratingBusy || !syncReady}
+                        className={`flex min-h-[72px] flex-col items-center justify-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-50 ${item.tone}`}
+                        title={item.name}
+                      >
+                        <span className="text-[17px] font-bold leading-none text-white">
+                          {formatInterval(optionByRating[item.value].card.due)}
+                        </span>
+                        <span className="mt-2 text-[12px] font-semibold leading-none text-white/90">
+                          {item.name}
+                        </span>
+                        <span className="mt-1 text-[9px] text-white/45">
+                          {item.description}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          })()}
 
         </div>
       )}
