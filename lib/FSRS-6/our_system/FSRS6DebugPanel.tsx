@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { clearFSRSLogs, getFSRSLogs, subscribeFSRSLogs } from "./debugLog";
 
+const stateNames: Record<number, string> = {
+  0: "New",
+  1: "Learning",
+  2: "Review",
+  3: "Relearning",
+};
+
 function formatLog(line: string): string {
   const separator = line.indexOf(" {");
   if (separator === -1) return line;
@@ -11,7 +18,14 @@ function formatLog(line: string): string {
   const json = line.slice(separator + 1);
 
   try {
-    return `${prefix}${JSON.stringify(JSON.parse(json), null, 2)}`;
+    const parsed = JSON.parse(json) as unknown;
+    const formatted = JSON.stringify(parsed, (key, value) => {
+      if (key === "state" && typeof value === "number" && stateNames[value]) {
+        return `${value} (${stateNames[value]})`;
+      }
+      return value;
+    }, 2);
+    return `${prefix}${formatted}`;
   } catch {
     return line;
   }
@@ -43,7 +57,7 @@ export default function FSRS6DebugPanel({ visible = true }: { visible?: boolean 
             <div>
               <div className="text-xs text-white/70">FSRS-6 debug · {logs.length}</div>
               <div className="mt-0.5 text-[9px] leading-tight text-white/35">
-                1 слово = 1 FSRS-карточка · оценка учитывает весь ответ целиком
+                1 слово = 1 FSRS-карточка · оценка учитывает весь ответ целиком · время берётся с сервера
               </div>
             </div>
             <div className="flex shrink-0 gap-1.5">
