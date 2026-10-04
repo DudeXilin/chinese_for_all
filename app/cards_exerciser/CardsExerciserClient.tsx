@@ -68,7 +68,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [theoryOpen, setTheoryOpen] = useState(false);
   const [dontShowTheory, setDontShowTheory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const answerBoxRef = useRef<HTMLDivElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
@@ -99,14 +98,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
       inputRef.current?.focus();
     }
   }, [index, side, finished]);
-
-  function focusAnswerInput() {
-    // The real input is now the visible text field. On iPhone Safari this is
-    // important: Safari can natively keep the focused control above the
-    // keyboard. We must not move the page ourselves while the keyboard opens
-    // or while the user types.
-    inputRef.current?.focus();
-  }
 
   function reveal() {
     setSide("back");
@@ -177,7 +168,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       keyPrefix={`${index}-front`}
                     />
                   </div>
-                  <div ref={answerBoxRef} className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
+                  <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
                     <input
                       ref={inputRef}
@@ -189,7 +180,6 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                           reveal();
                         }
                       }}
-                      onFocus={focusAnswerInput}
                       aria-label="Введите Pinyin"
                       placeholder="ping2guo3"
                       autoCapitalize="none"
