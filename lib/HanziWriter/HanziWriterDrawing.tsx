@@ -20,6 +20,7 @@ type HanziWriterOptions = {
   acceptBackwardsStrokes?: boolean;
   markStrokeCorrectAfterMisses?: number | false;
   strokeAnimationSpeed?: number;
+  delayBetweenStrokes?: number;
   // Hanzi Writer's real signature is (character, onComplete, onError) — a
   // callback-style loader, not a 2-arg one. Getting this wrong means the
   // library silently never resolves (no error, no data, no visible failure).
@@ -205,8 +206,11 @@ export default function HanziWriterDrawing({
           leniency: 2.2,
           acceptBackwardsStrokes: true,
           markStrokeCorrectAfterMisses: 6,
-          // +50% speed for the stroke-order animation on the card back.
-          strokeAnimationSpeed: 1.5,
+          // Individual-stroke speed: was bumped to 1.5 (+50% over the
+          // library default of 1), now dialed back 30% from that: 1.5*0.7.
+          strokeAnimationSpeed: 1.05,
+          // Pause between strokes: library default is 1000ms — cut by 60%.
+          delayBetweenStrokes: 400,
             charDataLoader,
             onLoadCharDataSuccess: () => {
               logHanzi(tag, `onLoadCharDataSuccess fired for "${character}"`);

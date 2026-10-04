@@ -125,6 +125,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     if (!tonePadOpen || !window.visualViewport) return;
     const update = () => {
       const viewport = window.visualViewport;
+      if (!viewport) return;
       setKeyboardBottom(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
     };
     update();
