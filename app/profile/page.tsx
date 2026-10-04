@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
 import { GlassInit } from "@/components/glass-init";
+import { FSRSStatistics } from "./fsrs-statistics";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export default async function ProfilePage() {
     redirect("/auth/login");
   }
 
-  const [{ data: profile }, { data: progress }] = await Promise.all([
+  const [{ data: profile }, { data: progress }, { data: fsrsCards }] = await Promise.all([
     supabase
       .from("profiles")
       .select("nickname, avatar_url")
@@ -23,6 +24,11 @@ export default async function ProfilePage() {
       .select("hsk_level, words_learned, lessons_completed")
       .eq("user_id", claims.sub)
       .maybeSingle(),
+    supabase
+      .from("fsrs_cards")
+      .select("word, due, stability, difficulty, scheduled_days, reps, lapses, state")
+      .eq("user_id", claims.sub)
+      .order("due", { ascending: true }),
   ]);
 
   const nickname = profile?.nickname || claims.email || "Без никнейма";
@@ -69,6 +75,8 @@ export default async function ProfilePage() {
             <Stat label="Слов" value={progress?.words_learned ?? 0} />
             <Stat label="Уроков" value={progress?.lessons_completed ?? 0} />
           </div>
+
+          <FSRSStatistics cards={fsrsCards ?? []} />
 
           <LogoutButton />
 
