@@ -162,7 +162,8 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                 </button>
               )}
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((index + 1) / Math.max(words.length, 1)) * 100}%` }} /></div>
- 
+              <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{index + 1} / {words.length}</span>
+
             </div>
           </header>
 
