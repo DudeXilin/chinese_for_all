@@ -187,7 +187,9 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     });
   }
 
-  function rate(rating: Rating.Again | Rating.Hard | Rating.Good | Rating.Easy) {
+  type FSRSRating = Rating.Again | Rating.Hard | Rating.Good | Rating.Easy;
+
+  function rate(rating: FSRSRating) {
     const now = new Date();
     const card = fsrsCards[index] ?? createCard(now);
     const result = review(card, now, rating);
