@@ -199,25 +199,49 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   function rate(rating: FSRSRating) {
     const now = new Date();
     const card = fsrsCards[index] ?? createCard(now);
+
+    // Preview all four choices BEFORE applying the user's rating.
+    // The word is one learning item: the rating reflects the complete answer.
+    const beforePreview = preview(card, now);
     const result = review(card, now, rating);
     const ratingName = Rating[rating];
-    const nextPreviews = preview(result.card, now);
 
     setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
     setLastFSRSResult({ word: currentWord, rating, result });
+
     logFSRS("review", {
       word: currentWord,
       cardIndex: index,
+      answer: answer || null,
       rating: ratingName,
       ratingValue: rating,
-      answer: answer || null,
-      card: result.card,
-      log: result.log,
-      nextPreview: {
-        again: nextPreviews.again.card.scheduled_days,
-        hard: nextPreviews.hard.card.scheduled_days,
-        good: nextPreviews.good.card.scheduled_days,
-        easy: nextPreviews.easy.card.scheduled_days,
+      before: {
+        state: card.state,
+        stability: card.stability,
+        difficulty: card.difficulty,
+        due: card.due,
+        options: {
+          again: {
+            scheduledDays: beforePreview.again.card.scheduled_days,
+            due: beforePreview.again.card.due,
+          },
+          hard: {
+            scheduledDays: beforePreview.hard.card.scheduled_days,
+            due: beforePreview.hard.card.due,
+          },
+          good: {
+            scheduledDays: beforePreview.good.card.scheduled_days,
+            due: beforePreview.good.card.due,
+          },
+          easy: {
+            scheduledDays: beforePreview.easy.card.scheduled_days,
+            due: beforePreview.easy.card.due,
+          },
+        },
+      },
+      result: {
+        card: result.card,
+        log: result.log,
       },
     });
 
