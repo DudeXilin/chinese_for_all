@@ -108,7 +108,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [syncReady, setSyncReady] = useState(false);
   const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
-  const [lastFSRSResult, setLastFSRSResult] = useState<{ word: string; rating: number; result: ReturnType<typeof review> } | null>(null);
+  const [lastFSRSResult, setLastFSRSResult] = useState<{ index: number; word: string; answer: string; rating: number; previousCard: SerializedCard; result: ReturnType<typeof review> } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
@@ -316,12 +316,52 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     return new Date(Date.now() + serverTimeOffsetMs);
   }
 
+  function handleRatingPointerUp(event: React.PointerEvent<HTMLButtonElement>, rating: FSRSRating) {
+    if (event.pointerType === "mouse" || event.pointerType === "touch" || event.pointerType === "pen") {
+      if (event.currentTarget.contains(event.target as Node)) void rate(rating);
+    }
+  }
+
+  async function undoLastRating() {
+    const previous = lastFSRSResult;
+    if (!previous || ratingBusy || !syncReady) return;
+
+    setRatingBusy(true);
+    try {
+      if (authenticated) {
+        const response = await fetch("/api/fsrs/undo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ word: previous.word, previousCard: previous.previousCard }),
+        });
+        if (!response.ok) throw new Error("FSRS undo failed");
+      }
+
+      setFsrsCards((cards) => ({ ...cards, [previous.index]: previous.previousCard }));
+      setIndex(previous.index);
+      setAnswer(previous.answer);
+      setSide("back");
+      setLastFSRSResult(null);
+    } catch (error) {
+      console.error("[FSRS-6] undo failed", error);
+      logFSRS("undo_error", {
+        word: previous.word,
+        cardIndex: previous.index,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setRatingBusy(false);
+    }
+  }
+
   async function rate(rating: FSRSRating) {
     if (ratingBusy || !syncReady) return;
     setRatingBusy(true);
 
     const now = getAuthoritativeNow();
     const card = fsrsCards[index] ?? createCard(now);
+    const previousCard = { ...card };
     const ratingName = Rating[rating];
 
     try {
@@ -355,7 +395,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
       }
 
       setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
-      setLastFSRSResult({ word: currentWord, rating, result });
+      setLastFSRSResult({ index, word: currentWord, answer, rating, previousCard, result });
 
       logFSRS("review", {
         word: currentWord,
@@ -470,7 +510,19 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
           <section className="mx-auto mt-5 w-full max-w-3xl">
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
                             {side === "front" ? (
-                <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
+                <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
+                  {lastFSRSResult && index === lastFSRSResult.index + 1 && (
+                    <button
+                      type="button"
+                      onClick={undoLastRating}
+                      disabled={ratingBusy || !syncReady}
+                      className="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-[17px] text-white/45 shadow-lg backdrop-blur-xl transition hover:bg-white/[0.09] hover:text-white/75 disabled:cursor-wait disabled:opacity-40"
+                      aria-label="Вернуться к предыдущей карточке и изменить оценку"
+                      title="Изменить последнюю оценку"
+                    >
+                      ↶
+                    </button>
+                  )}
                   <div className="text-center"><h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1></div>
                   <div className="mt-7 flex justify-center">
                     <HanziWriterStrip
@@ -577,7 +629,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       <button
                         key={item.value}
                         type="button"
-                        onClick={() => rate(item.value)}
+                        onPointerUp={(event) => handleRatingPointerUp(event, item.value)}
+                        onClick={(event) => {
+                          if (event.detail === 0) void rate(item.value);
+                        }}
                         disabled={ratingBusy || !syncReady}
                         className={`flex h-[36px] min-h-0 flex-col items-center justify-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-50 ${item.tone}`}
                         title={item.name}
