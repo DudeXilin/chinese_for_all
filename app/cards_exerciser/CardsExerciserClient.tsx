@@ -189,6 +189,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
   type FSRSRating = Rating.Again | Rating.Hard | Rating.Good | Rating.Easy;
 
+  const fsrsRatings: Array<{ value: FSRSRating; label: string; name: string; hint: string }> = [
+    { value: Rating.Again, label: "1", name: "Again", hint: "Не вспомнил" },
+    { value: Rating.Hard, label: "2", name: "Hard", hint: "С трудом" },
+    { value: Rating.Good, label: "3", name: "Good", hint: "Вспомнил" },
+    { value: Rating.Easy, label: "4", name: "Easy", hint: "Легко" },
+  ];
+
   function rate(rating: FSRSRating) {
     const now = new Date();
     const card = fsrsCards[index] ?? createCard(now);
@@ -350,12 +357,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
             </article>
           </section>
 
-          {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{[
-  { value: Rating.Again, label: "1", name: "Again", hint: "Не вспомнил" },
-  { value: Rating.Hard, label: "2", name: "Hard", hint: "С трудом" },
-  { value: Rating.Good, label: "3", name: "Good", hint: "Вспомнил" },
-  { value: Rating.Easy, label: "4", name: "Easy", hint: "Легко" },
-].map((item) => (
+          {side === "back" && <section className="mx-auto mt-3 w-full max-w-3xl"><div className="rounded-[22px] border border-white/10 bg-white/[0.045] p-1.5 shadow-xl backdrop-blur-2xl"><div className="mb-1 flex items-center justify-between px-2"><span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Confidence</span><span className="text-[9px] text-white/20">оценка</span></div><div className="grid grid-cols-4 gap-1.5">{fsrsRatings.map((item) => (
   <button
     key={item.value}
     type="button"
