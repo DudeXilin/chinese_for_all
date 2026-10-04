@@ -99,6 +99,20 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     }
   }, [index, side, finished]);
 
+  function keepInputFocused() {
+    const isPhone = navigator.maxTouchPoints > 0 && window.innerWidth < 900;
+
+    // On iPhone/Safari blur must be allowed so the keyboard can close naturally.
+    // Desktop keeps the input ready for immediate typing.
+    if (isPhone) return;
+
+    requestAnimationFrame(() => {
+      if (isFrontRef.current) {
+        inputRef.current?.focus();
+      }
+    });
+  }
+
   function reveal() {
     setSide("back");
     inputRef.current?.blur();
