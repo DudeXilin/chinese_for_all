@@ -105,6 +105,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [debugOpen, setDebugOpen] = useState(false);
   const [ratingBusy, setRatingBusy] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [syncReady, setSyncReady] = useState(false);
   const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
   const [lastFSRSResult, setLastFSRSResult] = useState<{ word: string; rating: number; result: ReturnType<typeof review> } | null>(null);
@@ -149,12 +150,19 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     async function loadFSRSCards() {
       try {
         const response = await fetch("/api/fsrs/cards", { cache: "no-store" });
-        if (!response.ok) return;
+        if (!response.ok) {
+          if (!cancelled) {
+            setAuthenticated(false);
+            setSyncReady(true);
+          }
+          return;
+        }
 
         const payload = await response.json();
         if (cancelled || !Array.isArray(payload.cards)) return;
 
         setAuthenticated(payload.authenticated === true);
+        setSyncReady(true);
 
         const byWord = new Map<string, SerializedCard>();
         for (const row of payload.cards) {
@@ -184,6 +192,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
           ),
         );
       } catch {
+        if (!cancelled) {
+          setAuthenticated(false);
+          setSyncReady(true);
+        }
         // Session-local FSRS remains available if Supabase is unavailable.
       }
     }
@@ -280,7 +292,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   }
 
   async function rate(rating: FSRSRating) {
-    if (ratingBusy) return;
+    if (ratingBusy || !syncReady) return;
     setRatingBusy(true);
 
     const now = getAuthoritativeNow();
@@ -514,7 +526,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     key={item.value}
     type="button"
     onClick={() => rate(item.value)}
-    disabled={ratingBusy}
+    disabled={ratingBusy || !syncReady}
     className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.045] transition hover:-translate-y-0.5 hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50"
     title={item.name}
   >
