@@ -279,7 +279,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                 </div>
               ) : (
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
-                  <div className="text-center pt-[1px]">
+                  <div className="text-center pt-[5px]">
                     <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
                     <div className="mt-7 flex justify-center">
                       <HanziWriterStrip
