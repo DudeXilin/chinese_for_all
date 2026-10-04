@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 import HanziWriterStrip from "@/lib/HanziWriter/HanziWriterStrip";
 import HanziWriterDebugPanel from "@/lib/HanziWriter/HanziWriterDebugPanel";
 import { convertPinyin } from "@/lib/neat_pinyin_converter";
@@ -316,7 +317,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     return new Date(Date.now() + serverTimeOffsetMs);
   }
 
-  function handleRatingPointerUp(event: React.PointerEvent<HTMLButtonElement>, rating: FSRSRating) {
+  function handleRatingPointerUp(event: PointerEvent<HTMLButtonElement>, rating: FSRSRating) {
     if (event.pointerType === "mouse" || event.pointerType === "touch" || event.pointerType === "pen") {
       if (event.currentTarget.contains(event.target as Node)) void rate(rating);
     }
