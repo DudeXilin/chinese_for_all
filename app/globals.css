@@ -9,10 +9,16 @@
 html,
 body {
   min-height: 100%;
+  background: #000;
+}
+
+html {
+  overscroll-behavior-y: none;
 }
 
 body {
   margin: 0;
+  background: #000;
 }
 
 /* iOS Safari jitters position:fixed elements while its address-bar
