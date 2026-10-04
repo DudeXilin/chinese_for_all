@@ -70,6 +70,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const answerBoxRef = useRef<HTMLDivElement>(null);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const keyboardOpenRef = useRef(false);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
@@ -99,6 +100,17 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
     let frame = 0;
 
+    const scrollInputIntoView = (behavior: ScrollBehavior = "smooth") => {
+      const box = answerBoxRef.current;
+      if (!box) return;
+
+      box.scrollIntoView({
+        behavior,
+        block: "center",
+        inline: "nearest",
+      });
+    };
+
     const updateKeyboardOffset = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -112,12 +124,18 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
         setKeyboardOffset((current) =>
           Math.abs(current - neededOffset) > 1 ? neededOffset : current,
         );
+
+        if (neededOffset > 0 && !keyboardOpenRef.current) {
+          keyboardOpenRef.current = true;
+          window.setTimeout(() => scrollInputIntoView("smooth"), 40);
+        }
       });
     };
 
     const timer = window.setTimeout(() => {
       inputRef.current?.focus();
       updateKeyboardOffset();
+      window.setTimeout(() => scrollInputIntoView("smooth"), 220);
     }, 120);
 
     viewport.addEventListener("resize", updateKeyboardOffset);
@@ -125,6 +143,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
     window.addEventListener("resize", updateKeyboardOffset);
 
     return () => {
+      keyboardOpenRef.current = false;
       window.clearTimeout(timer);
       cancelAnimationFrame(frame);
       viewport.removeEventListener("resize", updateKeyboardOffset);
