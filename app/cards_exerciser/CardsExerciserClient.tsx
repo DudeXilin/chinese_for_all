@@ -68,6 +68,8 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   const [theoryOpen, setTheoryOpen] = useState(false);
   const [dontShowTheory, setDontShowTheory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const answerBoxRef = useRef<HTMLDivElement>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
@@ -87,9 +89,48 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
   }, [theory, theoryKey]);
 
   useEffect(() => {
-    if (side !== "front" || finished) return;
-    const timer = window.setTimeout(() => inputRef.current?.focus(), 120);
-    return () => window.clearTimeout(timer);
+    if (side !== "front" || finished) {
+      setKeyboardOffset(0);
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    let frame = 0;
+
+    const updateKeyboardOffset = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const box = answerBoxRef.current;
+        if (!box) return;
+
+        const safeBottom = Math.max(16, viewport.height - 20);
+        const bottom = box.getBoundingClientRect().bottom;
+        const neededOffset = Math.max(0, bottom - safeBottom);
+
+        setKeyboardOffset((current) =>
+          Math.abs(current - neededOffset) > 1 ? neededOffset : current,
+        );
+      });
+    };
+
+    const timer = window.setTimeout(() => {
+      inputRef.current?.focus();
+      updateKeyboardOffset();
+    }, 120);
+
+    viewport.addEventListener("resize", updateKeyboardOffset);
+    viewport.addEventListener("scroll", updateKeyboardOffset);
+    window.addEventListener("resize", updateKeyboardOffset);
+
+    return () => {
+      window.clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      viewport.removeEventListener("resize", updateKeyboardOffset);
+      viewport.removeEventListener("scroll", updateKeyboardOffset);
+      window.removeEventListener("resize", updateKeyboardOffset);
+    };
   }, [index, side, finished]);
 
   function keepInputFocused() {
@@ -167,7 +208,7 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                       keyPrefix={`${index}-front`}
                     />
                   </div>
-                  <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
+                  <div ref={answerBoxRef} className="mx-auto mt-4 max-w-xl rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3">
                     <div className="flex items-center justify-between gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">Pinyin</span><span className="text-[10px] text-white/25">печатайте сразу</span></div>
                     <div className="mt-2 min-h-8 cursor-text border-b border-white/10 pb-1 text-lg tracking-wide text-white/75" onPointerDown={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>{answer || <span className="text-white/20">ping2guo3</span>}<span className="ml-1 inline-block h-5 w-px animate-pulse bg-white/35 align-middle" /></div>
                     <input ref={inputRef} value={answer} onChange={(e) => setAnswer(convertPinyin(e.target.value))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); reveal(); } }} aria-label="Введите Pinyin" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" className="absolute left-0 top-0 h-px w-px opacity-0" onBlur={keepInputFocused} />
