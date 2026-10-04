@@ -553,10 +553,14 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
               const diffMs = Math.max(0, new Date(due).getTime() - now.getTime());
               const minutes = Math.max(1, Math.round(diffMs / 60000));
               if (minutes < 60) return `${minutes} мин`;
-              const hours = Math.round(minutes / 60);
+              const hours = Math.floor(minutes / 60);
               if (hours < 24) return `${hours} ч`;
-              const days = Math.max(1, Math.round(hours / 24));
-              return `${days} ${days === 1 ? "день" : "дня"}`;
+              const days = Math.floor(hours / 24);
+              if (days < 30) return `${Math.max(1, days)} д`;
+              const months = Math.floor(days / 30);
+              if (months < 12) return `${Math.max(1, months)} мес`;
+              const years = Math.floor(months / 12);
+              return `${Math.max(1, years)} г`;
             };
             const optionByRating = {
               [Rating.Again]: options.again,
@@ -575,13 +579,13 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
                         type="button"
                         onClick={() => rate(item.value)}
                         disabled={ratingBusy || !syncReady}
-                        className={`flex min-h-[72px] flex-col items-center justify-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-50 ${item.tone}`}
+                        className={`flex h-[36px] min-h-0 flex-col items-center justify-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-50 ${item.tone}`}
                         title={item.name}
                       >
-                        <span className="text-[17px] font-bold leading-none text-white">
+                        <span className="text-[12px] font-bold leading-none text-white">
                           {formatInterval(optionByRating[item.value].card.due)}
                         </span>
-                        <span className="mt-1 text-[11px] font-semibold leading-none text-white/90">
+                        <span className="mt-1 text-[9px] font-semibold leading-none text-white/50">
                           {item.name}
                         </span>
                       </button>
