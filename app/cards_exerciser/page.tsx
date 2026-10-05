@@ -2,6 +2,7 @@ import CardsExerciserClient from "./CardsExerciserClient";
 import lessonWords from "@/data/lesson-words.json";
 import measureWords from "@/data/measure-words.json";
 import lessonTheory from "@/data/theory/measure_words_theory.json";
+import uiDecks from "@/data/ui-interface-decks.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
@@ -12,9 +13,12 @@ export default async function CardsExerciserPage({
 }) {
   const { topic: topicParam } = await searchParams;
   const topic = topicParam ?? "places";
+  const uiDeck = uiDecks[topic as keyof typeof uiDecks];
   const lesson = topic === "measure_words"
     ? { title: "Счётные слова", words: Object.keys(measureWords) }
-    : lessonWords[topic as keyof typeof lessonWords];
+    : uiDeck && "words" in uiDeck
+      ? { title: uiDeck.title, words: uiDeck.words }
+      : lessonWords[topic as keyof typeof lessonWords];
   const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
 
   if (!lesson) {
