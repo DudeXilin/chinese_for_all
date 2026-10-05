@@ -212,11 +212,24 @@ export default function LessonsPage() {
                         <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
-                        {Array.from({ length: 6 }, (_, index) => (
-                          <button className="lesson-island lesson-deck" key={index} type="button">
-                            Колода{index + 1}
-                          </button>
-                        ))}
+                                                  <a className="lesson-island lesson-deck" key="ui-basics" href={"/cards_exerciser?topic=ui-basics"}>
+                            Колода1
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-social" href={"/cards_exerciser?topic=ui-social"}>
+                            Колода2
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-account" href={"/cards_exerciser?topic=ui-account"}>
+                            Колода3
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-language" href={"/cards_exerciser?topic=ui-language"}>
+                            Колода4
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-network" href={"/cards_exerciser?topic=ui-network"}>
+                            Колода5
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-files-search" href={"/cards_exerciser?topic=ui-files-search"}>
+                            Колода6
+                          </a>
                       </div>
                     </div>
                   );
