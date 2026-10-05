@@ -1,0 +1,713 @@
+{
+  "ui-basics": {
+    "title": "Основные действия интерфейса",
+    "words": [
+      "设置",
+      "搜索",
+      "登录",
+      "注册",
+      "密码",
+      "账号",
+      "用户名",
+      "手机号",
+      "验证码",
+      "下载",
+      "上传",
+      "加载",
+      "更新",
+      "删除",
+      "保存",
+      "取消",
+      "确定",
+      "返回",
+      "下一步",
+      "完成",
+      "关闭",
+      "打开",
+      "选择",
+      "确认",
+      "添加",
+      "修改",
+      "更改",
+      "开启",
+      "发送",
+      "接收"
+    ]
+  },
+  "ui-social": {
+    "title": "Общение и социальные функции",
+    "words": [
+      "消息",
+      "聊天",
+      "私信",
+      "评论",
+      "回复",
+      "点赞",
+      "关注",
+      "粉丝",
+      "分享",
+      "转发",
+      "收藏",
+      "通知",
+      "好友",
+      "头像",
+      "个人资料",
+      "主页",
+      "历史记录"
+    ]
+  },
+  "ui-account": {
+    "title": "Аккаунт и безопасность",
+    "words": [
+      "账户",
+      "账号",
+      "密码",
+      "修改密码",
+      "更改密码",
+      "验证",
+      "验证码",
+      "安全",
+      "隐私",
+      "隐私设置",
+      "权限",
+      "同意",
+      "拒绝",
+      "授权",
+      "退出登录",
+      "切换账号",
+      "忘记密码"
+    ]
+  },
+  "ui-language": {
+    "title": "Язык и оформление",
+    "words": [
+      "语言",
+      "中文",
+      "英文",
+      "简体中文",
+      "繁体中文",
+      "切换语言",
+      "地区",
+      "国家",
+      "字体",
+      "深色模式",
+      "浅色模式",
+      "主题",
+      "默认",
+      "自动",
+      "手动"
+    ]
+  },
+  "ui-network": {
+    "title": "Интернет и состояния",
+    "words": [
+      "网络",
+      "网络连接",
+      "连接",
+      "断开",
+      "已连接",
+      "未连接",
+      "连接失败",
+      "无法连接",
+      "加载中",
+      "下载中",
+      "上传中",
+      "更新中",
+      "失败",
+      "成功",
+      "错误",
+      "重试",
+      "刷新"
+    ]
+  },
+  "ui-files-search": {
+    "title": "Файлы, поиск и покупки",
+    "words": [
+      "文件",
+      "文件夹",
+      "图片",
+      "照片",
+      "视频",
+      "音频",
+      "相册",
+      "拍照",
+      "录音",
+      "录像",
+      "编辑",
+      "重命名",
+      "复制",
+      "粘贴",
+      "移动",
+      "关键词",
+      "结果",
+      "搜索结果",
+      "首页",
+      "更多",
+      "全部",
+      "推荐",
+      "热门",
+      "最新",
+      "浏览记录",
+      "购买",
+      "商品",
+      "价格",
+      "付款",
+      "支付",
+      "订单",
+      "购物车",
+      "优惠",
+      "免费",
+      "付费",
+      "余额",
+      "退款",
+      "确认订单",
+      "同步",
+      "重启",
+      "安装",
+      "卸载",
+      "设置"
+    ]
+  },
+  "words": {
+    "设置": {
+      "pinyin": "shèzhì",
+      "translation": "настройки; настроить / settings"
+    },
+    "搜索": {
+      "pinyin": "sōusuǒ",
+      "translation": "поиск; искать / search"
+    },
+    "登录": {
+      "pinyin": "dēnglù",
+      "translation": "войти; вход в аккаунт / log in"
+    },
+    "注册": {
+      "pinyin": "zhùcè",
+      "translation": "зарегистрироваться / sign up"
+    },
+    "密码": {
+      "pinyin": "mìmǎ",
+      "translation": "пароль / password"
+    },
+    "账号": {
+      "pinyin": "zhànghào",
+      "translation": "аккаунт; учётная запись / account"
+    },
+    "用户名": {
+      "pinyin": "yònghùmíng",
+      "translation": "имя пользователя / username"
+    },
+    "手机号": {
+      "pinyin": "shǒujīhào",
+      "translation": "номер телефона / phone number"
+    },
+    "验证码": {
+      "pinyin": "yànzhèngmǎ",
+      "translation": "код подтверждения / verification code"
+    },
+    "下载": {
+      "pinyin": "xiàzǎi",
+      "translation": "скачать; скачать файл / download"
+    },
+    "上传": {
+      "pinyin": "shàngchuán",
+      "translation": "загрузить на сервер / upload"
+    },
+    "加载": {
+      "pinyin": "jiāzǎi",
+      "translation": "загрузка; загружать / loading, load"
+    },
+    "更新": {
+      "pinyin": "gēngxīn",
+      "translation": "обновить; обновление / update"
+    },
+    "删除": {
+      "pinyin": "shānchú",
+      "translation": "удалить / delete"
+    },
+    "保存": {
+      "pinyin": "bǎocún",
+      "translation": "сохранить / save"
+    },
+    "取消": {
+      "pinyin": "qǔxiāo",
+      "translation": "отменить; отмена / cancel"
+    },
+    "确定": {
+      "pinyin": "quèdìng",
+      "translation": "подтвердить; ОК / confirm, OK"
+    },
+    "返回": {
+      "pinyin": "fǎnhuí",
+      "translation": "назад; вернуться / back, return"
+    },
+    "下一步": {
+      "pinyin": "xià yí bù",
+      "translation": "следующий шаг / next step"
+    },
+    "完成": {
+      "pinyin": "wánchéng",
+      "translation": "готово; завершить / complete, done"
+    },
+    "关闭": {
+      "pinyin": "guānbì",
+      "translation": "закрыть; выключить / close, turn off"
+    },
+    "打开": {
+      "pinyin": "dǎkāi",
+      "translation": "открыть; включить / open, turn on"
+    },
+    "选择": {
+      "pinyin": "xuǎnzé",
+      "translation": "выбрать; выбор / select"
+    },
+    "确认": {
+      "pinyin": "quèrèn",
+      "translation": "подтвердить / confirm"
+    },
+    "添加": {
+      "pinyin": "tiānjiā",
+      "translation": "добавить / add"
+    },
+    "修改": {
+      "pinyin": "xiūgǎi",
+      "translation": "изменить / modify"
+    },
+    "更改": {
+      "pinyin": "gēnggǎi",
+      "translation": "изменить / change"
+    },
+    "开启": {
+      "pinyin": "kāiqǐ",
+      "translation": "включить; активировать / enable"
+    },
+    "发送": {
+      "pinyin": "fāsòng",
+      "translation": "отправить / send"
+    },
+    "接收": {
+      "pinyin": "jiēshōu",
+      "translation": "получить; принять / receive"
+    },
+    "消息": {
+      "pinyin": "xiāoxi",
+      "translation": "сообщение; сообщения / message"
+    },
+    "聊天": {
+      "pinyin": "liáotiān",
+      "translation": "чат; общаться / chat"
+    },
+    "私信": {
+      "pinyin": "sīxìn",
+      "translation": "личное сообщение / direct message, DM"
+    },
+    "评论": {
+      "pinyin": "pínglùn",
+      "translation": "комментарий; комментировать / comment"
+    },
+    "回复": {
+      "pinyin": "huífù",
+      "translation": "ответ; ответить / reply"
+    },
+    "点赞": {
+      "pinyin": "diǎnzàn",
+      "translation": "поставить лайк / like"
+    },
+    "关注": {
+      "pinyin": "guānzhù",
+      "translation": "подписаться; следить / follow"
+    },
+    "粉丝": {
+      "pinyin": "fěnsī",
+      "translation": "подписчики / followers"
+    },
+    "分享": {
+      "pinyin": "fēnxiǎng",
+      "translation": "поделиться / share"
+    },
+    "转发": {
+      "pinyin": "zhuǎnfā",
+      "translation": "репост; переслать / repost, forward"
+    },
+    "收藏": {
+      "pinyin": "shōucáng",
+      "translation": "добавить в избранное; сохранить / favorite, bookmark"
+    },
+    "通知": {
+      "pinyin": "tōngzhī",
+      "translation": "уведомление / notification"
+    },
+    "好友": {
+      "pinyin": "hǎoyǒu",
+      "translation": "друг / friend"
+    },
+    "头像": {
+      "pinyin": "tóuxiàng",
+      "translation": "аватарка; фото профиля / profile picture"
+    },
+    "个人资料": {
+      "pinyin": "gèrén zīliào",
+      "translation": "профиль; личные данные / profile"
+    },
+    "主页": {
+      "pinyin": "zhǔyè",
+      "translation": "главная страница; страница профиля / home page"
+    },
+    "历史记录": {
+      "pinyin": "lìshǐ jìlù",
+      "translation": "история / history"
+    },
+    "账户": {
+      "pinyin": "zhànghù",
+      "translation": "аккаунт; учётная запись / account"
+    },
+    "修改密码": {
+      "pinyin": "xiūgǎi mìmǎ",
+      "translation": "изменить пароль / change password"
+    },
+    "更改密码": {
+      "pinyin": "gēnggǎi mìmǎ",
+      "translation": "изменить пароль / change password"
+    },
+    "验证": {
+      "pinyin": "yànzhèng",
+      "translation": "проверка; верификация / verify"
+    },
+    "安全": {
+      "pinyin": "ānquán",
+      "translation": "безопасность / security"
+    },
+    "隐私": {
+      "pinyin": "yǐnsī",
+      "translation": "конфиденциальность; приватность / privacy"
+    },
+    "隐私设置": {
+      "pinyin": "yǐnsī shèzhì",
+      "translation": "настройки приватности / privacy settings"
+    },
+    "权限": {
+      "pinyin": "quánxiàn",
+      "translation": "разрешения / permissions"
+    },
+    "同意": {
+      "pinyin": "tóngyì",
+      "translation": "согласиться / agree"
+    },
+    "拒绝": {
+      "pinyin": "jùjué",
+      "translation": "отклонить; отказаться / reject"
+    },
+    "授权": {
+      "pinyin": "shòuquán",
+      "translation": "предоставить разрешение / authorize"
+    },
+    "退出登录": {
+      "pinyin": "tuìchū dēnglù",
+      "translation": "выйти из аккаунта / log out"
+    },
+    "切换账号": {
+      "pinyin": "qiēhuàn zhànghào",
+      "translation": "сменить аккаунт / switch account"
+    },
+    "忘记密码": {
+      "pinyin": "wàngjì mìmǎ",
+      "translation": "забыли пароль / forgot password"
+    },
+    "语言": {
+      "pinyin": "yǔyán",
+      "translation": "язык / language"
+    },
+    "中文": {
+      "pinyin": "Zhōngwén",
+      "translation": "китайский язык / Chinese"
+    },
+    "英文": {
+      "pinyin": "Yīngwén",
+      "translation": "английский язык / English"
+    },
+    "简体中文": {
+      "pinyin": "Jiǎntǐ Zhōngwén",
+      "translation": "упрощённый китайский / Simplified Chinese"
+    },
+    "繁体中文": {
+      "pinyin": "Fántǐ Zhōngwén",
+      "translation": "традиционный китайский / Traditional Chinese"
+    },
+    "切换语言": {
+      "pinyin": "qiēhuàn yǔyán",
+      "translation": "сменить язык / switch language"
+    },
+    "地区": {
+      "pinyin": "dìqū",
+      "translation": "регион / region"
+    },
+    "国家": {
+      "pinyin": "guójiā",
+      "translation": "страна / country"
+    },
+    "字体": {
+      "pinyin": "zìtǐ",
+      "translation": "шрифт / font"
+    },
+    "深色模式": {
+      "pinyin": "shēnsè móshì",
+      "translation": "тёмная тема / dark mode"
+    },
+    "浅色模式": {
+      "pinyin": "qiǎnsè móshì",
+      "translation": "светлая тема / light mode"
+    },
+    "主题": {
+      "pinyin": "zhǔtí",
+      "translation": "тема; оформление / theme"
+    },
+    "默认": {
+      "pinyin": "mòrèn",
+      "translation": "по умолчанию / default"
+    },
+    "自动": {
+      "pinyin": "zìdòng",
+      "translation": "автоматически / automatic"
+    },
+    "手动": {
+      "pinyin": "shǒudòng",
+      "translation": "вручную / manual"
+    },
+    "网络": {
+      "pinyin": "wǎngluò",
+      "translation": "сеть; интернет / network"
+    },
+    "网络连接": {
+      "pinyin": "wǎngluò liánjiē",
+      "translation": "сетевое соединение / network connection"
+    },
+    "连接": {
+      "pinyin": "liánjiē",
+      "translation": "подключение; соединение / connect, connection"
+    },
+    "断开": {
+      "pinyin": "duànkāi",
+      "translation": "отключиться; разорвать соединение / disconnect"
+    },
+    "已连接": {
+      "pinyin": "yǐ liánjiē",
+      "translation": "подключено / connected"
+    },
+    "未连接": {
+      "pinyin": "wèi liánjiē",
+      "translation": "не подключено / not connected"
+    },
+    "连接失败": {
+      "pinyin": "liánjiē shībài",
+      "translation": "не удалось подключиться / connection failed"
+    },
+    "无法连接": {
+      "pinyin": "wúfǎ liánjiē",
+      "translation": "невозможно подключиться / unable to connect"
+    },
+    "加载中": {
+      "pinyin": "jiāzǎi zhōng",
+      "translation": "загрузка... / loading..."
+    },
+    "下载中": {
+      "pinyin": "xiàzǎi zhōng",
+      "translation": "скачивание... / downloading..."
+    },
+    "上传中": {
+      "pinyin": "shàngchuán zhōng",
+      "translation": "загрузка на сервер... / uploading..."
+    },
+    "更新中": {
+      "pinyin": "gēngxīn zhōng",
+      "translation": "обновление... / updating..."
+    },
+    "失败": {
+      "pinyin": "shībài",
+      "translation": "неудача; не удалось / failed"
+    },
+    "成功": {
+      "pinyin": "chénggōng",
+      "translation": "успешно / successful"
+    },
+    "错误": {
+      "pinyin": "cuòwù",
+      "translation": "ошибка / error"
+    },
+    "重试": {
+      "pinyin": "chóngshì",
+      "translation": "повторить попытку / retry"
+    },
+    "刷新": {
+      "pinyin": "shuāxīn",
+      "translation": "обновить страницу / refresh"
+    },
+    "文件": {
+      "pinyin": "wénjiàn",
+      "translation": "файл / file"
+    },
+    "文件夹": {
+      "pinyin": "wénjiànjiā",
+      "translation": "папка / folder"
+    },
+    "图片": {
+      "pinyin": "túpiàn",
+      "translation": "изображение; картинка / image"
+    },
+    "照片": {
+      "pinyin": "zhàopiàn",
+      "translation": "фотография / photo"
+    },
+    "视频": {
+      "pinyin": "shìpín",
+      "translation": "видео / video"
+    },
+    "音频": {
+      "pinyin": "yīnpín",
+      "translation": "аудио / audio"
+    },
+    "相册": {
+      "pinyin": "xiàngcè",
+      "translation": "фотоальбом / album"
+    },
+    "拍照": {
+      "pinyin": "pāizhào",
+      "translation": "сфотографировать / take a photo"
+    },
+    "录音": {
+      "pinyin": "lùyīn",
+      "translation": "записать звук / record audio"
+    },
+    "录像": {
+      "pinyin": "lùxiàng",
+      "translation": "видеозапись; записывать видео / video recording"
+    },
+    "编辑": {
+      "pinyin": "biānjí",
+      "translation": "редактировать / edit"
+    },
+    "重命名": {
+      "pinyin": "chóngmìngmíng",
+      "translation": "переименовать / rename"
+    },
+    "复制": {
+      "pinyin": "fùzhì",
+      "translation": "копировать / copy"
+    },
+    "粘贴": {
+      "pinyin": "zhāntiē",
+      "translation": "вставить / paste"
+    },
+    "移动": {
+      "pinyin": "yídòng",
+      "translation": "переместить / move"
+    },
+    "关键词": {
+      "pinyin": "guānjiàncí",
+      "translation": "ключевое слово / keyword"
+    },
+    "结果": {
+      "pinyin": "jiéguǒ",
+      "translation": "результат / result"
+    },
+    "搜索结果": {
+      "pinyin": "sōusuǒ jiéguǒ",
+      "translation": "результаты поиска / search results"
+    },
+    "首页": {
+      "pinyin": "shǒuyè",
+      "translation": "главная страница / home page"
+    },
+    "更多": {
+      "pinyin": "gèngduō",
+      "translation": "ещё; больше / more"
+    },
+    "全部": {
+      "pinyin": "quánbù",
+      "translation": "всё; все / all"
+    },
+    "推荐": {
+      "pinyin": "tuījiàn",
+      "translation": "рекомендации; рекомендовать / recommended"
+    },
+    "热门": {
+      "pinyin": "rèmén",
+      "translation": "популярное / trending, popular"
+    },
+    "最新": {
+      "pinyin": "zuìxīn",
+      "translation": "самое новое / latest"
+    },
+    "浏览记录": {
+      "pinyin": "liúlǎn jìlù",
+      "translation": "история просмотров / browsing history"
+    },
+    "购买": {
+      "pinyin": "gòumǎi",
+      "translation": "купить; покупка / purchase"
+    },
+    "商品": {
+      "pinyin": "shāngpǐn",
+      "translation": "товар / product, item"
+    },
+    "价格": {
+      "pinyin": "jiàgé",
+      "translation": "цена / price"
+    },
+    "付款": {
+      "pinyin": "fùkuǎn",
+      "translation": "оплатить / make a payment"
+    },
+    "支付": {
+      "pinyin": "zhīfù",
+      "translation": "оплата; платить / pay, payment"
+    },
+    "订单": {
+      "pinyin": "dìngdān",
+      "translation": "заказ / order"
+    },
+    "购物车": {
+      "pinyin": "gòuwùchē",
+      "translation": "корзина / shopping cart"
+    },
+    "优惠": {
+      "pinyin": "yōuhuì",
+      "translation": "скидка; льгота / discount, special offer"
+    },
+    "免费": {
+      "pinyin": "miǎnfèi",
+      "translation": "бесплатно / free"
+    },
+    "付费": {
+      "pinyin": "fùfèi",
+      "translation": "платный; оплачивать / paid"
+    },
+    "余额": {
+      "pinyin": "yú'é",
+      "translation": "баланс / balance"
+    },
+    "退款": {
+      "pinyin": "tuìkuǎn",
+      "translation": "возврат денег / refund"
+    },
+    "确认订单": {
+      "pinyin": "quèrèn dìngdān",
+      "translation": "подтвердить заказ / confirm order"
+    },
+    "同步": {
+      "pinyin": "tóngbù",
+      "translation": "синхронизировать / sync"
+    },
+    "重启": {
+      "pinyin": "chóngqǐ",
+      "translation": "перезапустить / restart"
+    },
+    "安装": {
+      "pinyin": "ānzhuāng",
+      "translation": "установить / install"
+    },
+    "卸载": {
+      "pinyin": "xièzǎi",
+      "translation": "удалить приложение / uninstall"
+    }
+  }
+}
