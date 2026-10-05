@@ -72,6 +72,7 @@ const GLASS_OPTIONS = {
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
+  const [showUiWords, setShowUiWords] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -239,6 +240,9 @@ export default function LessonsPage() {
                           <a className="lesson-island lesson-deck" key="ui-apps" href={"/cards_exerciser?topic=ui-apps"}>
                             Приложения и управление системой
                           </a>
+                          <button className="lesson-island lesson-deck lesson-all-words-button" type="button" onClick={() => setShowUiWords(true)}>
+                            Все слова из папки
+                          </button>
                       </div>
                     </div>
                   );
@@ -287,6 +291,36 @@ export default function LessonsPage() {
           </section>
         </div>
       </div>
+
+      {showUiWords && (
+        <div className="ui-words-modal" role="dialog" aria-modal="true" aria-label="Все слова из папки">
+          <div className="ui-words-backdrop" onClick={() => setShowUiWords(false)} />
+          <div className="ui-words-panel">
+            <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setShowUiWords(false)}>×</button>
+            <div className="ui-words-title">Все слова</div>
+            <div className="ui-words-tree">
+              {[
+                ["Основные действия интерфейса", ["настройки; настроить / settings","поиск; искать / search","войти; вход в аккаунт / log in","зарегистрироваться / sign up","пароль / password","аккаунт; учётная запись / account","имя пользователя / username","номер телефона / phone number","код подтверждения / verification code","скачать; скачать файл / download","загрузить на сервер / upload","загрузка; загружать / loading, load","обновить; обновление / update","удалить / delete","сохранить / save","отменить; отмена / cancel","подтвердить; ОК / confirm, OK","назад; вернуться / back, return","следующий шаг / next step","готово; завершить / complete, done","закрыть; выключить / close, turn off","открыть; включить / open, turn on","выбрать; выбор / select","подтвердить / confirm","добавить / add","изменить / modify","изменить / change","включить; активировать / enable","отправить / send","получить; принять / receive"]],
+                ["Общение и социальные функции", ["сообщение; сообщения / message","чат; общаться / chat","личное сообщение / direct message, DM","комментарий; комментировать / comment","ответ; ответить / reply","поставить лайк / like","подписаться; следить / follow","подписчики / followers","поделиться / share","репост; переслать / repost, forward","добавить в избранное; сохранить / favorite, bookmark","уведомление / notification","друг / friend","аватарка; фото профиля / profile picture","профиль; личные данные / profile","главная страница; страница профиля / home page","история / history"]],
+                ["Аккаунт и безопасность", ["аккаунт; учётная запись / account","аккаунт; учётная запись / account","пароль / password","изменить пароль / change password","изменить пароль / change password","проверка; верификация / verify","код подтверждения / verification code","безопасность / security","конфиденциальность; приватность / privacy","настройки приватности / privacy settings","разрешения / permissions","согласиться / agree","отклонить; отказаться / reject","предоставить разрешение / authorize","выйти из аккаунта / log out","сменить аккаунт / switch account","забыли пароль / forgot password"]],
+                ["Язык и оформление", ["язык / language","китайский язык / Chinese","английский язык / English","упрощённый китайский / Simplified Chinese","традиционный китайский / Traditional Chinese","сменить язык / switch language","регион / region","страна / country","шрифт / font","тёмная тема / dark mode","светлая тема / light mode","тема; оформление / theme","по умолчанию / default","автоматически / automatic","вручную / manual"]],
+                ["Интернет и состояния", ["сеть; интернет / network","сетевое соединение / network connection","подключение; соединение / connect, connection","отключиться; разорвать соединение / disconnect","подключено / connected","не подключено / not connected","не удалось подключиться / connection failed","невозможно подключиться / unable to connect","загрузка... / loading...","скачивание... / downloading...","загрузка на сервер... / uploading...","обновление... / updating...","неудача; не удалось / failed","успешно / successful","ошибка / error","повторить попытку / retry","обновить страницу / refresh"]],
+                ["Файлы и папки", ["файл / file","папка / folder","изображение; картинка / image","фотография / photo","видео / video","аудио / audio","фотоальбом / album","сфотографировать / take a photo","записать звук / record audio","видеозапись; записывать видео / video recording","редактировать / edit","переименовать / rename","копировать / copy","вставить / paste","переместить / move"]],
+                ["Поиск и навигация", ["найти; поиск / find, search","искать; проверять / search, check","ключевое слово / keyword","результат / result","результаты поиска / search results","главная страница / home page","ещё; больше / more","всё; все / all","рекомендации; рекомендовать / recommended","популярное / trending, popular","самое новое / latest","история просмотров / browsing history"]],
+                ["Покупки, товары и деньги", ["купить; покупка / purchase","товар / product, item","цена / price","оплатить / make a payment","оплата; платить / pay, payment","заказ / order","корзина / shopping cart","скидка; льгота / discount, special offer","бесплатно / free","платный; оплачивать / paid","баланс / balance","возврат денег / refund","подтвердить заказ / confirm order"]],
+                ["Приложения и управление системой", ["синхронизировать / sync","перезапустить / restart","установить / install","удалить приложение / uninstall"]]
+              ].map(([title, words]) => (
+                <details className="ui-words-branch" key={title as string}>
+                  <summary>{title as string}</summary>
+                  <div className="ui-words-leaves">
+                    {(words as string[]).map((word, index) => <div className="ui-words-leaf" key={title + "-" + index}>{word}</div>)}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Compass-needle glass: a static lens sitting over a sliding ribbon
           of lesson-type names, like a loupe over a ruler - whichever name
@@ -376,6 +410,23 @@ export default function LessonsPage() {
         .lesson-deck { position: relative; flex-basis: 66px; border-radius: 20px; font-size: 19px; background: rgba(255,255,255,.045); }
         .lesson-deck::before { content: ""; position: absolute; left: -19px; top: 50%; width: 19px; height: 1px; background: rgba(255,255,255,.16); }
         .lesson-deck:hover { background: rgba(255,255,255,.085); }
+
+        .lesson-all-words-button { background: rgba(255,255,255,.08); border-style: dashed; }
+        .lesson-all-words-button:hover { background: rgba(255,255,255,.12); }
+        .ui-words-modal { position: absolute; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
+        .ui-words-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.68); backdrop-filter: blur(10px); }
+        .ui-words-panel { position: relative; z-index: 1; width: min(760px, 94vw); max-height: min(82vh, 820px); overflow: hidden; border: 1px solid rgba(255,255,255,.16); border-radius: 30px; background: rgba(28,28,28,.92); box-shadow: 0 24px 80px rgba(0,0,0,.55); color: #fff; }
+        .ui-words-title { padding: 24px 62px 18px 26px; font: 700 26px/1.15 Arial,sans-serif; }
+        .ui-words-close { position: absolute; top: 12px; right: 14px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); font: 300 30px/1 Arial,sans-serif; cursor: pointer; }
+        .ui-words-tree { max-height: calc(min(82vh, 820px) - 76px); overflow-y: auto; padding: 0 18px 22px 26px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
+        .ui-words-branch { border-bottom: 1px solid rgba(255,255,255,.09); }
+        .ui-words-branch summary { position: relative; padding: 16px 34px 16px 20px; color: rgba(255,255,255,.92); font: 650 18px/1.25 Arial,sans-serif; cursor: pointer; list-style: none; }
+        .ui-words-branch summary::-webkit-details-marker { display: none; }
+        .ui-words-branch summary::before { content: "›"; position: absolute; left: 0; top: 14px; color: rgba(255,255,255,.45); font-size: 25px; line-height: 1; transition: transform 160ms ease; }
+        .ui-words-branch[open] summary::before { transform: rotate(90deg); }
+        .ui-words-leaves { margin: 0 0 12px 20px; padding-left: 16px; border-left: 1px solid rgba(255,255,255,.13); }
+        .ui-words-leaf { padding: 8px 10px; color: rgba(255,255,255,.7); font: 500 16px/1.35 Arial,sans-serif; }
+        @media (max-width:600px) { .ui-words-modal { padding: 12px; } .ui-words-panel { width: 96vw; max-height: 88vh; border-radius: 24px; } .ui-words-title { padding: 20px 58px 14px 20px; font-size: 23px; } .ui-words-tree { max-height: calc(88vh - 68px); padding-left: 20px; } .ui-words-branch summary { font-size: 16px; padding-left: 18px; } .ui-words-leaves { margin-left: 18px; } .ui-words-leaf { font-size: 15px; } }
 
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
