@@ -123,6 +123,8 @@
   "ui-files-search": {
     "title": "Файлы, поиск и покупки",
     "words": [
+      "查找",
+      "查",
       "文件",
       "文件夹",
       "图片",
@@ -164,8 +166,7 @@
       "同步",
       "重启",
       "安装",
-      "卸载",
-      "设置"
+      "卸载"
     ]
   },
   "words": {
@@ -708,6 +709,14 @@
     "卸载": {
       "pinyin": "xièzǎi",
       "translation": "удалить приложение / uninstall"
+    },
+    "查找": {
+      "pinyin": "cházhǎo",
+      "translation": "найти; поиск / find, search"
+    },
+    "查": {
+      "pinyin": "chá",
+      "translation": "искать; проверять / search, check"
     }
   }
 }
