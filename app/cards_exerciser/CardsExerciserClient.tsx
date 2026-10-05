@@ -8,6 +8,7 @@ import { convertPinyin } from "@/lib/neat_pinyin_converter";
 import { createCard, preview, review, Rating, type SerializedCard } from "@/lib/FSRS-6/our_system";
 import FSRS6DebugPanel from "@/lib/FSRS-6/our_system/FSRS6DebugPanel";
 import { logFSRS } from "@/lib/FSRS-6/our_system/debugLog";
+import uiDecks from "@/data/ui-interface-decks.json";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -116,8 +117,9 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
   const currentWord = words[index] ?? "汉字";
   const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
-  const correctPinyin = pinyins[currentWord] ?? "pinyin placeholder";
-  const translation = translations[currentWord] ?? "перевод placeholder";
+  const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
+  const correctPinyin = uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
+  const translation = uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
   const theoryKey = `cfa-theory-dismissed:${title}`;
 
   useEffect(() => {
