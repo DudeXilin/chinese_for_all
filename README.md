@@ -77,6 +77,5 @@ for a free stunning liquid glass effect implementation and making it free for ev
 for a free script that let's you write Chinese characters. 
 
 
-Licensed under the Human Flourishing License, Version 1.0.
-See LICENSE.
+# Licensed under the Human Flourishing License, Version 1.0. See LICENSE.
 
