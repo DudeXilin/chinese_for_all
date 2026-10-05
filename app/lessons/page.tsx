@@ -71,6 +71,7 @@ const GLASS_OPTIONS = {
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
+  const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -194,18 +195,46 @@ export default function LessonsPage() {
         >
           <section className="lesson-panel">
             <div className="lesson-list">
-              {topics.map((topic) => (
-                <button
-                  className="lesson-island"
-                  key={topic}
-                  type="button"
-                  onClick={() => {
-                    if (topic === "Места") window.location.href = "/cards_exerciser?topic=places";
-                  }}
-                >
-                  {topic}
-                </button>
-              ))}
+              {topics.map((topic) => {
+                const isFolder = topic === "Тема 2";
+                const isOpen = openTopic === topic;
+
+                if (isFolder) {
+                  return (
+                    <div className={"lesson-folder" + (isOpen ? " is-open" : "")} key={topic}>
+                      <button
+                        className="lesson-island lesson-folder-button"
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => setOpenTopic(isOpen ? null : topic)}
+                      >
+                        <span>Переключи весь интерфейс на китайский!</span>
+                        <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
+                      </button>
+                      <div className="lesson-folder-children" aria-hidden={!isOpen}>
+                        {Array.from({ length: 6 }, (_, index) => (
+                          <button className="lesson-island lesson-deck" key={index} type="button">
+                            Колода{index + 1}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    className="lesson-island"
+                    key={topic}
+                    type="button"
+                    onClick={() => {
+                      if (topic === "Места") window.location.href = "/cards_exerciser?topic=places";
+                    }}
+                  >
+                    {topic}
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -313,6 +342,19 @@ export default function LessonsPage() {
         .lesson-island { flex: 0 0 92px; width: 100%; border: 1px solid rgba(255,255,255,.14); border-radius: 28px; background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); box-shadow: 0 8px 28px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; font: 600 24px/1.2 Arial,sans-serif; cursor: pointer; transition: background 160ms ease, transform 160ms ease, border-color 160ms ease; }
         .lesson-island:hover { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
         .lesson-island:active { transform: scale(.985); }
+
+        .lesson-folder { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .lesson-folder-button { position: relative; flex-basis: 92px; padding-left: 54px; padding-right: 54px; }
+        .lesson-folder-button > span:first-child { max-width: 90%; }
+        .lesson-folder-chevron { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font-size: 26px; line-height: 1; color: rgba(255,255,255,.58); transition: transform 180ms ease; }
+        .lesson-folder.is-open .lesson-folder-chevron { transform: translateY(-50%) rotate(180deg); }
+        .lesson-folder-children { display: flex; flex-direction: column; gap: 10px; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: max-height 260ms ease, opacity 180ms ease, transform 260ms ease; padding-left: 28px; position: relative; }
+        .lesson-folder-children::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.16); }
+        .lesson-folder.is-open .lesson-folder-children { max-height: 700px; opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .lesson-deck { position: relative; flex-basis: 66px; border-radius: 20px; font-size: 19px; background: rgba(255,255,255,.045); }
+        .lesson-deck::before { content: ""; position: absolute; left: -19px; top: 50%; width: 19px; height: 1px; background: rgba(255,255,255,.16); }
+        .lesson-deck:hover { background: rgba(255,255,255,.085); }
+
         .grammar-list { max-width: 760px; }
         .lesson-placeholder { width: min(760px,90vw); min-height: 180px; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; color: rgba(255,255,255,.65); font: 500 clamp(18px,2vw,26px)/1.3 Arial,sans-serif; background: rgba(255,255,255,.04); }
 
@@ -362,6 +404,12 @@ export default function LessonsPage() {
           .lesson-panel { padding-left: 18px; padding-right: 18px; }
           .lesson-list { width: 94vw; max-height: calc(100vh - 200px); gap: 12px; padding-left: 4px; padding-right: 4px; }
           .lesson-island { flex-basis: 82px; border-radius: 24px; font-size: 20px; }
+          .lesson-folder-button { flex-basis: 82px; padding-left: 38px; padding-right: 38px; }
+          .lesson-folder-button > span:first-child { max-width: 88%; }
+          .lesson-folder-children { padding-left: 22px; }
+          .lesson-folder-children::before { left: 8px; }
+          .lesson-deck { flex-basis: 60px; border-radius: 19px; font-size: 17px; }
+          .lesson-deck::before { left: -15px; width: 15px; }
         }
       `}</style>
     </main>
