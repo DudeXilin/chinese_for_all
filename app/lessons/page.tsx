@@ -213,22 +213,31 @@ export default function LessonsPage() {
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
                                                   <a className="lesson-island lesson-deck" key="ui-basics" href={"/cards_exerciser?topic=ui-basics"}>
-                            Колода1
+                            Основные действия интерфейса
                           </a>
                           <a className="lesson-island lesson-deck" key="ui-social" href={"/cards_exerciser?topic=ui-social"}>
-                            Колода2
+                            Общение и социальные функции
                           </a>
                           <a className="lesson-island lesson-deck" key="ui-account" href={"/cards_exerciser?topic=ui-account"}>
-                            Колода3
+                            Аккаунт и безопасность
                           </a>
                           <a className="lesson-island lesson-deck" key="ui-language" href={"/cards_exerciser?topic=ui-language"}>
-                            Колода4
+                            Язык и оформление
                           </a>
                           <a className="lesson-island lesson-deck" key="ui-network" href={"/cards_exerciser?topic=ui-network"}>
-                            Колода5
+                            Интернет и состояния
                           </a>
-                          <a className="lesson-island lesson-deck" key="ui-files-search" href={"/cards_exerciser?topic=ui-files-search"}>
-                            Колода6
+                          <a className="lesson-island lesson-deck" key="ui-files-folders" href={"/cards_exerciser?topic=ui-files-folders"}>
+                            Файлы и папки
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-search" href={"/cards_exerciser?topic=ui-search"}>
+                            Поиск и навигация
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-shopping" href={"/cards_exerciser?topic=ui-shopping"}>
+                            Покупки, товары и деньги
+                          </a>
+                          <a className="lesson-island lesson-deck" key="ui-apps" href={"/cards_exerciser?topic=ui-apps"}>
+                            Приложения и управление системой
                           </a>
                       </div>
                     </div>
@@ -363,7 +372,7 @@ export default function LessonsPage() {
         .lesson-folder.is-open .lesson-folder-chevron { transform: translateY(-50%) rotate(180deg); }
         .lesson-folder-children { display: flex; flex-direction: column; gap: 10px; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: max-height 260ms ease, opacity 180ms ease, transform 260ms ease; padding-left: 28px; position: relative; }
         .lesson-folder-children::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.16); }
-        .lesson-folder.is-open .lesson-folder-children { max-height: 700px; opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .lesson-folder.is-open .lesson-folder-children { max-height: 1000px; opacity: 1; transform: translateY(0); pointer-events: auto; }
         .lesson-deck { position: relative; flex-basis: 66px; border-radius: 20px; font-size: 19px; background: rgba(255,255,255,.045); }
         .lesson-deck::before { content: ""; position: absolute; left: -19px; top: 50%; width: 19px; height: 1px; background: rgba(255,255,255,.16); }
         .lesson-deck:hover { background: rgba(255,255,255,.085); }
