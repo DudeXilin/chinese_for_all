@@ -1,141 +1,287 @@
-# Human Flourishing License
+# People Flourishing License
 
 ## Version 1.0
 
-Copyright © [2026] [Chinese For Everyone].
+Copyright © 2026 Chinese For Everyone Project.
 
-### Preamble
+---
 
-This License exists to preserve four principles:
+## Preamble
 
-**Everyone must be able to use the Software on equal terms.
-No person may receive less functionality because they have less money.
-The Software must remain open and continuable.
-The Software must be used for genuine human benefit, not for human harm.**
+This License exists to preserve the following principles:
 
-These principles are the foundation of the License and shall guide its interpretation.
+**The Software must be available to everyone on equal terms.
+No person may receive less Functionality because they have less money.
+The Software and its continuation must remain open.
+The Software must be used for genuine human benefit and must not be used to exploit, degrade, or materially harm people.**
 
-### 1. Definitions
+These principles are the foundation of this License and shall guide its interpretation.
 
-**“Software”** means the software and source materials released by the Copyright Holder under this License.
+---
 
-**“Covered Work”** means the Software and any work that incorporates, modifies, extends, or is substantially derived from it.
+## 1. Definitions
 
-**“Functionality”** means the capabilities materially provided by a Covered Work.
+**“Software”** means the software, source code, source materials, documentation, assets, and other materials released by the Copyright Holder under this License.
+
+**“Covered Work”** means the Software and any work that incorporates, modifies, extends, or is substantially derived from the Software.
+
+A Covered Work also includes any software, service, plugin, extension, backend, API, account system, infrastructure, or other component that is intentionally integrated with, distributed with, operated together with, or used to provide the Functionality of a Covered Work, where that component is used to achieve a result that would be prohibited by this License if achieved directly within the Covered Work.
+
+A person must not avoid the requirements of this License by separating a Covered Work into nominally independent components.
+
+**“Licensee”** means any natural person or legal entity exercising rights granted by this License.
 
 **“User”** means any natural person who uses a Covered Work.
 
-**“Commercial Use”** means use intended to obtain revenue, monetary compensation, or commercial advantage, whether directly or indirectly.
+**“Functionality”** means any capability, output, result, capacity, quality, performance level, access right, service, feature, or practical benefit provided to a User through a Covered Work, whether provided directly or through another component, service, API, model, infrastructure, or dependency.
 
-**“Economic Condition”** means payment, subscription, purchase, donation, paid account, credit, licence fee, sponsorship, or any other transfer of money or economic value required or used to obtain, retain, improve, accelerate, increase, or unlock access to Functionality.
+**“Commercial Use”** means any use intended to obtain revenue, monetary compensation, commercial advantage, or other economic benefit, whether directly or indirectly.
 
-**“Donation”** means a voluntary transfer of value for which the donor receives no consideration.
+**“Economic Condition”** means any payment, subscription, purchase, donation, paid account, credit, licence fee, sponsorship, advertising arrangement, or other transfer of money or economic value that is required or used to obtain, retain, improve, accelerate, increase, prioritize, or unlock access to Functionality.
 
-**“Consideration”** means anything of economic, functional, preferential, or practical value provided in exchange for a Donation or other payment.
+**“Donation”** means a voluntary transfer of money or other value for which the donor receives nothing in return.
 
-**“Reliable Evidence”** means independently verifiable empirical research, systematic reviews or meta-analyses, controlled studies where reasonably applicable, or conclusions supported by established professional or scientific bodies relevant to the claimed benefit.
+A Donation ceases to be a Donation if the donor receives any Functionality, access, capacity, priority, quality, service, status, preference, recognition, advantage, or other consideration in return.
 
-### 2. Grant of Rights
+**“Reliable Evidence”** means the overall body of independently verifiable empirical evidence relevant to the matter at issue, including systematic reviews, meta-analyses, multiple independent controlled studies where reasonably applicable, longitudinal evidence, and conclusions supported by established professional or scientific bodies.
 
-Subject to this License, every person receives a worldwide, perpetual, royalty-free right to access, use, copy, modify, run, and distribute the Software and Covered Works.
+A single isolated study, preliminary finding, unreplicated result, anecdotal report, or study of insufficient methodological reliability shall not by itself constitute Reliable Evidence where the broader body of evidence does not support the claimed conclusion.
+
+---
+
+## 2. Grant of Rights
+
+Subject to the conditions of this License, every person receives a worldwide, perpetual, royalty-free right to access, use, copy, modify, run, study, and distribute the Software and Covered Works.
 
 These rights exist only while the conditions of this License are observed.
 
-### 3. Non-Commercial Use
+No provision of this License grants permission to engage in conduct prohibited by this License.
 
-Commercial Use of the Software or any Covered Work is prohibited.
+---
 
-The Software and Covered Works must not be sold, rented, licensed, monetized, commercially hosted, commercially provided, or used primarily to obtain commercial advantage.
+## 3. Non-Commercial Use
 
-### 4. Equal Access
+Commercial Use of the Software and Covered Works is prohibited.
+
+The Software and Covered Works must not be:
+
+* sold;
+* rented;
+* leased;
+* licensed for monetary compensation;
+* commercially hosted;
+* commercially provided;
+* monetized;
+* used to obtain commercial advantage; or
+* incorporated into a commercial service or product.
+
+This prohibition applies regardless of whether the Software itself is provided without charge.
+
+A person must not obtain commercial benefit by providing access to a Covered Work, providing Functionality of a Covered Work, or providing a service whose principal purpose is to provide access to a Covered Work.
+
+No person may use a Covered Work as part of a paid educational institution, paid service, commercial product, commercial service, or other economically valuable offering.
+
+---
+
+## 4. Equal Access
 
 Every User must receive the same Functionality under the same substantive conditions, regardless of wealth, income, ability to pay, payment status, or economic circumstances.
 
 No Covered Work may impose an Economic Condition for access to any Functionality.
 
-No Covered Work may provide a materially better, larger, faster, more capable, less restricted, or otherwise superior form of Functionality to one User because that User has paid or provided economic value.
+No Covered Work may provide a materially better, larger, faster, more capable, less restricted, more reliable, more convenient, or otherwise superior form of Functionality to one User because that User has paid or provided economic value.
 
 No Covered Work may divide its Functionality into free and paid versions or otherwise reserve Functionality for paying Users.
 
-A limitation is permitted only when it applies equally to all Users and cannot be removed, increased, or reduced through payment or economic status.
+A limitation is permitted only when it applies equally to all Users and cannot be removed, increased, reduced, bypassed, or otherwise altered through payment or economic status.
 
-This requirement applies equally to Functionality provided through third-party software, services, APIs, models, infrastructure, or other dependencies. A User must not be required to pay a third party in order to receive Functionality.
+A User must not be required to pay a third party in order to receive Functionality of a Covered Work.
 
-### 5. Donations
+This requirement applies regardless of whether the payment is made to the Copyright Holder, Licensee, hosting provider, API provider, model provider, infrastructure provider, plugin developer, service operator, or any other person or entity.
 
-Donations are permitted only when they are entirely voluntary and provide no Consideration.
+A Licensee must not move a prohibited payment requirement, restriction, or superior Functionality into another component, service, account system, plugin, extension, dependency, server, or other separate work.
 
-A donor must receive no additional Functionality, access, capacity, priority, quality, service, status, preference, or other advantage.
+---
 
-A payment that provides any such advantage is not a Donation and is prohibited.
+## 5. Donations
 
-### 6. Source and Same License
+Donations are permitted only when they are entirely voluntary and provide nothing in return.
 
-The complete source code necessary to inspect, modify, build, operate, and reproduce the Functionality of a Covered Work must be available without charge under this License.
+A donor must receive no:
 
-For a Covered Work operated over a network, the source necessary to reproduce the network service and its Functionality must likewise be made available under this License to its Users.
+* additional Functionality;
+* additional access;
+* increased capacity;
+* priority;
+* improved quality;
+* preferential treatment;
+* service;
+* status;
+* recognition;
+* personalization;
+* convenience;
+* privilege; or
+* other advantage.
+
+A donor must receive nothing that a non-donor does not receive on the same terms.
+
+A payment that provides any such benefit is not a Donation and is prohibited.
+
+---
+
+## 6. Source and Same License
+
+The complete source code and source materials necessary to inspect, modify, build, operate, and reproduce the Functionality of a Covered Work must be available without charge under this License.
+
+For a Covered Work operated over a network, the source and other materials necessary to reproduce the network service and its Functionality must likewise be made available without charge under this License to its Users.
+
+No Licensee may require payment, registration fee, subscription, donation, commercial relationship, or other Economic Condition to obtain the source materials required by this Section.
 
 Every Covered Work must be distributed under this License and no other license.
 
-No person may relicense, sublicense, or impose terms on a Covered Work that permit conduct prohibited by this License.
+No person may relicense, sublicense, or impose additional terms on a Covered Work that permit conduct prohibited by this License.
 
-Independent third-party components remain subject to their own licenses where their copyright holders require it.
+A Licensee must not add restrictions that reduce the rights granted by this License.
 
-### 7. Human Benefit
+Independent third-party components that are not Covered Works remain subject to their own licenses where their copyright holders require it.
 
-A Covered Work may be distributed or operated only if its primary intended purpose is to provide meaningful benefit to human beings.
+However, a third-party component must not be used as a means of circumventing any requirement of this License.
 
-For this purpose, a benefit must concern a real improvement in human welfare or capability, supported where applicable by Reliable Evidence. Examples include education and learning, intellectual development, physical health, mental well-being, meaningful social connection, cultural participation or creation, practical capability, autonomy, or other demonstrable aspects of human flourishing.
+---
 
-Entertainment or emotional enjoyment alone is not sufficient where the primary mechanism of the Covered Work is to produce compulsive use or dependency.
+## 7. Human Benefit
 
-A Covered Work violates this Section when its primary purpose or reasonably foreseeable principal mechanism is to create or maintain compulsive use, dependency, or other material impairment of a person's ability to stop using it or to pursue ordinary activities beneficial to their life.
+A Covered Work must not be distributed or operated in a manner that is intended to cause, facilitate, or materially contribute to substantial harm to human beings.
 
-The burden of establishing that a Covered Work satisfies this Section lies with the Licensee. The assessment must be based on the weight of Reliable Evidence rather than on the Licensee's personal belief, commercial interest, or assertion.
+The assessment of harm must be based on Reliable Evidence and the reasonably foreseeable effects of the relevant Functionality.
 
-Where Reliable Evidence establishes a substantial and reasonably foreseeable risk of material harm that is not outweighed by the human benefit of the relevant Functionality, that Functionality must not be distributed under this License.
+A Covered Work violates this Section where Reliable Evidence establishes that its Functionality causes or materially contributes to a substantial and reasonably foreseeable risk of material harm to people.
 
-### 8. Prohibited Use
+The Licensee bears the burden of establishing that a claimed human benefit is supported by Reliable Evidence where the Licensee relies upon that claimed benefit to justify the relevant use.
 
-A Covered Work must not be used primarily to produce or distribute material that:
+A Licensee must not rely upon a single isolated study, anecdotal claim, preliminary finding, unreplicated result, or other insufficient evidence as proof that a harmful Functionality provides a human benefit.
 
-(a) discriminates against or promotes the unequal treatment or subordination of persons on the basis of race, sex, sexual orientation, religion, nationality, disability, or age;
+The existence of some benefit does not permit a Functionality that is otherwise prohibited because Reliable Evidence establishes that it causes substantial and reasonably foreseeable material harm.
 
-(b) is pornographic, obscene, or sexually explicit.
+### Compulsive Use and Dependency
 
-### 9. No Circumvention
+Compulsive use and dependency constitute relevant forms of harm where they materially impair a person's ability to stop using the Covered Work or to pursue ordinary activities necessary or beneficial to their life.
 
-No person may avoid a requirement of this License by moving a prohibited payment condition, restriction, superior Functionality, source code, or other mechanism into another component, server, service, account system, plugin, extension, dependency, or other separate work.
+Examples include circumstances in which the use of a Covered Work causes or materially contributes to:
 
-A Covered Work must not be divided or reorganized for the purpose of achieving a result that this License prohibits when considered as a whole.
+* substantial impairment of personal or family relationships;
+* substantial interference with education;
+* substantial interference with professional or occupational responsibilities;
+* substantial interference with sleep or other ordinary life activities;
+* persistent inability to stop or meaningfully reduce use despite harmful consequences; or
+* other comparable material impairment of a person's ordinary life.
 
-### 10. Violation and Termination
+A Covered Work must not intentionally employ mechanisms whose reasonably foreseeable principal effect is to create or maintain such harmful dependency.
 
-A material violation of this License automatically terminates the rights granted to the violating Licensee.
+The mere fact that a person enjoys using a Covered Work does not by itself constitute harmful dependency.
 
-A violation by an end User does not by itself terminate the rights of an operator who did not participate in, intentionally enable, or knowingly permit the violation and who takes reasonable steps to stop it after becoming aware of it.
+Entertainment, recreation, or emotional enjoyment may constitute legitimate human benefit. However, entertainment or enjoyment does not excuse a Covered Work from the requirements of this Section where Reliable Evidence establishes substantial and reasonably foreseeable material harm.
+
+For example, prolonged use of a game may constitute relevant harm where the use materially interferes with a person's education, professional responsibilities, personal relationships, sleep, or other ordinary activities, even if the game itself is not otherwise inherently harmful.
+
+---
+
+## 8. Prohibited Discriminatory and Sexual Use
+
+A Covered Work must not be used to produce, distribute, facilitate, or materially enable material that:
+
+**(a)** discriminates against, promotes the unequal treatment or subordination of, or advocates material harm against persons or groups on the basis of race, ethnic origin, sex, gender, sexual orientation, gender identity, religion, nationality, disability, age, or comparable personal characteristics;
+
+**(b)** is pornographic or sexually explicit; or
+
+**(c)** is otherwise used principally to exploit or materially degrade persons on the basis of such characteristics.
+
+The examples in this Section are not intended to permit discrimination or exploitation based on another personal characteristic merely because that characteristic is not expressly listed.
+
+Educational, scientific, medical, historical, artistic, or documentary material is not prohibited solely because it discusses sex, sexuality, discrimination, or other sensitive subjects, provided that the Covered Work is not being used to produce or distribute prohibited material as such.
+
+---
+
+## 9. No Circumvention
+
+No person may avoid a requirement of this License by moving a prohibited payment condition, restriction, superior Functionality, source code, harmful mechanism, or other prohibited mechanism into another component, server, service, account system, plugin, extension, dependency, infrastructure provider, or other separate work.
+
+A Covered Work must not be divided, reorganized, renamed, wrapped, proxied, or otherwise structured for the purpose or foreseeable effect of achieving a result that this License prohibits when the relevant components are considered together.
+
+A Licensee must not use an independent component to provide Functionality that the Licensee would be prohibited from providing directly as part of the Covered Work.
+
+Whether components are formally separate works is not by itself determinative of whether they are being used to circumvent this License.
+
+---
+
+## 10. Violation and Termination
+
+Any violation of this License terminates the rights granted to the violating Licensee automatically upon the violation.
+
+Upon termination, the Licensee must immediately cease exercising the rights granted by this License.
 
 Termination removes the rights granted by this License; it does not transfer ownership of copyright or other property.
 
-### 11. Notices
+A violation by an end User does not by itself terminate the rights of an operator who did not participate in, intentionally enable, or knowingly permit the violation and who takes reasonable steps to stop the violation after becoming aware of it.
 
-Every copy and Covered Work must retain the copyright notice and the complete text of this License.
+No failure by the Copyright Holder to immediately enforce a provision constitutes a waiver of that provision.
 
-### 12. Disclaimer
+---
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, TO THE MAXIMUM EXTENT PERMITTED BY LAW.
+## 11. Notices
 
-### 13. Severability
+Every copy and Covered Work must retain:
 
-If any provision of this License is held unenforceable, the remaining provisions remain in effect to the maximum extent permitted by law.
+* the copyright notice;
+* attribution to the Copyright Holder;
+* the complete text of this License; and
+* any existing notices required by this License.
 
-### 14. Governing Principle
+A Licensee must not remove or obscure these notices.
 
-This License shall, to the maximum extent permitted by law, be interpreted to preserve its essential purposes:
+---
 
+## 12. Disclaimer
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY LAW.
+
+THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE OR A COVERED WORK, EXCEPT TO THE EXTENT LIABILITY CANNOT LAWFULLY BE EXCLUDED.
+
+---
+
+## 13. Severability
+
+If any provision of this License is held invalid or unenforceable, that provision shall be enforced to the maximum extent permitted by law, and the remaining provisions shall remain in effect.
+
+Where a provision cannot lawfully be enforced, it shall be interpreted or modified to the minimum extent necessary to preserve its essential purpose while remaining lawful.
+
+---
+
+## 14. Interpretation and Governing Principle
+
+This License shall, to the maximum extent permitted by law, be interpreted in a manner that preserves its essential purposes:
 
 **The Software is for everyone.
-No one's access depends on wealth.
+No person's access depends on wealth.
 Its capabilities cannot be sold, restricted, or reserved for those who can pay.
 Its source must remain available and its continuation must remain possible.
-And the Software must provide genuine human benefit rather than being designed to exploit, degrade, or materially harm the people who use it.**
+Donations must provide nothing in return.
+And the Software must not be used to exploit, degrade, discriminate against, or materially harm the people who use it.**
+
+Where an ambiguity exists between an interpretation that permits circumvention of these principles and an interpretation that preserves them, the interpretation that best preserves these principles shall be preferred to the maximum extent permitted by law.
+
+---
+
+## 15. Copyright Holder
+
+The Copyright Holder of the Software is:
+
+**Chinese For Everyone Project**
+
+Copyright © 2026 Chinese For Everyone Project.
+
+This License does not transfer ownership of the Software or its copyright to any Licensee.
+
+---
+
+**People Flourishing License — Version 1.0**
