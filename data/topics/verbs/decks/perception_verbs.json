@@ -1,0 +1,16 @@
+{
+  "id": "perception_verbs",
+  "title": "Глаголы восприятия",
+  "words": [
+    {
+      "word": "看",
+      "pinyin": "kàn",
+      "translation": "see; look at; watch"
+    },
+    {
+      "word": "听",
+      "pinyin": "tīng",
+      "translation": "listen; hear"
+    }
+  ]
+}
