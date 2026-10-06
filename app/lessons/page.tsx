@@ -5,6 +5,12 @@ import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
 import foodAndDrinksTopic from "@/data/topics/food_and_drinks/topic.json";
 import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
+import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
+import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
+import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
+import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
+import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
+import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
 
 // See docs/LIQUIDGL.md for the six ground rules this page is built around
 // (Rules #1-#6). Summary, since this page leans on all of them at once:
@@ -36,7 +42,7 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = ["Места", "Тема 2", "Еда и напитки", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
+const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const NAVIGATOR_STEP_DESKTOP = 74;
@@ -200,7 +206,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => {
-                const isFolder = topic === "Еда и напитки" || topic === "Тема 2";
+                const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тема 2";
                 const isOpen = openTopic === topic;
 
                 if (isFolder) {
@@ -212,11 +218,26 @@ export default function LessonsPage() {
                         aria-expanded={isOpen}
                         onClick={() => setOpenTopic(isOpen ? null : topic)}
                       >
-                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : "Переключи весь интерфейс на китайский!"}</span>
+                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : topic === "Люди и отношения" ? peopleTopic.title : "Переключи весь интерфейс на китайский!"}</span>
                         <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
-                                                  {topic === "Еда и напитки" ? (
+                                                  {topic === "Люди и отношения" ? (
+                          <>
+                            {[pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck].map((deck) => (
+                              <a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=people_and_relationships/" + deck.id}>
+                                {deck.title}
+                              </a>
+                            ))}
+                            <button
+                              className="lesson-island lesson-deck lesson-structure-button"
+                              type="button"
+                              onClick={() => setShowTopicStructure(true)}
+                            >
+                              Структура папки
+                            </button>
+                          </>
+                        ) : {topic === "Еда и напитки" ? (
                           <>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=food_and_drinks/drinks"}>
                               {drinksDeck.title}
@@ -317,16 +338,18 @@ export default function LessonsPage() {
           <div className="ui-words-backdrop" onClick={() => setShowTopicStructure(false)} />
           <div className="ui-words-panel">
             <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setShowTopicStructure(false)}>×</button>
-            <div className="ui-words-title">{foodAndDrinksTopic.title}</div>
+            <div className="ui-words-title">{peopleTopic.title}</div>
             <div className="ui-words-tree">
-              <details className="ui-words-branch" open>
-                <summary>{drinksDeck.title}</summary>
-                <div className="ui-words-leaves">
-                  {drinksDeck.words.map((card) => (
-                    <div className="ui-words-leaf" key={card.word}>{card.translation}</div>
-                  ))}
-                </div>
-              </details>
+              {[pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck].map((deck) => (
+                <details className="ui-words-branch" key={deck.id} open>
+                  <summary>{deck.title}</summary>
+                  <div className="ui-words-leaves">
+                    {deck.words.map((card) => (
+                      <div className="ui-words-leaf" key={card.word}>{card.translation}</div>
+                    ))}
+                  </div>
+                </details>
+              ))}
             </div>
           </div>
         </div>
