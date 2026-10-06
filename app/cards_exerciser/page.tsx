@@ -11,6 +11,10 @@ import feelingsVerbsDeck from "@/data/topics/verbs/decks/feelings_verbs.json";
 import perceptionVerbsDeck from "@/data/topics/verbs/decks/perception_verbs.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
 import studyDeck from "@/data/topics/study_and_work/decks/study.json";
+import bedroomDeck from "@/data/topics/home/decks/bedroom.json";
+import bathroomDeck from "@/data/topics/home/decks/bathroom.json";
+import kitchenDeck from "@/data/topics/home/decks/kitchen.json";
+import entrywayDeck from "@/data/topics/home/decks/entryway.json";
 import workDeck from "@/data/topics/study_and_work/decks/work.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
@@ -40,6 +44,10 @@ export default async function CardsExerciserPage({
     "adjectives/color": adjectivesTopic.decks[1],
     "study_and_work/study": studyDeck,
     "study_and_work/work": workDeck,
+    "home/bedroom": bedroomDeck,
+    "home/bathroom": bathroomDeck,
+    "home/kitchen": kitchenDeck,
+    "home/entryway": entrywayDeck,
     "people_and_relationships/pronouns": pronounsDeck,
     "people_and_relationships/close_people": closePeopleDeck,
     "people_and_relationships/introductions": introductionsDeck,
