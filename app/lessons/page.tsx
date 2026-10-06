@@ -392,7 +392,13 @@ export default function LessonsPage() {
                 ? [drinksDeck, popularFoodDeck]
                 : structureTopic === "body_health"
                   ? [bodyPartsDeck, medicineDeck]
-                  : [pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck]
+                  : structureTopic === "verbs"
+                    ? verbsTopic.decks
+                    : structureTopic === "adjectives"
+                      ? adjectivesTopic.decks
+                      : structureTopic === "study_and_work"
+                        ? [studyDeck, workDeck]
+                        : [pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck]
               ).map((deck) => (
                 <details className="ui-words-branch" key={deck.id} open>
                   <summary>{deck.title}</summary>
