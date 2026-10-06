@@ -1,0 +1,8 @@
+{
+  "id": "body_and_health",
+  "title": "Тело и здоровье",
+  "decks": [
+    {"id":"body_parts","title":"Части тела","file":"decks/body_parts.json"},
+    {"id":"medicine","title":"Медицина","file":"decks/medicine.json"}
+  ]
+}
