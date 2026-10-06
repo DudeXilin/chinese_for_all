@@ -1,0 +1,10 @@
+{
+  "id": "home",
+  "title": "Дом",
+  "decks": [
+    {"id": "bedroom", "title": "Спальня", "file": "decks/bedroom.json"},
+    {"id": "bathroom", "title": "Ванная", "file": "decks/bathroom.json"},
+    {"id": "kitchen", "title": "Кухня", "file": "decks/kitchen.json"},
+    {"id": "entryway", "title": "Прихожая", "file": "decks/entryway.json"}
+  ]
+}
