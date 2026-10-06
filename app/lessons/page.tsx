@@ -13,6 +13,11 @@ import verbsTopic from "@/data/topics/verbs/topic.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
 import studyDeck from "@/data/topics/study_and_work/decks/study.json";
 import workDeck from "@/data/topics/study_and_work/decks/work.json";
+import homeTopic from "@/data/topics/home/topic.json";
+import bedroomDeck from "@/data/topics/home/decks/bedroom.json";
+import bathroomDeck from "@/data/topics/home/decks/bathroom.json";
+import kitchenDeck from "@/data/topics/home/decks/kitchen.json";
+import entrywayDeck from "@/data/topics/home/decks/entryway.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
@@ -50,7 +55,7 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
+const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Дом", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const studyAndWorkDecks = [
@@ -94,7 +99,7 @@ export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [showUiWords, setShowUiWords] = useState(false);
-  const [structureTopic, setStructureTopic] = useState<"food_and_drinks" | "people_and_relationships" | "body_health" | "verbs" | "adjectives" | "study_and_work" | null>(null);
+  const [structureTopic, setStructureTopic] = useState<"food_and_drinks" | "people_and_relationships" | "body_health" | "verbs" | "adjectives" | "study_and_work" | "home" | null>(null);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -219,7 +224,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => {
-                const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тело и здоровье" || topic === "Глаголы" || topic === "Признаки" || topic === "Учёба и работа" || topic === "Тема 2";
+                const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тело и здоровье" || topic === "Глаголы" || topic === "Признаки" || topic === "Учёба и работа" || topic === "Дом" || topic === "Тема 2";
                 const isOpen = openTopic === topic;
 
                 if (isFolder) {
@@ -231,7 +236,7 @@ export default function LessonsPage() {
                         aria-expanded={isOpen}
                         onClick={() => setOpenTopic(isOpen ? null : topic)}
                       >
-                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : topic === "Люди и отношения" ? peopleTopic.title : topic === "Тело и здоровье" ? bodyHealthTopic.title : topic === "Глаголы" ? verbsTopic.title : topic === "Признаки" ? adjectivesTopic.title : topic === "Учёба и работа" ? "Учёба и работа" : "Переключи весь интерфейс на китайский!"}</span>
+                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : topic === "Люди и отношения" ? peopleTopic.title : topic === "Тело и здоровье" ? bodyHealthTopic.title : topic === "Глаголы" ? verbsTopic.title : topic === "Признаки" ? adjectivesTopic.title : topic === "Учёба и работа" ? "Учёба и работа" : topic === "Дом" ? homeTopic.title : "Переключи весь интерфейс на китайский!"}</span>
                         <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
@@ -291,6 +296,13 @@ export default function LessonsPage() {
                           <>
                             {adjectivesTopic.decks.map((deck) => (<a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=adjectives/" + deck.id}>{deck.title}</a>))}
                             <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("adjectives")}>Структура папки</button>
+                          </>
+                        ) : topic === "Дом" ? (
+                          <>
+                            {homeTopic.decks.map((deck) => (
+                              <a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=home/" + deck.id}>{deck.title}</a>
+                            ))}
+                            <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("home")}>Структура папки</button>
                           </>
                         ) : topic === "Учёба и работа" ? (
                           <>
