@@ -27,7 +27,8 @@ type Theory = {
   sections: TheorySection[];
 };
 
-type Props = { title: string; words: string[]; theory?: Theory };
+type DeckCard = { word: string; pinyin: string; translation: string };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -95,7 +96,7 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, theory }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory }: Props) {
   const [index, setIndex] = useState(0);
   const [side, setSide] = useState<"front" | "back">("front");
   const [answer, setAnswer] = useState("");
@@ -117,9 +118,10 @@ export default function CardsExerciserClient({ title, words, theory }: Props) {
 
   const currentWord = words[index] ?? "汉字";
   const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
+  const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
-  const correctPinyin = uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
-  const translation = uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
+  const correctPinyin = deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
+  const translation = deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
   const theoryKey = `cfa-theory-dismissed:${title}`;
 
   useEffect(() => {
