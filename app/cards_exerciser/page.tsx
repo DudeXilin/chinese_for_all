@@ -3,8 +3,10 @@ import lessonWords from "@/data/lesson-words.json";
 import measureWords from "@/data/measure-words.json";
 import lessonTheory from "@/data/theory/measure_words_theory.json";
 import uiDecks from "@/data/ui-interface-decks.json";
+import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
+type DeckCard = { word: string; pinyin: string; translation: string };
 
 export default async function CardsExerciserPage({
   searchParams,
@@ -14,11 +16,18 @@ export default async function CardsExerciserPage({
   const { topic: topicParam } = await searchParams;
   const topic = topicParam ?? "places";
   const uiDeck = uiDecks[topic as keyof typeof uiDecks];
-  const lesson = topic === "measure_words"
-    ? { title: "Счётные слова", words: Object.keys(measureWords) }
-    : uiDeck && "words" in uiDeck
-      ? { title: uiDeck.title, words: uiDeck.words }
-      : lessonWords[topic as keyof typeof lessonWords];
+  const isDrinksDeck = topic === "food_and_drinks/drinks";
+  const lesson = isDrinksDeck
+    ? {
+        title: drinksDeck.title,
+        words: drinksDeck.words.map((card) => card.word),
+        cards: drinksDeck.words as DeckCard[],
+      }
+    : topic === "measure_words"
+      ? { title: "Счётные слова", words: Object.keys(measureWords) }
+      : uiDeck && "words" in uiDeck
+        ? { title: uiDeck.title, words: uiDeck.words }
+        : lessonWords[topic as keyof typeof lessonWords];
   const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
 
   if (!lesson) {
@@ -40,6 +49,7 @@ export default async function CardsExerciserPage({
     <CardsExerciserClient
       title={lesson.title}
       words={lesson.words}
+      cards={"cards" in lesson ? lesson.cards : undefined}
       theory={theory}
     />
   );
