@@ -51,6 +51,11 @@ const sections = [
 const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
+const studyAndWorkDecks = [
+  { id: "study", title: "Учёба", words: [{word:"学校",pinyin:"xuéxiào",translation:"school"},{word:"读",pinyin:"dú",translation:"read; study"},{word:"老师",pinyin:"lǎoshī",translation:"teacher"},{word:"题",pinyin:"tí",translation:"question/problem in an assignment"},{word:"字",pinyin:"zì",translation:"character; letter"},{word:"书",pinyin:"shū",translation:"book"},{word:"学生",pinyin:"xuésheng",translation:"student"},{word:"学习",pinyin:"xuéxí",translation:"learn; study"}] },
+  { id: "work", title: "Работа", words: [{word:"工作",pinyin:"gōngzuò",translation:"work; job"}] },
+];
+
 const NAVIGATOR_STEP_DESKTOP = 74;
 const NAVIGATOR_STEP_MOBILE = 68;
 const currentStep = () => (typeof window !== "undefined" && window.innerWidth <= 600 ? NAVIGATOR_STEP_MOBILE : NAVIGATOR_STEP_DESKTOP);
