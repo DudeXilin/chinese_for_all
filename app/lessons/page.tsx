@@ -9,6 +9,8 @@ import popularFoodDeck from "@/data/topics/food_and_drinks/decks/popular_food.js
 import bodyHealthTopic from "@/data/topics/body_health/topic.json";
 import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
 import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
+import verbsTopic from "@/data/topics/verbs/topic.json";
+import adjectivesTopic from "@/data/topics/adjectives/topic.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
@@ -46,7 +48,7 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
+const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const NAVIGATOR_STEP_DESKTOP = 74;
@@ -85,7 +87,7 @@ export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [showUiWords, setShowUiWords] = useState(false);
-  const [structureTopic, setStructureTopic] = useState<"food_and_drinks" | "people_and_relationships" | "body_health" | null>(null);
+  const [structureTopic, setStructureTopic] = useState<"food_and_drinks" | "people_and_relationships" | "body_health" | "verbs" | "adjectives" | "study_and_work" | null>(null);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -210,7 +212,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => {
-                const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тело и здоровье" || topic === "Тема 2";
+                const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тело и здоровье" || topic === "Глаголы" || topic === "Признаки" || topic === "Учёба и работа" || topic === "Тема 2";
                 const isOpen = openTopic === topic;
 
                 if (isFolder) {
@@ -222,7 +224,7 @@ export default function LessonsPage() {
                         aria-expanded={isOpen}
                         onClick={() => setOpenTopic(isOpen ? null : topic)}
                       >
-                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : topic === "Люди и отношения" ? peopleTopic.title : topic === "Тело и здоровье" ? bodyHealthTopic.title : "Переключи весь интерфейс на китайский!"}</span>
+                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : topic === "Люди и отношения" ? peopleTopic.title : topic === "Тело и здоровье" ? bodyHealthTopic.title : topic === "Глаголы" ? verbsTopic.title : topic === "Признаки" ? adjectivesTopic.title : topic === "Учёба и работа" ? "Учёба и работа" : "Переключи весь интерфейс на китайский!"}</span>
                         <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
