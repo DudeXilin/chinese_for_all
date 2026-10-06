@@ -9,7 +9,8 @@ import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
 import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
 import verbsTopic from "@/data/topics/verbs/topic.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
-import studyAndWorkTopic from "@/data/topics/study_and_work/topic.json";
+import studyDeck from "@/data/topics/study_and_work/decks/study.json";
+import workDeck from "@/data/topics/study_and_work/decks/work.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
 import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
@@ -36,8 +37,8 @@ export default async function CardsExerciserPage({
     "verbs/perception_verbs": verbsTopic.decks[1],
     "adjectives/form": adjectivesTopic.decks[0],
     "adjectives/color": adjectivesTopic.decks[1],
-    "study_and_work/study": studyAndWorkTopic.decks[0],
-    "study_and_work/work": studyAndWorkTopic.decks[1],
+    "study_and_work/study": studyDeck,
+    "study_and_work/work": workDeck,
     "people_and_relationships/pronouns": pronounsDeck,
     "people_and_relationships/close_people": closePeopleDeck,
     "people_and_relationships/introductions": introductionsDeck,
