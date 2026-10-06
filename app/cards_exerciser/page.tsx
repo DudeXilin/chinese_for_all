@@ -45,7 +45,7 @@ export default async function CardsExerciserPage({
     "people_and_relationships/communication": communicationDeck,
     "people_and_relationships/politeness": politenessDeck,
   } as const;
-  const topicDeck = topicDecks[topic as keyof typeof topicDecks];
+  const topicDeck = topicDecks[topic as keyof typeof topicDecks] as { title: string; words: DeckCard[] } | undefined;
   const lesson = topicDeck
     ? {
         title: topicDeck.title,
