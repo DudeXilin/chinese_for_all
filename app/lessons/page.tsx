@@ -283,7 +283,7 @@ export default function LessonsPage() {
                             Все слова из папки
                           </button>
                           </>
-                        )}
+                        ))}
                       </div>
                     </div>
                   );
