@@ -4,6 +4,9 @@ import measureWords from "@/data/measure-words.json";
 import lessonTheory from "@/data/theory/measure_words_theory.json";
 import uiDecks from "@/data/ui-interface-decks.json";
 import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
+import popularFoodDeck from "@/data/topics/food_and_drinks/decks/popular_food.json";
+import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
+import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
 import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
@@ -23,6 +26,9 @@ export default async function CardsExerciserPage({
   const uiDeck = uiDecks[topic as keyof typeof uiDecks];
   const topicDecks = {
     "food_and_drinks/drinks": drinksDeck,
+    "food_and_drinks/popular_food": popularFoodDeck,
+    "body_health/body_parts": bodyPartsDeck,
+    "body_health/medicine": medicineDeck,
     "people_and_relationships/pronouns": pronounsDeck,
     "people_and_relationships/close_people": closePeopleDeck,
     "people_and_relationships/introductions": introductionsDeck,
