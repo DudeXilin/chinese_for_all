@@ -1,0 +1,11 @@
+{
+  "id": "people_and_relationships",
+  "title": "Люди и отношения",
+  "decks": [
+    {"id":"pronouns","title":"Местоимения","file":"decks/pronouns.json"},
+    {"id":"close_people","title":"Близкие","file":"decks/close_people.json"},
+    {"id":"introductions","title":"Знакомство","file":"decks/introductions.json"},
+    {"id":"communication","title":"Общение","file":"decks/communication.json"},
+    {"id":"politeness","title":"Вежливость","file":"decks/politeness.json"}
+  ]
+}
