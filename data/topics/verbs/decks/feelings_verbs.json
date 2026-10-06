@@ -1,0 +1,21 @@
+{
+  "id": "feelings_verbs",
+  "title": "Глаголы чувств",
+  "words": [
+    {
+      "word": "喜欢",
+      "pinyin": "xǐhuan",
+      "translation": "like"
+    },
+    {
+      "word": "爱",
+      "pinyin": "ài",
+      "translation": "love"
+    },
+    {
+      "word": "想",
+      "pinyin": "xiǎng",
+      "translation": "miss"
+    }
+  ]
+}
