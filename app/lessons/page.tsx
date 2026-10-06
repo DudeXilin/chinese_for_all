@@ -399,6 +399,7 @@ export default function LessonsPage() {
                       : structureTopic === "study_and_work"
                         ? [studyDeck, workDeck]
                         : [pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck]
+              ) as Array<{ id: string; title: string; words: Array<{ word: string; pinyin: string; translation: string }> }>
               ).map((deck) => (
                 <details className="ui-words-branch" key={deck.id} open>
                   <summary>{deck.title}</summary>
