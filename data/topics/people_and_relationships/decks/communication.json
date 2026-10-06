@@ -1,0 +1,11 @@
+{
+  "id": "communication",
+  "title": "Общение",
+  "words": [
+    {"word":"喂","pinyin":"wèi","translation":"hey; hello on the phone"},
+    {"word":"问","pinyin":"wèn","translation":"ask; inquire"},
+    {"word":"说","pinyin":"shuō","translation":"speak"},
+    {"word":"说话","pinyin":"shuōhuà","translation":"talk; speech"},
+    {"word":"打电话","pinyin":"dǎ diànhuà","translation":"make a phone call"}
+  ]
+}
