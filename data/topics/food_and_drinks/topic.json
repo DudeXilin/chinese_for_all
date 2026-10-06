@@ -6,6 +6,11 @@
       "id": "drinks",
       "title": "Напитки",
       "file": "decks/drinks.json"
+    },
+    {
+      "id": "popular_food",
+      "title": "Популярная еда",
+      "file": "decks/popular_food.json"
     }
   ]
 }
