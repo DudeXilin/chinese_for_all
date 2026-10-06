@@ -237,7 +237,7 @@ export default function LessonsPage() {
                               Структура папки
                             </button>
                           </>
-                        ) : {topic === "Еда и напитки" ? (
+                        ) : (topic === "Еда и напитки" ? (
                           <>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=food_and_drinks/drinks"}>
                               {drinksDeck.title}
