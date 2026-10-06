@@ -1,0 +1,12 @@
+{
+  "id": "popular_food",
+  "title": "Популярная еда",
+  "words": [
+    {"word":"米饭","pinyin":"mǐfàn","translation":"cooked rice"},
+    {"word":"鸡蛋","pinyin":"jīdàn","translation":"chicken egg"},
+    {"word":"吃","pinyin":"chī","translation":"eat"},
+    {"word":"菜","pinyin":"cài","translation":"dish; vegetables"},
+    {"word":"苹果","pinyin":"píngguǒ","translation":"apple"},
+    {"word":"水果","pinyin":"shuǐguǒ","translation":"fruit"}
+  ]
+}
