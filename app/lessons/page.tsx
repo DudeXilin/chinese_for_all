@@ -81,7 +81,7 @@ export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [showUiWords, setShowUiWords] = useState(false);
-  const [showTopicStructure, setShowTopicStructure] = useState(false);
+  const [structureTopic, setStructureTopic] = useState<"food_and_drinks" | "people_and_relationships" | null>(null);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -232,7 +232,7 @@ export default function LessonsPage() {
                             <button
                               className="lesson-island lesson-deck lesson-structure-button"
                               type="button"
-                              onClick={() => setShowTopicStructure(true)}
+                              onClick={() => setStructureTopic("people_and_relationships")}
                             >
                               Структура папки
                             </button>
@@ -245,7 +245,7 @@ export default function LessonsPage() {
                             <button
                               className="lesson-island lesson-deck lesson-structure-button"
                               type="button"
-                              onClick={() => setShowTopicStructure(true)}
+                              onClick={() => setStructureTopic("food_and_drinks")}
                             >
                               Структура папки
                             </button>
@@ -333,14 +333,17 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {showTopicStructure && (
-        <div className="ui-words-modal" role="dialog" aria-modal="true" aria-label="Структура папки Еда и напитки">
-          <div className="ui-words-backdrop" onClick={() => setShowTopicStructure(false)} />
+      {structureTopic && (
+        <div className="ui-words-modal" role="dialog" aria-modal="true" aria-label="Структура папки">
+          <div className="ui-words-backdrop" onClick={() => setStructureTopic(null)} />
           <div className="ui-words-panel">
-            <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setShowTopicStructure(false)}>×</button>
-            <div className="ui-words-title">{peopleTopic.title}</div>
+            <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setStructureTopic(null)}>×</button>
+            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : peopleTopic.title}</div>
             <div className="ui-words-tree">
-              {[pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck].map((deck) => (
+              {(structureTopic === "food_and_drinks"
+                ? [drinksDeck]
+                : [pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck]
+              ).map((deck) => (
                 <details className="ui-words-branch" key={deck.id} open>
                   <summary>{deck.title}</summary>
                   <div className="ui-words-leaves">
