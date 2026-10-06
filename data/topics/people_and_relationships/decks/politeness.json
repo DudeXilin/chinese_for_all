@@ -1,0 +1,13 @@
+{
+  "id": "politeness",
+  "title": "Вежливость",
+  "words": [
+    {"word":"不客气","pinyin":"bú kèqi","translation":"you're welcome"},
+    {"word":"谢谢","pinyin":"xièxie","translation":"thank you"},
+    {"word":"请","pinyin":"qǐng","translation":"please; invite"},
+    {"word":"对不起","pinyin":"duìbuqǐ","translation":"I'm sorry; excuse me"},
+    {"word":"再见","pinyin":"zàijiàn","translation":"goodbye"},
+    {"word":"你好","pinyin":"nǐ hǎo","translation":"hello"},
+    {"word":"您","pinyin":"nín","translation":"you (plural), polite"}
+  ]
+}
