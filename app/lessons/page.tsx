@@ -3,6 +3,8 @@
 import { PointerEvent, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
+import foodAndDrinksTopic from "@/data/topics/food_and_drinks/topic.json";
+import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
 
 // See docs/LIQUIDGL.md for the six ground rules this page is built around
 // (Rules #1-#6). Summary, since this page leans on all of them at once:
@@ -34,7 +36,7 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = ["Места", ...Array.from({ length: 9 }, (_, index) => `Тема ${index + 2}`)];
+const topics = ["Места", "Еда и напитки", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const NAVIGATOR_STEP_DESKTOP = 74;
@@ -73,6 +75,7 @@ export default function LessonsPage() {
   const [active, setActive] = useState(0);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [showUiWords, setShowUiWords] = useState(false);
+  const [showTopicStructure, setShowTopicStructure] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [dragRatio, setDragRatio] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -197,7 +200,7 @@ export default function LessonsPage() {
           <section className="lesson-panel">
             <div className="lesson-list">
               {topics.map((topic) => {
-                const isFolder = topic === "Тема 2";
+                const isFolder = topic === "Еда и напитки" || topic === "Тема 2";
                 const isOpen = openTopic === topic;
 
                 if (isFolder) {
@@ -209,11 +212,26 @@ export default function LessonsPage() {
                         aria-expanded={isOpen}
                         onClick={() => setOpenTopic(isOpen ? null : topic)}
                       >
-                        <span>Переключи весь интерфейс на китайский!</span>
+                        <span>{topic === "Еда и напитки" ? foodAndDrinksTopic.title : "Переключи весь интерфейс на китайский!"}</span>
                         <span className="lesson-folder-chevron" aria-hidden="true">⌄</span>
                       </button>
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
-                                                  <a className="lesson-island lesson-deck" key="ui-basics" href={"/cards_exerciser?topic=ui-basics"}>
+                                                  {topic === "Еда и напитки" ? (
+                          <>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=food_and_drinks/drinks"}>
+                              {drinksDeck.title}
+                            </a>
+                            <button
+                              className="lesson-island lesson-deck lesson-structure-button"
+                              type="button"
+                              onClick={() => setShowTopicStructure(true)}
+                            >
+                              Структура папки
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                        <a className="lesson-island lesson-deck" key="ui-basics" href={"/cards_exerciser?topic=ui-basics"}>
                             Основные действия интерфейса
                           </a>
                           <a className="lesson-island lesson-deck" key="ui-social" href={"/cards_exerciser?topic=ui-social"}>
@@ -243,6 +261,8 @@ export default function LessonsPage() {
                           <button className="lesson-island lesson-deck lesson-all-words-button" type="button" onClick={() => setShowUiWords(true)}>
                             Все слова из папки
                           </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   );
@@ -291,6 +311,26 @@ export default function LessonsPage() {
           </section>
         </div>
       </div>
+
+      {showTopicStructure && (
+        <div className="ui-words-modal" role="dialog" aria-modal="true" aria-label="Структура папки Еда и напитки">
+          <div className="ui-words-backdrop" onClick={() => setShowTopicStructure(false)} />
+          <div className="ui-words-panel">
+            <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setShowTopicStructure(false)}>×</button>
+            <div className="ui-words-title">{foodAndDrinksTopic.title}</div>
+            <div className="ui-words-tree">
+              <details className="ui-words-branch" open>
+                <summary>{drinksDeck.title}</summary>
+                <div className="ui-words-leaves">
+                  {drinksDeck.words.map((card) => (
+                    <div className="ui-words-leaf" key={card.word}>{card.translation}</div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showUiWords && (
         <div className="ui-words-modal" role="dialog" aria-modal="true" aria-label="Все слова из папки">
@@ -411,6 +451,8 @@ export default function LessonsPage() {
         .lesson-deck::before { content: ""; position: absolute; left: -19px; top: 50%; width: 19px; height: 1px; background: rgba(255,255,255,.16); }
         .lesson-deck:hover { background: rgba(255,255,255,.085); }
 
+        .lesson-structure-button { background: rgba(255,255,255,.065); border-style: dashed; }
+        .lesson-structure-button:hover { background: rgba(255,255,255,.11); }
         .lesson-all-words-button { background: rgba(255,255,255,.08); border-style: dashed; }
         .lesson-all-words-button:hover { background: rgba(255,255,255,.12); }
         .ui-words-modal { position: absolute; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
