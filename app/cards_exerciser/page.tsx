@@ -7,7 +7,8 @@ import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
 import popularFoodDeck from "@/data/topics/food_and_drinks/decks/popular_food.json";
 import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
 import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
-import verbsTopic from "@/data/topics/verbs/topic.json";
+import feelingsVerbsDeck from "@/data/topics/verbs/decks/feelings_verbs.json";
+import perceptionVerbsDeck from "@/data/topics/verbs/decks/perception_verbs.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
 import studyDeck from "@/data/topics/study_and_work/decks/study.json";
 import workDeck from "@/data/topics/study_and_work/decks/work.json";
@@ -33,8 +34,8 @@ export default async function CardsExerciserPage({
     "food_and_drinks/popular_food": popularFoodDeck,
     "body_health/body_parts": bodyPartsDeck,
     "body_health/medicine": medicineDeck,
-    "verbs/feelings_verbs": verbsTopic.decks[0],
-    "verbs/perception_verbs": verbsTopic.decks[1],
+    "verbs/feelings_verbs": feelingsVerbsDeck,
+    "verbs/perception_verbs": perceptionVerbsDeck,
     "adjectives/form": adjectivesTopic.decks[0],
     "adjectives/color": adjectivesTopic.decks[1],
     "study_and_work/study": studyDeck,
