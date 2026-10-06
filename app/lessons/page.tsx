@@ -11,6 +11,8 @@ import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
 import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
 import verbsTopic from "@/data/topics/verbs/topic.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
+import studyDeck from "@/data/topics/study_and_work/decks/study.json";
+import workDeck from "@/data/topics/study_and_work/decks/work.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
 import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
@@ -280,6 +282,22 @@ export default function LessonsPage() {
                               Структура папки
                             </button>
                           </>
+                        ) : topic === "Глаголы" ? (
+                          <>
+                            {verbsTopic.decks.map((deck) => (<a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=verbs/" + deck.id}>{deck.title}</a>))}
+                            <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("verbs")}>Структура папки</button>
+                          </>
+                        ) : topic === "Признаки" ? (
+                          <>
+                            {adjectivesTopic.decks.map((deck) => (<a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=adjectives/" + deck.id}>{deck.title}</a>))}
+                            <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("adjectives")}>Структура папки</button>
+                          </>
+                        ) : topic === "Учёба и работа" ? (
+                          <>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/study"}>{studyDeck.title}</a>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/work"}>{workDeck.title}</a>
+                            <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("study_and_work")}>Структура папки</button>
+                          </>
                         ) : (
                           <>
                         <a className="lesson-island lesson-deck" key="ui-basics" href={"/cards_exerciser?topic=ui-basics"}>
@@ -368,7 +386,7 @@ export default function LessonsPage() {
           <div className="ui-words-backdrop" onClick={() => setStructureTopic(null)} />
           <div className="ui-words-panel">
             <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setStructureTopic(null)}>×</button>
-            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : peopleTopic.title}</div>
+            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : structureTopic === "verbs" ? verbsTopic.title : structureTopic === "adjectives" ? adjectivesTopic.title : structureTopic === "study_and_work" ? "Учёба и работа" : peopleTopic.title}</div>
             <div className="ui-words-tree">
               {(structureTopic === "food_and_drinks"
                 ? [drinksDeck, popularFoodDeck]
