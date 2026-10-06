@@ -1,0 +1,8 @@
+{
+  "id": "verbs",
+  "title": "Глаголы",
+  "decks": [
+    {"id": "feelings_verbs", "title": "Глаголы чувств", "file": "decks/feelings_verbs.json"},
+    {"id": "perception_verbs", "title": "Глаголы восприятия", "file": "decks/perception_verbs.json"}
+  ]
+}
