@@ -1,0 +1,11 @@
+{
+  "id": "food_and_drinks",
+  "title": "Еда и напитки",
+  "decks": [
+    {
+      "id": "drinks",
+      "title": "Напитки",
+      "file": "decks/drinks.json"
+    }
+  ]
+}
