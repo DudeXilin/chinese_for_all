@@ -1,0 +1,15 @@
+{
+  "id": "pronouns",
+  "title": "Местоимения",
+  "words": [
+    {"word":"我","pinyin":"wǒ","translation":"I; me"},
+    {"word":"你","pinyin":"nǐ","translation":"you"},
+    {"word":"他","pinyin":"tā","translation":"he; him"},
+    {"word":"她","pinyin":"tā","translation":"she"},
+    {"word":"我们","pinyin":"wǒmen","translation":"we; us"},
+    {"word":"您","pinyin":"nín","translation":"you, polite"},
+    {"word":"它","pinyin":"tā","translation":"it"},
+    {"word":"谁","pinyin":"shéi","translation":"who"},
+    {"word":"大家","pinyin":"dàjiā","translation":"everyone"}
+  ]
+}
