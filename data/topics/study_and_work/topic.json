@@ -1,0 +1,8 @@
+{
+  "id": "study_and_work",
+  "title": "Учёба и работа",
+  "decks": [
+    {"id": "study", "title": "Учёба", "file": "decks/study.json"},
+    {"id": "work", "title": "Работа", "file": "decks/work.json"}
+  ]
+}
