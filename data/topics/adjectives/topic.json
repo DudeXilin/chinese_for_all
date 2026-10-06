@@ -1,0 +1,43 @@
+{
+  "id": "adjectives",
+  "title": "Признаки",
+  "decks": [
+    {
+      "id": "form",
+      "title": "Форма",
+      "words": [
+        {
+          "word": "大",
+          "pinyin": "dà",
+          "translation": "big; large"
+        },
+        {
+          "word": "小",
+          "pinyin": "xiǎo",
+          "translation": "small; young"
+        },
+        {
+          "word": "高",
+          "pinyin": "gāo",
+          "translation": "high (tall)"
+        }
+      ]
+    },
+    {
+      "id": "color",
+      "title": "Цвет",
+      "words": [
+        {
+          "word": "红",
+          "pinyin": "hóng",
+          "translation": "red"
+        },
+        {
+          "word": "黑",
+          "pinyin": "hēi",
+          "translation": "black; dark"
+        }
+      ]
+    }
+  ]
+}
