@@ -4,6 +4,11 @@ import measureWords from "@/data/measure-words.json";
 import lessonTheory from "@/data/theory/measure_words_theory.json";
 import uiDecks from "@/data/ui-interface-decks.json";
 import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
+import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
+import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
+import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
+import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
+import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 type DeckCard = { word: string; pinyin: string; translation: string };
@@ -16,12 +21,20 @@ export default async function CardsExerciserPage({
   const { topic: topicParam } = await searchParams;
   const topic = topicParam ?? "places";
   const uiDeck = uiDecks[topic as keyof typeof uiDecks];
-  const isDrinksDeck = topic === "food_and_drinks/drinks";
-  const lesson = isDrinksDeck
+  const topicDecks = {
+    "food_and_drinks/drinks": drinksDeck,
+    "people_and_relationships/pronouns": pronounsDeck,
+    "people_and_relationships/close_people": closePeopleDeck,
+    "people_and_relationships/introductions": introductionsDeck,
+    "people_and_relationships/communication": communicationDeck,
+    "people_and_relationships/politeness": politenessDeck,
+  } as const;
+  const topicDeck = topicDecks[topic as keyof typeof topicDecks];
+  const lesson = topicDeck
     ? {
-        title: drinksDeck.title,
-        words: drinksDeck.words.map((card) => card.word),
-        cards: drinksDeck.words as DeckCard[],
+        title: topicDeck.title,
+        words: topicDeck.words.map((card) => card.word),
+        cards: topicDeck.words as DeckCard[],
       }
     : topic === "measure_words"
       ? { title: "Счётные слова", words: Object.keys(measureWords) }
