@@ -403,7 +403,7 @@ export default function LessonsPage() {
                 <details className="ui-words-branch" key={deck.id} open>
                   <summary>{deck.title}</summary>
                   <div className="ui-words-leaves">
-                    {"words" in deck ? deck.words : []).map((card) => (
+                    {("words" in deck ? deck.words : []).map((card) => (
                       <div className="ui-words-leaf" key={card.word}>{card.translation}</div>
                     ))}
                   </div>
