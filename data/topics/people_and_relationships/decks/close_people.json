@@ -1,0 +1,14 @@
+{
+  "id": "close_people",
+  "title": "Близкие",
+  "words": [
+    {"word":"女儿","pinyin":"nǚér","translation":"daughter"},
+    {"word":"家","pinyin":"jiā","translation":"family; home"},
+    {"word":"朋友","pinyin":"péngyou","translation":"friend"},
+    {"word":"妈妈","pinyin":"māma","translation":"mom"},
+    {"word":"爸爸","pinyin":"bàba","translation":"dad"},
+    {"word":"儿子","pinyin":"érzi","translation":"son"},
+    {"word":"孩子","pinyin":"háizi","translation":"child"},
+    {"word":"姐姐","pinyin":"jiějie","translation":"older sister"}
+  ]
+}
