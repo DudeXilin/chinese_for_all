@@ -1,0 +1,26 @@
+{
+  "id": "drinks",
+  "title": "Напитки",
+  "words": [
+    {
+      "word": "喝",
+      "pinyin": "hē",
+      "translation": "to drink"
+    },
+    {
+      "word": "水",
+      "pinyin": "shuǐ",
+      "translation": "water"
+    },
+    {
+      "word": "茶",
+      "pinyin": "chá",
+      "translation": "tea"
+    },
+    {
+      "word": "咖啡",
+      "pinyin": "kāfēi",
+      "translation": "coffee"
+    }
+  ]
+}
