@@ -21,6 +21,7 @@ import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_
 import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
 import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
 import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
+import testDeck from "@/data/test_deck.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 type DeckCard = { word: string; pinyin: string; translation: string };
@@ -53,6 +54,7 @@ export default async function CardsExerciserPage({
     "people_and_relationships/introductions": introductionsDeck,
     "people_and_relationships/communication": communicationDeck,
     "people_and_relationships/politeness": politenessDeck,
+    "test_deck": testDeck,
   } as const;
   const topicDeck = topicDecks[topic as keyof typeof topicDecks] as { title: string; words: DeckCard[] } | undefined;
   const lesson = topicDeck
