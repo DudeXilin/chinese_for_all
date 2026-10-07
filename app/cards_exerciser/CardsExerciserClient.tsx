@@ -27,7 +27,8 @@ type Theory = {
   sections: TheorySection[];
 };
 
-type DeckCard = { word: string; pinyin: string; translation: string };
+type StructureComponent = { char: string; pinyin?: string; meaning?: string; components?: StructureComponent[] };
+type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
 type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory };
 
 const translations: Record<string, string> = {
@@ -109,6 +110,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const [ratingBusy, setRatingBusy] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [syncReady, setSyncReady] = useState(false);
+  const [structureStack, setStructureStack] = useState<Array<{ char: string; pinyin: string; translation: string; components: StructureComponent[] }>>([]);
   const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
   const [lastFSRSResult, setLastFSRSResult] = useState<{ index: number; word: string; answer: string; rating: number; previousCard: SerializedCard; result: ReturnType<typeof review> } | null>(null);
@@ -122,6 +124,13 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
   const correctPinyin = deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
   const translation = deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
+
+  function openCharacterStructure(char: string, structure?: StructureComponent | { pinyin?: string; translation?: string; components?: StructureComponent[] }) {
+    if (!structure?.components?.length) return;
+    setStructureStack((stack) => [...stack, { char, pinyin: structure.pinyin ?? pinyins[char] ?? "pinyin placeholder", translation: structure.translation ?? translations[char] ?? "перевод placeholder", components: structure.components }]);
+  }
+  function closeTopStructure() { setStructureStack((stack) => stack.slice(0, -1)); }
+
   const theoryKey = `cfa-theory-dismissed:${title}`;
 
   useEffect(() => {
@@ -249,6 +258,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   }
 
   function reveal() {
+    setStructureStack([]);
     setSide("back");
     inputRef.current?.blur();
     setTonePadOpen(false);
@@ -576,13 +586,17 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center pt-[8px]">
                     <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
-                    <div className="mt-7 flex justify-center">
-                      <HanziWriterStrip
-                        characters={Array.from(currentWord)}
-                        mode="preview"
-                        size={240}
-                        keyPrefix={`${index}-back`}
-                      />
+                    <div className="mt-7 flex flex-wrap justify-center gap-3">
+                      {Array.from(currentWord).map((char, charIndex) => {
+                        const structure = deckCard?.characterStructure?.[char];
+                        const clickable = Boolean(structure?.components?.length);
+                        return (
+                          <button key={`${index}-back-${char}-${charIndex}`} type="button" disabled={!clickable} onClick={() => openCharacterStructure(char, structure)} className={`relative rounded-3xl border border-transparent p-1 transition ${clickable ? "cursor-pointer hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" : "cursor-default"}`} aria-label={clickable ? `Показать структуру иероглифа ${char}` : char}>
+                            <HanziWriterStrip characters={[char]} mode="preview" size={190} keyPrefix={`${index}-back-${charIndex}`} />
+                            {clickable && <span className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/35 px-2 py-0.5 text-[9px] text-white/35 backdrop-blur-md">структура</span>}
+                          </button>
+                        );
+                      })}
                     </div>
                     <div className="mt-4 flex flex-col items-center">
                       <PinyinAnswer answer={answer} correct={correctPinyin} />
@@ -752,6 +766,18 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
           </div>
         </div>
       )}
+      {structureStack.map((node, stackIndex) => (
+        <div key={`character-structure-${stackIndex}-${node.char}`} className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-4 backdrop-blur-md sm:px-6" onMouseDown={(event) => { if (event.target === event.currentTarget) closeTopStructure(); }} onTouchStart={(event) => { if (event.target === event.currentTarget) closeTopStructure(); }}>
+          <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/15 bg-[#111]/96 shadow-2xl shadow-black/70" onMouseDown={(event) => event.stopPropagation()} onTouchStart={(event) => event.stopPropagation()}>
+            <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-5 text-center sm:px-7"><div className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/30">Структура иероглифа</div><h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#fff4e6]/80">{node.translation}</h2><div className="mt-1 text-sm text-white/40">{node.pinyin}</div></div>
+            <div className="overflow-y-auto px-4 pb-7 pt-5 sm:px-7"><div className="flex justify-center"><HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} /></div><div className="mt-2 text-center text-4xl font-medium text-white/75">{node.char}</div>
+              <div className="mt-7"><div className="mb-2 text-center text-[10px] uppercase tracking-[0.18em] text-white/25">Компоненты</div><div className="flex justify-center text-2xl text-white/35">↓</div><div className={`mt-1 grid gap-3 ${node.components.length === 2 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2"}`}>
+                {node.components.map((component, componentIndex) => { const hasChildren = Boolean(component.components?.length); return <button key={`${node.char}-component-${component.char}-${componentIndex}`} type="button" disabled={!hasChildren} onClick={() => openCharacterStructure(component.char, component)} className={`rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "cursor-pointer border-white/10 bg-white/[0.045] hover:border-white/20 hover:bg-white/[0.075] active:scale-[0.98]" : "cursor-default border-white/[0.07] bg-white/[0.025]"}`}><div className="text-4xl text-white/80">{component.char}</div>{(component.meaning || component.pinyin) && <div className="mt-2 text-xs leading-5 text-white/45">{component.pinyin && <div>{component.pinyin}</div>}{component.meaning && <div>{component.meaning}</div>}</div>}{hasChildren && <div className="mt-3 text-[9px] uppercase tracking-[0.15em] text-white/30">нажмите для разбора</div>}</button>; })}
+              </div></div>
+            </div><button type="button" onClick={closeTopStructure} className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/50 transition hover:bg-white/[0.1] hover:text-white" aria-label="Закрыть">×</button>
+          </div>
+        </div>
+      ))}
       <HanziWriterDebugPanel visible={debugOpen} />
       <FSRS6DebugPanel visible={debugOpen} />
     </main>
