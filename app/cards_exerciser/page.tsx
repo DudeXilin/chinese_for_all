@@ -24,7 +24,7 @@ import politenessDeck from "@/data/topics/people_and_relationships/decks/politen
 import testDeck from "@/data/test_deck.json";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
-type DeckCard = { word: string; pinyin: string; translation: string };
+type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, unknown> };
 
 export default async function CardsExerciserPage({
   searchParams,
