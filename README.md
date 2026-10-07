@@ -1,6 +1,6 @@
-# CHINESE FOR ALL. A vibe-coding project.
+# CHINESE FOR EVERYONE. A vibe-coding project.
 
-A Next.js application for learning Chinese with Supabase authentication and user data management.
+A free web application with open code.
 
 
 ## Technologies
@@ -16,6 +16,9 @@ for a free stunning liquid glass effect implementation and making it free for ev
 
 - https://github.com/chanind/hanzi-writer
 for a free script that let's you write Chinese characters. 
+
+- https://github.com/open-spaced-repetition/ts-fsrs 
+for a free and effective memorizing-algorithm.   
 
 
 
