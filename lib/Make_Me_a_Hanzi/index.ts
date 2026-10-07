@@ -19,7 +19,7 @@ export type CharacterInfo = CharacterData & {
   decompositionTree: DecompositionNode | null;
 };
 
-const data = dictionary as Record<string, CharacterData>;
+const data = dictionary as unknown as Record<string, CharacterData>;
 
 export function getCharacterInfo(character: string): CharacterInfo | null {
   const value = data[character];
