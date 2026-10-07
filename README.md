@@ -22,5 +22,5 @@ for a free and effective memorizing-algorithm.
 
 
 
-Licensed under the Human Flourishing License, Version 1.0. See LICENSE.
+Licensed under the People Flourishing License, Version 1.0. See LICENSE.
 
