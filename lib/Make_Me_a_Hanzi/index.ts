@@ -1,13 +1,8 @@
 import dictionary from "./dictionary.json";
-import {
-  getDirectComponents,
-  getLeafComponents,
-  parseDecomposition,
-  type DecompositionNode,
-} from "./ids";
+import { getDirectComponents, getLeafComponents, parseDecomposition, type DecompositionNode } from "./ids";
 
 export type CharacterData = {
-  pinyin: string;
+  pinyin: string[];
   definition: string;
   decomposition: string;
   etymology: {
@@ -29,11 +24,7 @@ const data = dictionary as Record<string, CharacterData>;
 export function getCharacterInfo(character: string): CharacterInfo | null {
   const value = data[character];
   if (!value) return null;
-  return {
-    character,
-    ...value,
-    decompositionTree: parseDecomposition(value.decomposition),
-  };
+  return { character, ...value, decompositionTree: parseDecomposition(value.decomposition) };
 }
 
 export { getDirectComponents, getLeafComponents, parseDecomposition };
