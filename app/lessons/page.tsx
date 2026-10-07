@@ -24,6 +24,7 @@ import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_
 import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
 import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
 import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
+import testDeckData from "@/data/test_deck.json";
 
 // See docs/LIQUIDGL.md for the six ground rules this page is built around
 // (Rules #1-#6). Summary, since this page leans on all of them at once:
@@ -55,7 +56,7 @@ const sections = [
   "4 тип упражнений",
 ];
 
-const topics = ["Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Дом", "Тема 3", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
+const topics = ["ТЕСТ КОЛОДА", "Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Дом", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
 
 const studyAndWorkDecks = [
@@ -94,6 +95,8 @@ const GLASS_OPTIONS = {
     },
   },
 };
+
+const testDeck = testDeckData;
 
 export default function LessonsPage() {
   const [active, setActive] = useState(0);
@@ -226,6 +229,14 @@ export default function LessonsPage() {
               {topics.map((topic) => {
                 const isFolder = topic === "Еда и напитки" || topic === "Люди и отношения" || topic === "Тело и здоровье" || topic === "Глаголы" || topic === "Признаки" || topic === "Учёба и работа" || topic === "Дом" || topic === "Тема 2";
                 const isOpen = openTopic === topic;
+
+                if (topic === "ТЕСТ КОЛОДА") {
+                  return (
+                    <a className="lesson-island lesson-deck" key={topic} href="/cards_exerciser?topic=test_deck">
+                      {testDeck.title}
+                    </a>
+                  );
+                }
 
                 if (isFolder) {
                   return (
