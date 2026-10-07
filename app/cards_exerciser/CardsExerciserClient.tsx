@@ -27,8 +27,8 @@ type Theory = {
   sections: TheorySection[];
 };
 
-type StructureComponent = { char: string; pinyin?: string; meaning?: string; components?: StructureComponent[] };
-type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
+type StructureComponent = { char: string; pinyin?: string; meaning?: string; translation?: string; components?: StructureComponent[] };
+export type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
 type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory };
 
 const translations: Record<string, string> = {
@@ -127,7 +127,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
 
   function openCharacterStructure(char: string, structure?: StructureComponent | { pinyin?: string; translation?: string; components?: StructureComponent[] }) {
     if (!structure?.components?.length) return;
-    setStructureStack((stack) => [...stack, { char, pinyin: structure.pinyin ?? pinyins[char] ?? "pinyin placeholder", translation: structure.translation ?? translations[char] ?? "перевод placeholder", components: structure.components }]);
+    setStructureStack((stack) => [...stack, { char, pinyin: structure.pinyin ?? pinyins[char] ?? "pinyin placeholder", translation: structure.translation ?? translations[char] ?? "перевод placeholder", components: structure.components ?? [] }]);
   }
   function closeTopStructure() { setStructureStack((stack) => stack.slice(0, -1)); }
 
