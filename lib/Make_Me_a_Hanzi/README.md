@@ -10,7 +10,7 @@ Included:
 - radical data
 - a TypeScript IDS parser and character-data API
 
-The original Make Me a Hanzi dictionary is newline-delimited JSON. `dictionary.json` is a compact runtime representation keyed by character.
+The original Make Me a Hanzi dictionary is newline-delimited JSON. `dictionary.txt` is preserved here as the source database, while `dictionary.json` is a compact runtime representation keyed by character.
 
 The source project:
 https://github.com/skishore/makemeahanzi
