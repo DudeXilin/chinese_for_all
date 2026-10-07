@@ -5,7 +5,33 @@
     {
       "word": "请",
       "pinyin": "qǐng",
-      "translation": "вежливый вопрос; вежливое приглашение."
+      "translation": "вежливый вопрос; вежливое приглашение.",
+      "characterStructure": {
+        "请": {
+          "pinyin": "qǐng",
+          "translation": "вежливый вопрос; вежливое приглашение.",
+          "components": [
+            {
+              "char": "讠",
+              "pinyin": "yán",
+              "meaning": "speech"
+            },
+            {
+              "char": "青",
+              "pinyin": "qīng",
+              "meaning": "green or blue",
+              "components": [
+                {
+                  "char": "龶"
+                },
+                {
+                  "char": "月"
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   ]
 }
