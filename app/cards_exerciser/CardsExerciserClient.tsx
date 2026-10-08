@@ -10,6 +10,7 @@ import { createCard, preview, review, Rating, type SerializedCard } from "@/lib/
 import FSRS6DebugPanel from "@/lib/FSRS-6/our_system/FSRS6DebugPanel";
 import { logFSRS } from "@/lib/FSRS-6/our_system/debugLog";
 import uiDecks from "@/data/ui-interface-decks.json";
+import Hint from "@/components/hint";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -691,14 +692,18 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center pt-[8px]">
                     <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
+                    <Hint itemKey={currentWord} />
                     <div className="mt-7 flex flex-wrap justify-center gap-3">
                       {Array.from(currentWord).map((char, charIndex) => {
                         const structure = getCharacterStructure(char);
                         const clickable = Boolean(structure?.components?.length);
                         return (
-                          <button key={`${index}-back-${char}-${charIndex}`} type="button" disabled={!clickable} onClick={() => openCharacterStructure(char)} className={`relative rounded-3xl border border-transparent p-1 transition ${clickable ? "cursor-pointer hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" : "cursor-default"}`} aria-label={clickable ? `Показать структуру иероглифа ${char}` : char}>
-                            <HanziWriterStrip characters={[char]} mode="preview" size={190} keyPrefix={`${index}-back-${charIndex}`} />
-                          </button>
+                          <div key={`${index}-back-${char}-${charIndex}`} className="flex w-[190px] flex-col items-center">
+                            <button type="button" disabled={!clickable} onClick={() => openCharacterStructure(char)} className={`relative rounded-3xl border border-transparent p-1 transition ${clickable ? "cursor-pointer hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" : "cursor-default"}`} aria-label={clickable ? `Показать структуру иероглифа ${char}` : char}>
+                              <HanziWriterStrip characters={[char]} mode="preview" size={190} keyPrefix={`${index}-back-${charIndex}`} />
+                            </button>
+                            <Hint itemKey={char} className="mt-1 max-w-[190px]" />
+                          </div>
                         );
                       })}
                     </div>
@@ -949,6 +954,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                             {component.meaning && <div>{component.meaning}</div>}
                           </div>
                         )}
+                        <Hint itemKey={component.char} className="mt-2 max-w-none" />
                         {hasChildren && <div className="mt-3 text-[9px] uppercase tracking-[0.15em] text-white/30">нажмите для разбора</div>}
                       </button>
                     );
