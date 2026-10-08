@@ -939,25 +939,40 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                   {node.components.map((component, componentIndex) => {
                     const hasChildren = Boolean(component.components?.length);
                     return (
-                      <button
+                      <div
                         key={`${node.char}-component-${component.char}-${componentIndex}`}
-                        type="button"
-                        disabled={!hasChildren}
-                        onClick={() => openCharacterStructure(component.char)}
-                        className={`rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "cursor-pointer border-white/10 bg-white/[0.045] hover:border-white/20 hover:bg-white/[0.075] active:scale-[0.98]" : "cursor-default border-white/[0.07] bg-white/[0.025]"}`}
+                        className={`rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "border-white/10 bg-white/[0.045]" : "border-white/[0.07] bg-white/[0.025]"}`}
                       >
-                        <div className="text-4xl text-white/80">{component.char}</div>
-                        {(component.meaning || component.pinyin) && (
-                          <div className="mt-2 text-xs leading-5 text-white/45">
-                            {component.pinyin && <div>{component.pinyin}</div>}
-                            {component.meaning && <div>{component.meaning}</div>}
-                          </div>
+                        {hasChildren ? (
+                          <button
+                            type="button"
+                            onClick={() => openCharacterStructure(component.char)}
+                            className="w-full rounded-xl transition hover:bg-white/[0.035] active:scale-[0.98]"
+                            aria-label={`Показать структуру иероглифа ${component.char}`}
+                          >
+                            <div className="text-4xl text-white/80">{component.char}</div>
+                            {(component.meaning || component.pinyin) && (
+                              <div className="mt-2 text-xs leading-5 text-white/45">
+                                {component.pinyin && <div>{component.pinyin}</div>}
+                                {component.meaning && <div>{component.meaning}</div>}
+                              </div>
+                            )}
+                            <div className="mt-3 text-[9px] uppercase tracking-[0.15em] text-white/30">нажмите для разбора</div>
+                          </button>
+                        ) : (
+                          <>
+                            <div className="text-4xl text-white/80">{component.char}</div>
+                            {(component.meaning || component.pinyin) && (
+                              <div className="mt-2 text-xs leading-5 text-white/45">
+                                {component.pinyin && <div>{component.pinyin}</div>}
+                                {component.meaning && <div>{component.meaning}</div>}
+                              </div>
+                            )}
+                          </>
                         )}
-                        <Hint itemKey={component.char} className="mt-2 max-w-none" />
-                        {hasChildren && <div className="mt-3 text-[9px] uppercase tracking-[0.15em] text-white/30">нажмите для разбора</div>}
-                      </button>
-                    );
-                  })}
+                        <Hint itemKey={component.char} className="mt-2 max-w-full" />
+                      </div>
+                    );                 })}
                 </div>
               </div>
             </div>
