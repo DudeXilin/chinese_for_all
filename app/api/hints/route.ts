@@ -106,6 +106,8 @@ export async function GET(request: Request) {
     itemKey,
     hint,
     source,
+    userHint,
+    developerHint: isAdmin ? developerHint : null,
     authenticated: Boolean(userId),
     isAdmin,
   });
@@ -181,7 +183,7 @@ export async function POST(request: Request) {
     const existing = await existingResponse.json();
     sha = existing.sha;
     try {
-      data = JSON.parse(Buffer.from(existing.content.replace(/\\n/g, ""), "base64").toString("utf8"));
+      data = JSON.parse(Buffer.from(existing.content.replace(/\n/g, ""), "base64").toString("utf8"));
     } catch {
       return NextResponse.json({ error: "Developer hint shard is invalid JSON" }, { status: 500 });
     }
