@@ -37,11 +37,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
   }
 
   useEffect(() => {
-    let cancelled = false;
     loadHint().catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, [itemKey]);
 
   function beginEdit(nextMode: "user" | "developer") {
