@@ -338,6 +338,29 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
     setTonePadOpen(false);
   }
 
+  // A decomposition layer is a modal: the page/card underneath must not scroll.
+  // Lock the document itself so iOS Safari cannot route a swipe from the modal
+  // header/empty area into the page's scroll container.
+  useEffect(() => {
+    if (structureStack.length === 0) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyTouchAction = body.style.touchAction;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+      body.style.touchAction = previousBodyTouchAction;
+    };
+  }, [structureStack.length]);
+
   useEffect(() => {
     if (!tonePadOpen || !window.visualViewport) return;
     const update = () => {
@@ -842,7 +865,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       {structureStack.map((node, stackIndex) => (
         <div
           key={`character-structure-${stackIndex}-${node.char}`}
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-0 py-0 backdrop-blur-md sm:px-6 sm:py-4"
+          className="fixed inset-0 z-[120] flex items-center justify-center touch-none bg-black/65 px-0 py-0 backdrop-blur-md sm:px-6 sm:py-4"
           onMouseDown={(event) => {
             if (window.innerWidth >= 640 && event.target === event.currentTarget) closeTopStructure();
           }}
@@ -860,7 +883,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
               <div className="mt-1 text-sm text-white/40">{node.pinyin}</div>
             </div>
 
-            <div className="overflow-y-auto px-4 pb-7 pt-5 sm:px-7">
+            <div className="min-h-0 flex-1 touch-pan-y overscroll-contain overflow-y-auto px-4 pb-7 pt-5 sm:px-7">
               <div className="flex justify-center">
                 <HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} />
               </div>
