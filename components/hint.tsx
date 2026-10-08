@@ -131,7 +131,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
   const displayedTextIsPlaceholder = !hint && authenticated;
 
   return (
-    <div className={`mx-auto mt-4 w-full max-w-[570px] ${className}`}>
+    <div className={`mx-auto mt-4 w-full max-w-[570px] min-w-0 px-3 sm:px-0 ${className}`}>
       {!editing ? (
         <div className="relative inline-block w-fit min-w-[190px] max-w-full rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-left">
           <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
             {source === "user" && <span className="text-[9px] text-white/25">личная</span>}
           </div>
 
-          <div className={`mt-1 whitespace-normal break-words pr-9 text-sm leading-6 ${hint ? "text-white/55" : "text-white/20"}`}>
+          <div className={`mt-1 whitespace-pre-wrap break-words pr-9 text-sm leading-6 ${hint ? "text-white/55" : "text-white/20"}`}>
             {displayedHint}
           </div>
 
