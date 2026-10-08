@@ -128,6 +128,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
   const pencilMode = source === "developer" && isAdmin ? "developer" : "user";
   const draftLength = Array.from(draft).length;
   const userDraftTooLong = mode === "user" && draftLength > MAX_USER_HINT_LENGTH;
+  const displayedTextIsPlaceholder = !hint && authenticated;
 
   return (
     <div className={`mx-auto mt-4 w-full max-w-[570px] ${className}`}>
