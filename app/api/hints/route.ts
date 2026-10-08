@@ -24,7 +24,7 @@ function normalizeHint(value: unknown) {
   return hint;
 }
 
-async function readDeveloperHint(itemKey: string): Promise<string | nullasync function readDeveloperHint(itemKey: string): Promise<string | null> {
+async function readDeveloperHint(itemKey: string): Promise<string | null> {
   const shard = hintShardKey(itemKey);
   const filePath = `data/developer_hints/${shard}.json`;
   const headers: Record<string, string> = {
