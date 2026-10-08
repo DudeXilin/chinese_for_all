@@ -1,5 +1,3 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCharacterInfo } from "@/lib/Make_Me_a_Hanzi";
@@ -26,13 +24,31 @@ function normalizeHint(value: unknown) {
   return hint;
 }
 
-async function readDeveloperHint(itemKey: string): Promise<string | null> {
+async function readDeveloperHint(itemKey: string): Promise<string | nullasync function readDeveloperHint(itemKey: string): Promise<string | null> {
   const shard = hintShardKey(itemKey);
-  const filePath = path.join(process.cwd(), "data", "developer_hints", `${shard}.json`);
+  const filePath = `data/developer_hints/${shard}.json`;
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
 
   try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const data = JSON.parse(raw) as Record<string, unknown>;
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO}/contents/${filePath}?ref=${BRANCH}`,
+      { headers, cache: "no-store" },
+    );
+
+    if (!response.ok) return null;
+
+    const existing = await response.json();
+    const encoded = typeof existing.content === "string" ? existing.content.replace(/\\n/g, "") : "";
+    if (!encoded) return null;
+
+    const data = JSON.parse(Buffer.from(encoded, "base64").toString("utf8")) as Record<string, unknown>;
     return typeof data[itemKey] === "string" && data[itemKey].trim() ? data[itemKey].trim() : null;
   } catch {
     return null;
