@@ -692,17 +692,16 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center pt-[8px]">
                     <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
-                    <Hint itemKey={currentWord} />
                     <div className="mt-7 flex flex-wrap justify-center gap-3">
                       {Array.from(currentWord).map((char, charIndex) => {
                         const structure = getCharacterStructure(char);
                         const clickable = Boolean(structure?.components?.length);
                         return (
-                          <div key={`${index}-back-${char}-${charIndex}`} className="flex w-[190px] flex-col items-center">
+                          <div key={`${index}-back-${char}-${charIndex}`} className="flex flex-col items-center">
                             <button type="button" disabled={!clickable} onClick={() => openCharacterStructure(char)} className={`relative rounded-3xl border border-transparent p-1 transition ${clickable ? "cursor-pointer hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" : "cursor-default"}`} aria-label={clickable ? `Показать структуру иероглифа ${char}` : char}>
                               <HanziWriterStrip characters={[char]} mode="preview" size={190} keyPrefix={`${index}-back-${charIndex}`} />
                             </button>
-                            <Hint itemKey={char} className="mt-1 max-w-[190px]" />
+                            <Hint itemKey={char} className="mt-1" />
                           </div>
                         );
                       })}
