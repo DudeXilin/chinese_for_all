@@ -6,7 +6,9 @@ import { hintShardKey } from "@/lib/hints/sharding";
 const REPO = "DudeXilin/chinese_for_all";
 const BRANCH = "main";
 const MAX_ITEM_KEY_LENGTH = 100;
-const MAX_HINT_LENGTH = 1000;
+const MAX_USER_HINT_LENGTH = 100;
+const MAX_DEVELOPER_HINT_LENGTH = 1000;
+const USER_HINT_COOLDOWN_MS = 10_000;
 
 type Source = "user" | "developer" | "make_me_a_hanzi" | "none";
 
@@ -17,10 +19,10 @@ function normalizeItemKey(value: unknown) {
   return itemKey;
 }
 
-function normalizeHint(value: unknown) {
+function normalizeHint(value: unknown, maxLength: number) {
   if (typeof value !== "string") return null;
   const hint = value.trim();
-  if (!hint || Array.from(hint).length > MAX_HINT_LENGTH) return null;
+  if (!hint || Array.from(hint).length > maxLength) return null;
   return hint;
 }
 
@@ -93,6 +95,21 @@ async function getUserHint(
   return data?.hint?.trim() || null;
 }
 
+async function getLastUserHintUpdate(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+) {
+  const { data } = await supabase
+    .from("user_hints")
+    .select("updated_at")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data?.updated_at ? new Date(data.updated_at).getTime() : null;
+}
+
 export async function GET(request: Request) {
   const itemKey = normalizeItemKey(new URL(request.url).searchParams.get("itemKey"));
   if (!itemKey) {
@@ -137,7 +154,8 @@ export async function POST(request: Request) {
   }
 
   const mode = body?.mode === "developer" ? "developer" : "user";
-  const hint = normalizeHint(body?.hint);
+  const maxHintLength = mode === "user" ? MAX_USER_HINT_LENGTH : MAX_DEVELOPER_HINT_LENGTH;
+  const hint = normalizeHint(body?.hint, maxHintLength);
 
   if (mode === "user") {
     const { supabase, userId } = await getAuthContext();
@@ -145,30 +163,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    if (!hint) {
-      const { error } = await supabase
-        .from("user_hints")
-        .delete()
-        .eq("user_id", userId)
-        .eq("item_key", itemKey);
+    const rawHint = typeof body?.hint === "string" ? body.hint : "";
+    const enteredLength = Array.from(rawHint).length;
+    if (enteredLength > MAX_USER_HINT_LENGTH) {
+      return NextResponse.json(
+        { error: "Hint too long", maxLength: MAX_USER_HINT_LENGTH, length: enteredLength },
+        { status: 400 },
+      );
+    }
 
-      if (error) {
-        return NextResponse.json({ error: "Failed to delete user hint" }, { status: 500 });
+    if (hint) {
+      const lastUpdate = await getLastUserHintUpdate(supabase, userId);
+      if (lastUpdate !== null) {
+        const elapsed = Date.now() - lastUpdate;
+        if (elapsed < USER_HINT_COOLDOWN_MS) {
+          const retryAfterMs = USER_HINT_COOLDOWN_MS - elapsed;
+          return NextResponse.json(
+            { error: "Please wait before saving another hint", retryAfterMs },
+            { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } },
+          );
+        }
       }
 
-      return NextResponse.json({ ok: true, hint: null });
+      const { error } = await supabase.from("user_hints").upsert(
+        { user_id: userId, item_key: itemKey, hint, updated_at: new Date().toISOString() },
+        { onConflict: "user_id,item_key" },
+      );
+
+      if (error) {
+        return NextResponse.json({ error: "Failed to save user hint" }, { status: 500 });
+      }
+
+      return NextResponse.json({ ok: true, hint, source: "user" as Source });
     }
 
-    const { error } = await supabase.from("user_hints").upsert(
-      { user_id: userId, item_key: itemKey, hint, updated_at: new Date().toISOString() },
-      { onConflict: "user_id,item_key" },
-    );
+    const { error } = await supabase
+      .from("user_hints")
+      .delete()
+      .eq("user_id", userId)
+      .eq("item_key", itemKey);
 
     if (error) {
-      return NextResponse.json({ error: "Failed to save user hint" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to delete user hint" }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, hint, source: "user" as Source });
+    return NextResponse.json({ ok: true, hint: null });
   }
 
   const { userId, isAdmin } = await getAuthContext();
