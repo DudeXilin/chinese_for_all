@@ -11,6 +11,7 @@ type Props = {
 
 export default function Hint({ itemKey, className = "" }: Props) {
   const [hint, setHint] = useState<string | null>(null);
+  const [developerHint, setDeveloperHint] = useState<string | null>(null);
   const [source, setSource] = useState<HintSource>("none");
   const [authenticated, setAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -28,6 +29,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
         const data = await response.json();
         if (cancelled) return;
         setHint(typeof data.hint === "string" ? data.hint : null);
+        setDeveloperHint(typeof data.developerHint === "string" ? data.developerHint : null);
         setSource(data.source ?? "none");
         setAuthenticated(data.authenticated === true);
         setIsAdmin(data.isAdmin === true);
@@ -42,7 +44,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
   function beginEdit(nextMode: "user" | "developer") {
     if (nextMode === "user" && !authenticated) return;
     setMode(nextMode);
-    setDraft(nextMode === "user" && source === "user" ? hint ?? "" : nextMode === "developer" && source === "developer" ? hint ?? "" : "");
+    setDraft(nextMode === "user" ? (source === "user" ? hint ?? "" : "") : developerHint ?? "");
     setEditing(true);
   }
 
@@ -57,8 +59,16 @@ export default function Hint({ itemKey, className = "" }: Props) {
       if (!response.ok) throw new Error("Hint save failed");
 
       const data = await response.json();
-      setHint(data.hint ?? null);
-      setSource(data.source ?? "none");
+      const refreshed = await fetch(`/api/hints?itemKey=${encodeURIComponent(itemKey)}`, { cache: "no-store" });
+      if (refreshed.ok) {
+        const next = await refreshed.json();
+        setHint(typeof next.hint === "string" ? next.hint : null);
+        setDeveloperHint(typeof next.developerHint === "string" ? next.developerHint : null);
+        setSource(next.source ?? "none");
+      } else {
+        setHint(data.hint ?? null);
+        setSource(data.source ?? "none");
+      }
       setEditing(false);
     } finally {
       setBusy(false);
