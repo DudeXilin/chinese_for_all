@@ -32,3 +32,19 @@ canvas[data-liquid-ignore] {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+/* Keep native scrolling available without showing browser scrollbars. */
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
