@@ -35,11 +35,18 @@ type StructureComponent = {
   translation?: string;
   components?: StructureComponent[];
 };
+type CharacterEtymology = {
+  type?: string;
+  hint?: string | null;
+  phonetic?: string | null;
+  semantic?: string | null;
+};
+
 type CharacterStructure = {
   pinyin: string;
   translation: string;
   components: StructureComponent[];
-  etymology?: { type?: string; hint?: string | null; phonetic?: string | null; semantic?: string | null } | null;
+  etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
 type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory };
@@ -194,6 +201,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       pinyin: manual.pinyin ?? pinyins[char] ?? "pinyin placeholder",
       translation: manual.translation ?? translations[char] ?? "перевод placeholder",
       components: manual.components,
+      etymology: null,
     };
   }
 
@@ -888,6 +896,39 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} />
               </div>
               <div className="mt-2 text-center text-4xl font-medium text-white/75">{node.char}</div>
+              {node.etymology && (node.etymology.type || node.etymology.hint || node.etymology.phonetic || node.etymology.semantic) && (
+                <div className="mx-auto mt-6 max-w-xl rounded-3xl border border-white/[0.08] bg-white/[0.025] px-4 py-4 text-left">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-white/30">Этимология</div>
+                  {node.etymology.type && (
+                    <div className="mt-2 text-sm font-medium text-white/65">
+                      {{
+                        pictographic: "Пиктографический",
+                        ideographic: "Идеографический",
+                        pictophonetic: "Пикто-фонетический",
+                      }[node.etymology.type] ?? node.etymology.type}
+                    </div>
+                  )}
+                  {node.etymology.hint && (
+                    <div className="mt-2 text-sm leading-6 text-white/50">{node.etymology.hint}</div>
+                  )}
+                  {(node.etymology.semantic || node.etymology.phonetic) && (
+                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {node.etymology.semantic && (
+                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5">
+                          <div className="text-[9px] uppercase tracking-[0.14em] text-white/25">Смысловая часть</div>
+                          <div className="mt-1 text-sm text-white/50">{node.etymology.semantic}</div>
+                        </div>
+                      )}
+                      {node.etymology.phonetic && (
+                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5">
+                          <div className="text-[9px] uppercase tracking-[0.14em] text-white/25">Фонетическая часть</div>
+                          <div className="mt-1 text-sm text-white/50">{node.etymology.phonetic}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="mt-7">
                 <div className={`grid gap-3 ${node.components.length === 2 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2"}`}>
