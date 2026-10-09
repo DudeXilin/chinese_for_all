@@ -913,16 +913,6 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} />
               </div>
               <div className="mt-2 text-center text-4xl font-medium text-white/75">{node.char}</div>
-              {node.etymology?.type && (
-                <div className="mt-2 text-center text-[10px] tracking-wide text-white/35">
-                  {({
-                    pictographic: "Пиктографический тип",
-                    ideographic: "Идеографический тип",
-                    pictophonetic: "Пикто-фонетический тип",
-                  } as Record<string, string>)[node.etymology.type] ?? node.etymology.type}
-                </div>
-              )}
-
               <div className="mt-7">
                 <div className={`grid gap-3 ${node.components.length === 2 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2"}`}>
                   {node.components.map((component, componentIndex) => {
@@ -942,36 +932,6 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           >
                             {component.role === "semantic" ? "💡?" : "🔔?"}
                           </button>
-                        )}
-                        {componentRoleHelp?.char === component.char && componentRoleHelp.role === component.role && component.role && (
-                          <div className="absolute inset-x-2 top-9 z-20 max-h-64 overflow-y-auto rounded-xl border border-white/15 bg-[#202020] p-3 text-left text-xs leading-relaxed text-white/80 shadow-xl">
-                            <div className="mb-2 flex items-center justify-between gap-2 font-semibold text-white/95">
-                              <span>{component.role === "semantic" ? "💡 Смысловой компонент" : "🔔 Звуковой компонент"}</span>
-                              <button type="button" onClick={() => setComponentRoleHelp(null)} className="rounded-md px-1 text-base leading-none text-white/50 hover:bg-white/10" aria-label="Закрыть пояснение">×</button>
-                            </div>
-                            {component.role === "phonetic" ? (
-                              <>
-                                <p>Подсказывает звучание иероглифа... <strong>примерно в 30% случаев</strong>.</p>
-                                <p className="mt-2">К сожалению, со временем большинство иероглифов изменили своё произношение. Из-за этого потерялась твёрдая связь между звучанием фонетика и иероглифа.</p>
-                                <p className="mt-2">Но ничего страшного! В таком случае всегда можно придумать свою ассоциацию: просто посмотри на перевод или то, как выглядит компонент, и придумай из всех частей иероглифа короткую историю! :)</p>
-                                <div className="my-2 border-t border-white/10 pt-2">
-                                  <p className="font-semibold">Например: Ударять 打 dǎ</p>
-                                  <p>Смысловой компонент — рука 扌 + звуковой 丁 dīng (не звучит как 打).</p>
-                                  <p className="mt-1">Придумываем историю... Да ведь 丁 выглядит как кирка! Всё просто: рукой 扌 держим кирку 丁 и <strong>УДАРЯЕМ</strong> 打.</p>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <p>Подсказывает смысл иероглифа. Связь не всегда прямая и очевидная, она может уходить глубоко в корни китайского языка и культуры. Учёные до сих пор разгадывают смыслы компонентов в некоторых иероглифах и порой ведут между собой ожесточённые споры!</p>
-                                <p className="mt-2">Иногда легче придумать свою ассоциацию. Просто посмотри на перевод компонента или на то, как он выглядит, и придумай из всех компонентов короткую историю! :)</p>
-                                <div className="my-2 border-t border-white/10 pt-2">
-                                  <p className="font-semibold">Например: Очень 很 hěn</p>
-                                  <p>Смысловой компонент — шаг 彳 (утратил прямую связь) + звуковой компонент — жёсткий, грубый, упрямый 艮 gěn.</p>
-                                  <p className="mt-1">Придумаем историю: чтобы шагать 彳 в сторону жёсткого, грубого 艮-мужика, надо иметь выдающиеся качества. Быть <strong>ОЧЕНЬ</strong> 很 сильным и уверенным… а может, и <strong>ОЧЕНЬ</strong> 很 глупым 🤷</p>
-                                </div>
-                              </>
-                            )}
-                          </div>
                         )}
                         {hasChildren ? (
                           <button
@@ -1018,6 +978,58 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
           </div>
         </div>
       ))}
+      {componentRoleHelp && (
+        <div
+          className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 py-5 backdrop-blur-sm sm:px-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setComponentRoleHelp(null);
+          }}
+          onTouchStart={(event) => {
+            if (event.target === event.currentTarget) setComponentRoleHelp(null);
+          }}
+          role="presentation"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="component-role-help-title"
+            className="relative flex max-h-[min(84dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#171717] text-white/80 shadow-2xl shadow-black/50"
+            onMouseDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
+              <h2 id="component-role-help-title" className="text-base font-semibold text-white/95 sm:text-lg">
+                {componentRoleHelp.role === "semantic" ? "💡 Смысловой компонент" : "🔔 Звуковой компонент"}
+              </h2>
+              <button type="button" onClick={() => setComponentRoleHelp(null)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Закрыть пояснение">×</button>
+            </div>
+            <div className="min-h-0 overflow-y-auto px-5 py-4 text-sm leading-relaxed sm:px-7 sm:py-5">
+              {componentRoleHelp.role === "phonetic" ? (
+                <>
+                  <p>Подсказывает звучание иероглифа... <strong>примерно в 30% случаев</strong>.</p>
+                  <p className="mt-3">К сожалению, со временем большинство иероглифов изменили своё произношение. Из-за этого потерялась твёрдая связь между звучанием фонетика и иероглифа.</p>
+                  <p className="mt-3">Но ничего страшного! В таком случае всегда можно придумать свою ассоциацию: просто посмотри на перевод или то, как выглядит компонент, и придумай из всех частей иероглифа короткую историю! :)</p>
+                  <div className="mt-4 border-t border-white/10 pt-3">
+                    <p className="font-semibold">Например: Ударять 打 dǎ</p>
+                    <p className="mt-1">Смысловой компонент — рука 扌 + звуковой 丁 dīng (не звучит как 打).</p>
+                    <p className="mt-2">Придумываем историю... Да ведь 丁 выглядит как кирка! Всё просто: рукой 扌 держим кирку 丁 и <strong>УДАРЯЕМ</strong> 打.</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>Подсказывают смысл иероглифа. Связь не всегда прямая и очевидная, она может уходить глубоко в корни китайского языка и культуры. Учёные до сих пор разгадывают смыслы компонентов в некоторых иероглифах и порой ведут между собой ожесточённые споры!</p>
+                  <p className="mt-3">Иногда легче придумать свою ассоциацию. Просто посмотри на перевод компонента или на то, как он выглядит, и придумай из всех компонентов короткую историю! :)</p>
+                  <div className="mt-4 border-t border-white/10 pt-3">
+                    <p className="font-semibold">Например: Очень 很 hěn</p>
+                    <p className="mt-1">Смысловой компонент — шаг 彳 (утратил прямую связь) + звуковой компонент — жёсткий, грубый, упрямый 艮 gěn.</p>
+                    <p className="mt-2">Придумаем историю: чтобы шагать 彳 в сторону жёсткого, грубого 艮-мужика, надо иметь выдающиеся качества. Быть <strong>ОЧЕНЬ</strong> 很 сильным и уверенным… а может, и <strong>ОЧЕНЬ</strong> 很 глупым 🤷</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
       <HanziWriterDebugPanel visible={debugOpen} />
       <FSRS6DebugPanel visible={debugOpen} />
     </main>
