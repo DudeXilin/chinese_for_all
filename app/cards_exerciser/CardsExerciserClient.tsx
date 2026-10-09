@@ -31,6 +31,7 @@ type Theory = {
 
 type StructureComponent = {
   char: string;
+  role?: "semantic" | "phonetic";
   pinyin?: string;
   meaning?: string;
   translation?: string;
@@ -128,6 +129,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const [tonePadOpen, setTonePadOpen] = useState(false);
   const [keyboardBottom, setKeyboardBottom] = useState(0);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [componentRoleHelp, setComponentRoleHelp] = useState<{ char: string; role: "semantic" | "phonetic" } | null>(null);
   const [ratingBusy, setRatingBusy] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [syncReady, setSyncReady] = useState(false);
@@ -146,6 +148,13 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const correctPinyin = deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
   const translation = deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
 
+  function componentRoleFor(parentChar: string, childChar: string): "semantic" | "phonetic" | undefined {
+    const etymology = getCharacterInfo(parentChar)?.etymology;
+    if (etymology?.semantic?.includes(childChar)) return "semantic";
+    if (etymology?.phonetic?.includes(childChar)) return "phonetic";
+    return undefined;
+  }
+
   function componentFromNode(node: DecompositionNode, seen = new Set<string>()): StructureComponent | null {
     if (node.type !== "character") return null;
 
@@ -161,7 +170,9 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
     const children = !isRadical && info?.decompositionTree && info.decompositionTree.type === "operator"
       ? info.decompositionTree.children.flatMap((child) => {
           const component = componentFromNode(child, nextSeen);
-          return component ? [component] : [];
+          if (!component) return [];
+          component.role = componentRoleFor(char, component.char);
+          return [component];
         })
       : [];
 
@@ -182,7 +193,9 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       : tree?.type === "operator"
         ? tree.children.flatMap((child) => {
             const component = componentFromNode(child, new Set([char]));
-            return component ? [component] : [];
+            if (!component) return [];
+            component.role = componentRoleFor(char, component.char);
+            return [component];
           })
         : [];
     return {
@@ -917,8 +930,49 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                     return (
                       <div
                         key={`${node.char}-component-${component.char}-${componentIndex}`}
-                        className={`rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "border-white/10 bg-white/[0.045]" : "border-white/[0.07] bg-white/[0.025]"}`}
+                        className={`relative rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "border-white/10 bg-white/[0.045]" : "border-white/[0.07] bg-white/[0.025]"}`}
                       >
+                        {component.role && (
+                          <button
+                            type="button"
+                            onClick={() => setComponentRoleHelp((current) => current?.char === component.char && current.role === component.role ? null : { char: component.char, role: component.role! })}
+                            className="absolute right-2 top-2 z-10 rounded-full px-1 py-0.5 text-xs leading-none opacity-80 transition hover:bg-white/10 hover:opacity-100"
+                            aria-label={component.role === "semantic" ? "Что такое смысловой компонент?" : "Что такое звуковой компонент?"}
+                            title={component.role === "semantic" ? "Смысловой компонент" : "Звуковой компонент"}
+                          >
+                            {component.role === "semantic" ? "💡?" : "🔔?"}
+                          </button>
+                        )}
+                        {componentRoleHelp?.char === component.char && componentRoleHelp.role === component.role && component.role && (
+                          <div className="absolute inset-x-2 top-9 z-20 max-h-64 overflow-y-auto rounded-xl border border-white/15 bg-[#202020] p-3 text-left text-xs leading-relaxed text-white/80 shadow-xl">
+                            <div className="mb-2 flex items-center justify-between gap-2 font-semibold text-white/95">
+                              <span>{component.role === "semantic" ? "💡 Смысловой компонент" : "🔔 Звуковой компонент"}</span>
+                              <button type="button" onClick={() => setComponentRoleHelp(null)} className="rounded-md px-1 text-base leading-none text-white/50 hover:bg-white/10" aria-label="Закрыть пояснение">×</button>
+                            </div>
+                            {component.role === "phonetic" ? (
+                              <>
+                                <p>Подсказывает звучание иероглифа... <strong>примерно в 30% случаев</strong>.</p>
+                                <p className="mt-2">К сожалению, со временем большинство иероглифов изменили своё произношение. Из-за этого потерялась твёрдая связь между звучанием фонетика и иероглифа.</p>
+                                <p className="mt-2">Но ничего страшного! В таком случае всегда можно придумать свою ассоциацию: просто посмотри на перевод или то, как выглядит компонент, и придумай из всех частей иероглифа короткую историю! :)</p>
+                                <div className="my-2 border-t border-white/10 pt-2">
+                                  <p className="font-semibold">Например: Ударять 打 dǎ</p>
+                                  <p>Смысловой компонент — рука 扌 + звуковой 丁 dīng (не звучит как 打).</p>
+                                  <p className="mt-1">Придумываем историю... Да ведь 丁 выглядит как кирка! Всё просто: рукой 扌 держим кирку 丁 и <strong>УДАРЯЕМ</strong> 打.</p>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p>Подсказывает смысл иероглифа. Связь не всегда прямая и очевидная, она может уходить глубоко в корни китайского языка и культуры. Учёные до сих пор разгадывают смыслы компонентов в некоторых иероглифах и порой ведут между собой ожесточённые споры!</p>
+                                <p className="mt-2">Иногда легче придумать свою ассоциацию. Просто посмотри на перевод компонента или на то, как он выглядит, и придумай из всех компонентов короткую историю! :)</p>
+                                <div className="my-2 border-t border-white/10 pt-2">
+                                  <p className="font-semibold">Например: Очень 很 hěn</p>
+                                  <p>Смысловой компонент — шаг 彳 (утратил прямую связь) + звуковой компонент — жёсткий, грубый, упрямый 艮 gěn.</p>
+                                  <p className="mt-1">Придумаем историю: чтобы шагать 彳 в сторону жёсткого, грубого 艮-мужика, надо иметь выдающиеся качества. Быть <strong>ОЧЕНЬ</strong> 很 сильным и уверенным… а может, и <strong>ОЧЕНЬ</strong> 很 глупым 🤷</p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                         {hasChildren ? (
                           <button
                             type="button"
