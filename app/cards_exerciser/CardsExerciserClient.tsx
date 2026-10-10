@@ -92,7 +92,7 @@ function PinyinAnswer({ answer, correct }: { answer: string; correct: string }) 
   if (isCorrect) return null;
 
   return (
-    <div className="mt-1 text-lg tracking-wide" aria-label="Ваш ответ с ошибками">
+    <div className="mt-1 text-[23px] tracking-wide" aria-label="Ваш ответ с ошибками">
       {Array.from(answer).map((character, index) => {
         if (/\s/.test(character)) {
           return <span key={`space-${index}`}>{character}</span>;
@@ -685,7 +685,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                       spellCheck={false}
                       inputMode="text"
                       enterKeyHint="done"
-                      className="mt-2 block min-h-8 w-full border-b border-white/10 bg-transparent pb-1 text-lg tracking-wide text-white/75 outline-none placeholder:text-white/20 focus:border-white/20"
+                      className="pinyin-answer-input mt-2 block min-h-8 w-full border-b border-white/10 bg-transparent pb-1 text-[23px] tracking-wide text-white/75 outline-none placeholder:text-white/20 focus:border-white/20"
                       onFocus={() => {
                         if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) setTonePadOpen(true);
                       }}
@@ -904,7 +904,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
           >
             <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-5 text-center sm:px-7">
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#fff4e6]/80">{node.translation}</h2>
-              <div className="mt-1 text-[17px] text-white/40">{node.pinyin}</div>
+              <div className="mt-1 text-[23px] text-white/40">{node.pinyin}</div>
             </div>
 
             <div className="min-h-0 flex-1 touch-pan-y overscroll-contain overflow-y-auto px-4 pb-7 pt-5 sm:px-7">
@@ -942,7 +942,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                             <div className="text-4xl text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
                               <div className="mt-2 leading-5 text-white/45">
-                                {component.pinyin && <div className="text-[10px]">{component.pinyin}</div>}
+                                {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
                                 {component.meaning && <div className="text-sm">{component.meaning}</div>}
                               </div>
                             )}
