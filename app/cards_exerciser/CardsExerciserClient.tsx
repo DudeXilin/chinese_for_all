@@ -720,7 +720,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                     </div>
                     <div className="mt-4 flex flex-col items-center">
                       <PinyinAnswer answer={answer} correct={correctPinyin} />
-                      <div className="text-xl tracking-wide text-white/65">{correctPinyin}</div>
+                      <div className="text-[23px] tracking-wide text-white/65">{correctPinyin}</div>
                     </div>
                     <div className="mt-2 text-sm text-white/35">{translation}</div>
                   </div>
@@ -911,7 +911,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
               <div className="flex justify-center">
                 <HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} />
               </div>
-              <div className="mt-2 text-center text-4xl font-medium text-white/75">{node.char}</div>
+              <div className="mt-2 text-center text-[54px] font-medium text-white/75">{node.char}</div>
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {node.components.map((component, componentIndex) => {
@@ -939,7 +939,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                             className="w-full rounded-xl transition hover:bg-white/[0.035] active:scale-[0.98]"
                             aria-label={`Показать структуру иероглифа ${component.char}`}
                           >
-                            <div className="text-4xl text-white/80">{component.char}</div>
+                            <div className="text-[54px] text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
                               <div className="mt-2 leading-5 text-white/45">
                                 {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
@@ -953,7 +953,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                             <div className="text-4xl text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
                               <div className="mt-2 leading-5 text-white/45">
-                                {component.pinyin && <div className="text-[10px]">{component.pinyin}</div>}
+                                {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
                                 {component.meaning && <div className="text-sm">{component.meaning}</div>}
                               </div>
                             )}
