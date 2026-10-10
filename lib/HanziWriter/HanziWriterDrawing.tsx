@@ -93,6 +93,7 @@ function loadHanziWriter(): Promise<HanziWriterFactory> {
 type Props = {
   character: string;
   mode?: "practice" | "preview";
+  animateOnClick?: boolean;
   /** Forces a fresh writer instance (e.g. pass a new key when the card changes). */
   resetKey?: string | number;
   /** Square side length in px. Passed as-is to the writer's own width/height
@@ -114,6 +115,7 @@ const HINT_RED = "rgba(224, 60, 70, 0.85)";
 export default function HanziWriterDrawing({
   character,
   mode = "practice",
+  animateOnClick = true,
   resetKey,
   size = 150,
   onMistake,
@@ -275,14 +277,16 @@ export default function HanziWriterDrawing({
       // No rounding/border of its own anymore — when several characters form
       // one word, HanziWriterStrip wraps them in a single rounded+bordered
       // shape instead of each cell having its own 4 corners.
-      className={["relative shrink-0 overflow-hidden", mode === "preview" ? "cursor-pointer select-none" : ""].join(
+      className={["relative shrink-0 overflow-hidden", mode === "preview" && animateOnClick ? "cursor-pointer select-none" : ""].join(
         " ",
       )}
-      onClick={mode === "preview" ? animatePreview : undefined}
+      onClick={mode === "preview" && animateOnClick ? animatePreview : undefined}
       aria-label={
-        mode === "preview"
+        mode === "preview" && animateOnClick
           ? "Нажмите, чтобы посмотреть порядок написания " + character
-          : "Напишите иероглиф " + character
+          : mode === "preview"
+            ? "Иероглиф " + character
+            : "Напишите иероглиф " + character
       }
     >
       {/* Thin dashed cross splitting the cell into 4 equal quarters. */}
