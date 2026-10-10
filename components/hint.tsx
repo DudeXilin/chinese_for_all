@@ -140,7 +140,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
             {source === "user" && <span className="text-[9px] text-white/25">личная</span>}
           </div>
 
-          <div className={`mt-1 whitespace-pre-wrap break-words pr-9 text-sm leading-6 ${hint ? "text-white/55" : "text-white/20"}`}>
+          <div className={`mt-1 whitespace-pre-wrap break-words pr-9 text-[18px] leading-6 ${hint ? "text-white/55" : "text-white/20"}`}>
             {displayedHint}
           </div>
 
@@ -182,7 +182,7 @@ export default function Hint({ itemKey, className = "" }: Props) {
               rows={3}
               maxLength={1000}
               placeholder="Введите подсказку…"
-              className={`w-full resize-none rounded-xl border bg-white/[0.035] px-3 pb-7 pt-2 text-sm leading-6 text-white/75 outline-none placeholder:text-white/20 ${userDraftTooLong ? "border-red-400/35" : "border-white/[0.08] focus:border-white/20"}`}
+              className={`w-full resize-none rounded-xl border bg-white/[0.035] px-3 pb-7 pt-2 text-[18px] leading-6 text-white/75 outline-none placeholder:text-white/20 ${userDraftTooLong ? "border-red-400/35" : "border-white/[0.08] focus:border-white/20"}`}
             />
             {mode === "user" && (
               <span className={`pointer-events-none absolute bottom-2 right-3 text-[10px] tabular-nums ${userDraftTooLong ? "text-red-300/75" : "text-white/25"}`}>
