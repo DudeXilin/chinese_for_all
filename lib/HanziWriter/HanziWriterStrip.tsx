@@ -6,6 +6,7 @@ import HanziWriterDrawing, { WARM_WHITE_DARK_30 } from "./HanziWriterDrawing";
 type Props = {
   characters: string[];
   mode: "practice" | "preview";
+  animateOnClick?: boolean;
   size: number;
   /** Unique per card+side, so each character's writer resets on a new card. */
   keyPrefix: string;
@@ -20,7 +21,7 @@ const dividerGradient = (direction: "to right" | "to bottom") =>
 // there's a thin divider, same warm hue as the strokes but darker, that fades
 // out to nothing at both ends — left/right on phones, top/bottom on desktop —
 // instead of a hard white line or a gap.
-export default function HanziWriterStrip({ characters, mode, size, keyPrefix, onMistake }: Props) {
+export default function HanziWriterStrip({ characters, mode, size, keyPrefix, onMistake, animateOnClick = true }: Props) {
   return (
     <div className="mx-auto flex w-fit flex-col overflow-hidden rounded-[28px] sm:flex-row">
       {characters.map((char, i) => (
@@ -44,6 +45,7 @@ export default function HanziWriterStrip({ characters, mode, size, keyPrefix, on
           <HanziWriterDrawing
             character={char}
             mode={mode}
+            animateOnClick={animateOnClick}
             size={size}
             resetKey={`${keyPrefix}-${i}`}
             onMistake={mode === "practice" ? onMistake : undefined}
