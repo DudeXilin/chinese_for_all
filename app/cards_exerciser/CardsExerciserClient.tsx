@@ -911,7 +911,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
               <div className="flex justify-center">
                 <HanziWriterStrip characters={[node.char]} mode="preview" size={230} keyPrefix={`structure-${stackIndex}-${node.char}`} />
               </div>
-              <div className="mt-2 text-center text-[54px] font-medium text-white/75">{node.char}</div>
+              <div className="mt-2 flex justify-center"><Hint itemKey={node.char} className="max-w-full" /></div>
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {node.components.map((component, componentIndex) => {
