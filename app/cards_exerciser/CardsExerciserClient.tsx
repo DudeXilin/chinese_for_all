@@ -710,8 +710,8 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                       {Array.from(currentWord).map((char, charIndex) => {
                         return (
                           <div key={`${index}-back-${char}-${charIndex}`} className="flex flex-col items-center">
-                            <button type="button" onClick={() => openCharacterStructure(char)} className="relative cursor-pointer rounded-3xl border border-transparent p-1 transition hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" aria-label={`Показать перевод и структуру иероглифа ${char}`}>
-                              <HanziWriterStrip characters={[char]} mode="preview" animateOnClick={false} size={190} keyPrefix={`${index}-back-${charIndex}`} />
+                            <button type="button" onClick={() => openCharacterStructure(char)} className="relative cursor-pointer rounded-3xl border border-transparent p-1 text-[54px] font-medium leading-none text-white/80 transition hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" aria-label={`Показать перевод и структуру иероглифа ${char}`}>
+                              {char}
                             </button>
                             <Hint itemKey={char} className="mt-1" />
                           </div>
