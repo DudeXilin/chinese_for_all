@@ -130,6 +130,15 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const [keyboardBottom, setKeyboardBottom] = useState(0);
   const [debugOpen, setDebugOpen] = useState(false);
   const [componentRoleHelp, setComponentRoleHelp] = useState<{ char: string; role: "semantic" | "phonetic" } | null>(null);
+  const [frequencyOpen, setFrequencyOpen] = useState(false);
+  const [frequencyLoading, setFrequencyLoading] = useState(false);
+  const [frequencyError, setFrequencyError] = useState<string | null>(null);
+  const [frequencyData, setFrequencyData] = useState<{
+    word: string;
+    wordFrequency: Record<string, string | number | null> | null;
+    characters: Array<{ character: string; frequency: Record<string, string | number | null> | null }>;
+    source: string;
+  } | null>(null);
   const [ratingBusy, setRatingBusy] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [syncReady, setSyncReady] = useState(false);
@@ -728,7 +737,39 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                   </div>
                   <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Информация</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Details</span></div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{["Перевод", "Часть речи", "HSK", "Частотность"].map((item) => <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3"><div className="text-[9px] uppercase tracking-[0.14em] text-white/25">{item}</div><div className="mt-2 text-xs text-white/55">placeholder</div></div>)}</div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {["Перевод", "Часть речи", "HSK", "Частотность"].map((item) => item === "Частотность" ? (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => {
+                            setFrequencyOpen(true);
+                            setFrequencyLoading(true);
+                            setFrequencyError(null);
+                            setFrequencyData(null);
+                            fetch(`/api/frequency?word=${encodeURIComponent(currentWord)}`, { cache: "force-cache" })
+                              .then(async (response) => {
+                                const payload = await response.json();
+                                if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
+                                setFrequencyData(payload);
+                              })
+                              .catch((error: unknown) => {
+                                setFrequencyError(error instanceof Error ? error.message : "Не удалось загрузить частотность.");
+                              })
+                              .finally(() => setFrequencyLoading(false));
+                          }}
+                          className="rounded-2xl border border-white/[0.12] bg-white/[0.055] p-3 text-left transition hover:border-white/20 hover:bg-white/[0.09] active:scale-[0.98]"
+                        >
+                          <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">{item}</div>
+                          <div className="mt-2 text-xs text-white/75">Открыть данные ↗</div>
+                        </button>
+                      ) : (
+                        <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
+                          <div className="text-[9px] uppercase tracking-[0.14em] text-white/25">{item}</div>
+                          <div className="mt-2 text-xs text-white/55">placeholder</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-white/[0.08] bg-black/20 p-4">
                     <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-white/70">Примеры</h2><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">Examples</span></div>
@@ -792,6 +833,102 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
             );
           })()}
 
+        </div>
+      )}
+
+
+      {frequencyOpen && (
+        <div
+          className="fixed inset-0 z-[160] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setFrequencyOpen(false);
+          }}
+          onTouchStart={(event) => {
+            if (event.target === event.currentTarget) setFrequencyOpen(false);
+          }}
+          role="presentation"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="frequency-modal-title"
+            className="relative flex max-h-[min(88dvh,820px)] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#171717]/[0.98] text-white/80 shadow-2xl shadow-black/60"
+            onMouseDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
+              <div className="min-w-0">
+                <h2 id="frequency-modal-title" className="text-lg font-semibold text-white/95">Частотность</h2>
+                <p className="mt-1 text-sm text-white/45">SUBTLEX-CH · {currentWord}</p>
+              </div>
+              <button type="button" onClick={() => setFrequencyOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Закрыть">×</button>
+            </div>
+            <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
+              {frequencyLoading ? (
+                <div className="py-12 text-center text-sm text-white/45">Загрузка данных частотности…</div>
+              ) : frequencyError ? (
+                <div className="rounded-2xl border border-red-300/15 bg-red-400/[0.06] px-4 py-3 text-sm text-red-100/80">{frequencyError}</div>
+              ) : frequencyData ? (
+                <div className="space-y-6">
+                  <section>
+                    <h3 className="mb-3 text-sm font-semibold text-white/85">Слово {frequencyData.word}</h3>
+                    {frequencyData.wordFrequency ? (
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {([
+                          ["WCount", "Употреблений в корпусе"],
+                          ["W/million", "На миллион слов"],
+                          ["logW", "Логарифм частоты"],
+                          ["W-CD", "Число контекстов"],
+                          ["W-CD%", "Контекстное разнообразие"],
+                          ["logW-CD", "Логарифм контекстов"],
+                        ] as const).map(([key, label]) => (
+                          <div key={key} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3">
+                            <div className="text-[10px] leading-4 text-white/40">{label}</div>
+                            <div className="mt-2 break-words font-mono text-base text-white/85">{frequencyData.wordFrequency?.[key] == null ? "—" : typeof frequencyData.wordFrequency[key] === "number" ? Number(frequencyData.wordFrequency[key]).toLocaleString("ru-RU", { maximumFractionDigits: 4 }) : frequencyData.wordFrequency[key]}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-sm leading-6 text-white/45">Отдельная запись для этого слова в словаре частотности не найдена.</p>
+                    )}
+                  </section>
+                  <section>
+                    <h3 className="mb-3 text-sm font-semibold text-white/85">Иероглифы по отдельности</h3>
+                    <div className="space-y-3">
+                      {frequencyData.characters.map(({ character, frequency }) => (
+                        <div key={character} className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3 sm:p-4">
+                          <div className="mb-3 flex items-center gap-3">
+                            <span className="text-3xl text-white/85">{character}</span>
+                            <span className="text-xs text-white/40">{frequency ? "Данные найдены" : "Нет записи в таблице"}</span>
+                          </div>
+                          {frequency ? (
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                              {([
+                                ["CHRCount", "Появлений в корпусе"],
+                                ["CHR/million", "На миллион иероглифов"],
+                                ["logCHR", "Логарифм частоты"],
+                                ["CHR-CD", "Число контекстов"],
+                                ["CHR-CD%", "Контекстное разнообразие"],
+                                ["logCHR-CD", "Логарифм контекстов"],
+                              ] as const).map(([key, label]) => (
+                                <div key={key} className="rounded-xl border border-white/[0.06] bg-black/20 p-2.5">
+                                  <div className="text-[10px] leading-4 text-white/40">{label}</div>
+                                  <div className="mt-1.5 break-words font-mono text-sm text-white/80">{frequency[key] == null ? "—" : typeof frequency[key] === "number" ? Number(frequency[key]).toLocaleString("ru-RU", { maximumFractionDigits: 4 }) : frequency[key]}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                  <p className="border-t border-white/[0.08] pt-3 text-xs leading-5 text-white/35">
+                    Источник: SUBTLEX-CH — корпус субтитров фильмов и сериалов. «На миллион слов» и «на миллион иероглифов» имеют разные знаменатели. Частотность отражает корпус исследования, а не точную вероятность встретить слово в любой современной беседе.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </section>
         </div>
       )}
 
