@@ -706,18 +706,20 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                 <div className="px-5 pb-7 pt-8 sm:px-10 sm:pb-8">
                   <div className="text-center pt-[8px]">
                     <h1 className="text-4xl font-semibold tracking-tight text-[#fff4e6]/75 sm:text-5xl">{translation}</h1>
-                    <div className="mt-7 flex flex-wrap justify-center gap-3">
-                      {Array.from(currentWord).map((char, charIndex) => {
-                        return (
-                          <div key={`${index}-back-${char}-${charIndex}`} className="flex flex-col items-center">
-                            <button type="button" onClick={() => openCharacterStructure(char)} className="relative cursor-pointer rounded-3xl border border-transparent p-1 text-[54px] font-medium leading-none text-white/80 transition hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" aria-label={`Показать перевод и структуру иероглифа ${char}`}>
-                              {char}
-                            </button>
-                            <Hint itemKey={char} className="mt-1" />
-                          </div>
-                        );
-                      })}
+                    <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                      {Array.from(currentWord).map((char, charIndex) => (
+                        <button
+                          key={`${index}-back-${char}-${charIndex}`}
+                          type="button"
+                          onClick={() => openCharacterStructure(char)}
+                          className="relative cursor-pointer rounded-3xl border border-transparent p-1 text-[54px] font-medium leading-none text-white/80 transition hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]"
+                          aria-label={`Показать перевод и структуру иероглифа ${char}`}
+                        >
+                          {char}
+                        </button>
+                      ))}
                     </div>
+                    {Array.from(currentWord).length > 1 && <Hint itemKey={currentWord} className="mt-2" />}
                     <div className="mt-4 flex flex-col items-center">
                       <PinyinAnswer answer={answer} correct={correctPinyin} />
                       <div className="text-[23px] tracking-wide text-white/65">{correctPinyin}</div>
