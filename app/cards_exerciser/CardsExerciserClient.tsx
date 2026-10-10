@@ -711,7 +711,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                         return (
                           <div key={`${index}-back-${char}-${charIndex}`} className="flex flex-col items-center">
                             <button type="button" onClick={() => openCharacterStructure(char)} className="relative cursor-pointer rounded-3xl border border-transparent p-1 transition hover:border-white/10 hover:bg-white/[0.035] active:scale-[0.98]" aria-label={`Показать перевод и структуру иероглифа ${char}`}>
-                              <HanziWriterStrip characters={[char]} mode="preview" size={190} keyPrefix={`${index}-back-${charIndex}`} />
+                              <HanziWriterStrip characters={[char]} mode="preview" animateOnClick={false} size={190} keyPrefix={`${index}-back-${charIndex}`} />
                             </button>
                             <Hint itemKey={char} className="mt-1" />
                           </div>
@@ -904,7 +904,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
           >
             <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-5 text-center sm:px-7">
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#fff4e6]/80">{node.translation}</h2>
-              <div className="mt-1 text-sm text-white/40">{node.pinyin}</div>
+              <div className="mt-1 text-[17px] text-white/40">{node.pinyin}</div>
             </div>
 
             <div className="min-h-0 flex-1 touch-pan-y overscroll-contain overflow-y-auto px-4 pb-7 pt-5 sm:px-7">
@@ -913,7 +913,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
               </div>
               <div className="mt-2 text-center text-4xl font-medium text-white/75">{node.char}</div>
               <div className="mt-7">
-                <div className={`grid gap-3 ${node.components.length === 2 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2"}`}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {node.components.map((component, componentIndex) => {
                     const hasChildren = Boolean(component.components?.length);
                     return (
@@ -941,9 +941,9 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           >
                             <div className="text-4xl text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
-                              <div className="mt-2 text-xs leading-5 text-white/45">
-                                {component.pinyin && <div>{component.pinyin}</div>}
-                                {component.meaning && <div>{component.meaning}</div>}
+                              <div className="mt-2 leading-5 text-white/45">
+                                {component.pinyin && <div className="text-[10px]">{component.pinyin}</div>}
+                                {component.meaning && <div className="text-sm">{component.meaning}</div>}
                               </div>
                             )}
                             <div className="mt-3 text-[9px] uppercase tracking-[0.15em] text-white/30">нажмите для разбора</div>
@@ -952,9 +952,9 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           <>
                             <div className="text-4xl text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
-                              <div className="mt-2 text-xs leading-5 text-white/45">
-                                {component.pinyin && <div>{component.pinyin}</div>}
-                                {component.meaning && <div>{component.meaning}</div>}
+                              <div className="mt-2 leading-5 text-white/45">
+                                {component.pinyin && <div className="text-[10px]">{component.pinyin}</div>}
+                                {component.meaning && <div className="text-sm">{component.meaning}</div>}
                               </div>
                             )}
                           </>
