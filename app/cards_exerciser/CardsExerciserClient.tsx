@@ -950,7 +950,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           </button>
                         ) : (
                           <>
-                            <div className="text-4xl text-white/80">{component.char}</div>
+                            <div className="text-[54px] text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
                               <div className="mt-2 leading-5 text-white/45">
                                 {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
