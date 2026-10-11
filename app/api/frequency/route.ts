@@ -87,14 +87,33 @@ export async function GET(request: NextRequest) {
     const characterFields = ["CHRCount", "CHR/million", "logCHR", "CHR-CD", "CHR-CD%", "logCHR-CD"];
     const wordFields = ["WCount", "W/million", "logW", "W-CD", "W-CD%", "logW-CD"];
 
+    const relatedWords = (wordIndex ? Array.from(wordIndex.values()) : [])
+      .filter((row) => {
+        const candidate = String(row.Word ?? "");
+        return Array.from(candidate).length > Array.from(word).length && candidate.includes(word);
+      })
+      .sort((left, right) => Number(right.WCount ?? 0) - Number(left.WCount ?? 0))
+      .slice(0, 10)
+      .map((row) => {
+        const candidate = String(row.Word ?? "");
+        const metadata = wordMetadataIndex?.get(candidate);
+        return {
+          word: candidate,
+          pinyin: metadata?.pinyin ?? null,
+          translation: metadata?.translation ?? null,
+          frequency: selectFields(row, wordFields),
+        };
+      });
+
     return NextResponse.json({
       word,
       wordFrequency: selectFields(wordRow, wordFields),
+      relatedWords,
       characters: Array.from(new Set(Array.from(word))).map((character) => {
         const commonWords = (wordIndex ? Array.from(wordIndex.values()) : [])
           .filter((row) => {
             const candidate = String(row.Word ?? "");
-            return candidate.length > 1 && Array.from(candidate).includes(character);
+            return Array.from(candidate).length > 1 && candidate !== character && candidate.includes(character);
           })
           .sort((a, b) => Number(b.WCount ?? 0) - Number(a.WCount ?? 0))
           .slice(0, 10)
