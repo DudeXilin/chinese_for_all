@@ -84,6 +84,22 @@ function compactPinyin(value: string) {
   return value.replace(/\s+/g, "").toLowerCase();
 }
 
+type RelatedWord = {
+  word: string;
+  pinyin: string | null;
+  translation: string | null;
+  frequency: Record<string, string | number | null> | null;
+};
+
+function filterRelatedWords<T extends RelatedWord>(items: T[]): T[] {
+  return items.filter((item) => {
+    const share = item.frequency?.["W-CD%"];
+    if (share == null || share === "") return true;
+    const value = Number(share);
+    return !Number.isFinite(value) || value >= 1;
+  });
+}
+
 function PinyinAnswer({ answer, correct }: { answer: string; correct: string }) {
   const normalizedAnswer = compactPinyin(answer.trim());
   const normalizedCorrect = compactPinyin(correct.trim());
@@ -259,7 +275,8 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
         if (!payload || !Array.isArray(payload.relatedWords)) return;
-        setCommonWordsCache((current) => ({ ...current, [target]: payload.relatedWords }));
+        const relatedWords = filterRelatedWords(payload.relatedWords);
+        setCommonWordsCache((current) => ({ ...current, [target]: relatedWords }));
       })
       .catch(() => undefined);
   }
@@ -289,7 +306,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       const response = await fetch("/api/frequency?word=" + encodeURIComponent(target), { cache: "force-cache" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотные слова.");
-      const relatedWords = Array.isArray(payload.relatedWords) ? payload.relatedWords : [];
+      const relatedWords = filterRelatedWords(Array.isArray(payload.relatedWords) ? payload.relatedWords : []);
       setCommonWordsDialogData({ word: target, relatedWords });
       setCommonWordsCache((current) => ({ ...current, [target]: relatedWords }));
     } catch {
@@ -320,7 +337,12 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
         const response = await fetch(`/api/frequency?word=${encodeURIComponent(currentWord)}`, { cache: "force-cache" });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
-        if (!cancelled) setFrequencyData(payload);
+        if (!cancelled) {
+          setFrequencyData({
+            ...payload,
+            relatedWords: filterRelatedWords(Array.isArray(payload.relatedWords) ? payload.relatedWords : []),
+          });
+        }
       } catch (error: unknown) {
         if (!cancelled) setFrequencyError(error instanceof Error ? error.message : "Не удалось загрузить частотность.");
       } finally {
@@ -852,16 +874,18 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           </span>
                         </button>
                       ) : item === "Часто используется" ? (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => void openCommonWords(currentWord)}
-                          className="flex min-h-[88px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] p-3 text-center transition hover:border-white/20 hover:bg-white/[0.09] active:scale-[0.98]"
-                          aria-label="Показать слова, которые используются вместе с этим словом"
-                          title="Друзья этого слова"
-                        >
-                          <span className="text-sm font-medium leading-5 text-white/80">{frequencyData?.word === currentWord ? (Array.isArray(frequencyData.relatedWords) ? frequencyData.relatedWords.length : 0) : "…"}<br />друзей</span>
-                        </button>
+                        frequencyData?.word === currentWord && frequencyData.relatedWords.length === 0 ? null : (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => void openCommonWords(currentWord)}
+                            className="flex min-h-[88px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] p-3 text-center transition hover:border-white/20 hover:bg-white/[0.09] active:scale-[0.98]"
+                            aria-label="Показать слова, которые используются вместе с этим словом"
+                            title="Друзья этого слова"
+                          >
+                            <span className="text-sm font-medium leading-5 text-white/80">{frequencyData?.word === currentWord ? frequencyData.relatedWords.length : "…"}<br />друзей</span>
+                          </button>
+                        )
                       ) : (
                         <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
                           <div className="text-[9px] uppercase tracking-[0.14em] text-white/25">{item}</div>
@@ -1030,7 +1054,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
 
       {commonWordsOpen && (
         <div
-          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
+          className="fixed inset-0 z-[180] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
           onMouseDown={(event) => { if (event.target === event.currentTarget) closeCommonWords(); }}
           onTouchStart={(event) => { if (event.target === event.currentTarget) closeCommonWords(); }}
           role="presentation"
@@ -1201,12 +1225,14 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
             onMouseDown={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => void openCommonWords(node.char)}
-              className="absolute left-4 top-4 z-20 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs text-white/70 transition hover:bg-white/10"
-              title="Слова, с которыми используется этот иероглиф"
-            >{commonWordsCache[node.char]?.length ?? "…"} друзей</button>
+            {commonWordsCache[node.char]?.length !== 0 && (
+              <button
+                type="button"
+                onClick={() => void openCommonWords(node.char)}
+                className="absolute left-4 top-4 z-20 min-h-10 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/10"
+                title="Слова, с которыми используется этот иероглиф"
+              >{commonWordsCache[node.char]?.length ?? "…"} друзей</button>
+            )}
             <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-12 text-center sm:px-7">
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#fff4e6]/80">{node.translation}</h2>
               <div className="mt-1 text-[23px] text-white/40">{node.pinyin}</div>
@@ -1226,13 +1252,15 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                         key={`${node.char}-component-${component.char}-${componentIndex}`}
                         className={`relative rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "border-white/10 bg-white/[0.045]" : "border-white/[0.07] bg-white/[0.025]"}`}
                       >
-                        <button
-                          type="button"
-                          onClick={() => void openCommonWords(component.char)}
-                          className="absolute left-2 top-2 z-10 rounded-full border border-white/[0.08] bg-black/20 px-2 py-1 text-[10px] leading-none text-white/65 transition hover:bg-white/10 hover:text-white"
-                          aria-label={"Показать слова, связанные с иероглифом " + component.char}
-                          title="Слова, с которыми используется этот компонент"
-                        >{commonWordsCache[component.char]?.length ?? "…"} друзей</button>
+                        {commonWordsCache[component.char]?.length !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => void openCommonWords(component.char)}
+                            className="absolute left-2 top-2 z-10 min-h-9 rounded-full border border-white/[0.08] bg-black/20 px-3 py-2 text-xs leading-4 text-white/65 transition hover:bg-white/10 hover:text-white"
+                            aria-label={"Показать слова, связанные с иероглифом " + component.char}
+                            title="Слова, с которыми используется этот компонент"
+                          >{commonWordsCache[component.char]?.length ?? "…"} друзей</button>
+                        )}
                         {component.role && (
                           <button
                             type="button"
