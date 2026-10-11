@@ -151,6 +151,16 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   isFrontRef.current = side === "front" && !finished;
 
   const currentWord = words[index] ?? "汉字";
+  const frequencyPercent = (() => {
+    if (!frequencyData || frequencyData.word !== currentWord) return null;
+    const raw = Array.from(currentWord).length === 1
+      ? frequencyData.characters.find((item) => item.character === currentWord)?.frequency?.["CHR-CD%"]
+      : frequencyData.wordFrequency?.["W-CD%"];
+    if (raw == null || raw === "") return null;
+    const parsed = typeof raw === "number" ? raw : Number(raw);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) : null;
+  })();
+  const frequencyHue = frequencyPercent == null ? 270 : Math.round((1 - frequencyPercent / 100) * 270);
   const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
   const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
@@ -238,6 +248,32 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   function closeTopStructure() { setStructureStack((stack) => stack.slice(0, -1)); }
 
   const theoryKey = `cfa-theory-dismissed:${title}`;
+
+  useEffect(() => {
+    if (side !== "back") return;
+    let cancelled = false;
+
+    async function loadFrequency() {
+      setFrequencyLoading(true);
+      setFrequencyError(null);
+      setFrequencyData(null);
+      try {
+        const response = await fetch(`/api/frequency?word=${encodeURIComponent(currentWord)}`, { cache: "force-cache" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
+        if (!cancelled) setFrequencyData(payload);
+      } catch (error: unknown) {
+        if (!cancelled) setFrequencyError(error instanceof Error ? error.message : "Не удалось загрузить частотность.");
+      } finally {
+        if (!cancelled) setFrequencyLoading(false);
+      }
+    }
+
+    void loadFrequency();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentWord, side]);
 
   useEffect(() => {
     let cancelled = false;
@@ -742,26 +778,19 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                         <button
                           key={item}
                           type="button"
-                          onClick={() => {
-                            setFrequencyOpen(true);
-                            setFrequencyLoading(true);
-                            setFrequencyError(null);
-                            setFrequencyData(null);
-                            fetch(`/api/frequency?word=${encodeURIComponent(currentWord)}`, { cache: "force-cache" })
-                              .then(async (response) => {
-                                const payload = await response.json();
-                                if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
-                                setFrequencyData(payload);
-                              })
-                              .catch((error: unknown) => {
-                                setFrequencyError(error instanceof Error ? error.message : "Не удалось загрузить частотность.");
-                              })
-                              .finally(() => setFrequencyLoading(false));
+                          onClick={() => setFrequencyOpen(true)}
+                          aria-label={`Частотность: ${frequencyPercent == null ? "нет данных" : `${Math.round(frequencyPercent)}%`}`}
+                          title="Частотность"
+                          style={{
+                            backgroundColor: `hsla(${frequencyHue}, 88%, 44%, 0.24)`,
+                            borderColor: `hsla(${frequencyHue}, 92%, 68%, 0.42)`,
+                            boxShadow: `inset 0 0 18px hsla(${frequencyHue}, 95%, 60%, 0.07)`,
                           }}
-                          className="rounded-2xl border border-white/[0.12] bg-white/[0.055] p-3 text-left transition hover:border-white/20 hover:bg-white/[0.09] active:scale-[0.98]"
+                          className="flex min-h-[88px] items-center justify-center rounded-2xl border p-3 text-center transition hover:brightness-125 active:scale-[0.98]"
                         >
-                          <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">{item}</div>
-                          <div className="mt-2 text-xs text-white/75">Открыть данные ↗</div>
+                          <span className="text-lg font-semibold tabular-nums text-white/90">
+                            {frequencyPercent == null ? "—" : `${Math.round(frequencyPercent)}%`}
+                          </span>
                         </button>
                       ) : (
                         <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
@@ -859,7 +888,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
               <div className="min-w-0">
                 <h2 id="frequency-modal-title" className="text-lg font-semibold text-white/95">Частотность</h2>
-                <p className="mt-1 text-sm text-white/45">SUBTLEX-CH · {currentWord}</p>
+
               </div>
               <button type="button" onClick={() => setFrequencyOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Закрыть">×</button>
             </div>
@@ -922,9 +951,6 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                       ))}
                     </div>
                   </section>
-                  <p className="border-t border-white/[0.08] pt-3 text-xs leading-5 text-white/35">
-                    Источник: SUBTLEX-CH — корпус субтитров фильмов и сериалов. «На миллион слов» и «на миллион иероглифов» имеют разные знаменатели. Частотность отражает корпус исследования, а не точную вероятность встретить слово в любой современной беседе.
-                  </p>
                 </div>
               ) : null}
             </div>
