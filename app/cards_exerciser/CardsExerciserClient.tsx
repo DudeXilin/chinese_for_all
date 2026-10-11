@@ -860,7 +860,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                           aria-label="Показать слова, которые используются вместе с этим словом"
                           title="Друзья этого слова"
                         >
-                          <span className="text-sm font-medium leading-5 text-white/80">{frequencyData?.word === currentWord ? frequencyData.relatedWords.length : "…"}<br />друзей</span>
+                          <span className="text-sm font-medium leading-5 text-white/80">{frequencyData?.word === currentWord ? (Array.isArray(frequencyData.relatedWords) ? frequencyData.relatedWords.length : 0) : "…"}<br />друзей</span>
                         </button>
                       ) : (
                         <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
@@ -994,7 +994,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                   <section>
                     <h3 className="mb-3 text-sm font-semibold text-white/85">Иероглифы по отдельности</h3>
                     <div className="space-y-3">
-                      {frequencyData.characters.map(({ character, frequency }) => (
+                      {(Array.isArray(frequencyData.characters) ? frequencyData.characters : []).map(({ character, frequency }) => (
                         <div key={character} className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3 sm:p-4">
                           <div className="mb-3 flex items-center gap-3">
                             <span className="text-3xl text-white/85">{character}</span>
@@ -1219,7 +1219,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
               <div className="mt-2 flex justify-center"><Hint itemKey={node.char} className="max-w-full" /></div>
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {node.components.map((component, componentIndex) => {
+                  {(Array.isArray(node.components) ? node.components : []).map((component, componentIndex) => {
                     const hasChildren = Boolean(component.components?.length);
                     return (
                       <div
