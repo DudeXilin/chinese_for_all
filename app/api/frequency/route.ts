@@ -90,7 +90,14 @@ export async function GET(request: NextRequest) {
     const relatedWords = (wordIndex ? Array.from(wordIndex.values()) : [])
       .filter((row) => {
         const candidate = String(row.Word ?? "");
-        return Array.from(candidate).length > Array.from(word).length && candidate.includes(word);
+        if (Array.from(candidate).length <= Array.from(word).length || !candidate.includes(word)) return false;
+
+        // Ignore related words whose subtitle/context share is below 1%.
+        const subtitleShare = row["W-CD%"];
+        if (subtitleShare != null && subtitleShare !== "" && Number.isFinite(Number(subtitleShare)) && Number(subtitleShare) < 1) {
+          return false;
+        }
+        return true;
       })
       .sort((left, right) => Number(right.WCount ?? 0) - Number(left.WCount ?? 0))
       .slice(0, 10)
