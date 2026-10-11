@@ -132,11 +132,16 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const [componentRoleHelp, setComponentRoleHelp] = useState<{ char: string; role: "semantic" | "phonetic" } | null>(null);
   const [frequencyOpen, setFrequencyOpen] = useState(false);
   const [commonWordsOpen, setCommonWordsOpen] = useState(false);
+  const [commonWordsTarget, setCommonWordsTarget] = useState<string | null>(null);
+  const [commonWordsDialogData, setCommonWordsDialogData] = useState<{ word: string; relatedWords: Array<{ word: string; pinyin: string | null; translation: string | null; frequency: Record<string, string | number | null> | null }> } | null>(null);
+  const [commonWordsDialogLoading, setCommonWordsDialogLoading] = useState(false);
+  const [commonWordsCache, setCommonWordsCache] = useState<Record<string, Array<{ word: string; pinyin: string | null; translation: string | null; frequency: Record<string, string | number | null> | null }>>>({});
   const [frequencyLoading, setFrequencyLoading] = useState(false);
   const [frequencyError, setFrequencyError] = useState<string | null>(null);
   const [frequencyData, setFrequencyData] = useState<{
     word: string;
     wordFrequency: Record<string, string | number | null> | null;
+    relatedWords: Array<{ word: string; pinyin: string | null; translation: string | null; frequency: Record<string, string | number | null> | null }>;
     characters: Array<{
       character: string;
       frequency: Record<string, string | number | null> | null;
@@ -248,11 +253,55 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
     };
   }
 
+  function prefetchCommonWords(target: string) {
+    if (commonWordsCache[target]) return;
+    void fetch("/api/frequency?word=" + encodeURIComponent(target), { cache: "force-cache" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (!payload || !Array.isArray(payload.relatedWords)) return;
+        setCommonWordsCache((current) => ({ ...current, [target]: payload.relatedWords }));
+      })
+      .catch(() => undefined);
+  }
+
+  function prefetchComponentTree(components: StructureComponent[]) {
+    for (const component of components) {
+      prefetchCommonWords(component.char);
+      if (component.components?.length) prefetchComponentTree(component.components);
+    }
+  }
+
   function openCharacterStructure(char: string) {
     const structure = getCharacterStructure(char);
     if (!structure) return;
+    prefetchCommonWords(char);
+    prefetchComponentTree(structure.components);
     // Radicals and indivisible characters still open the character details view.
     setStructureStack((stack) => [...stack, { char, ...structure }]);
+  }
+
+  async function openCommonWords(target: string) {
+    setCommonWordsTarget(target);
+    setCommonWordsOpen(true);
+    setCommonWordsDialogLoading(true);
+    setCommonWordsDialogData(null);
+    try {
+      const response = await fetch("/api/frequency?word=" + encodeURIComponent(target), { cache: "force-cache" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотные слова.");
+      const relatedWords = Array.isArray(payload.relatedWords) ? payload.relatedWords : [];
+      setCommonWordsDialogData({ word: target, relatedWords });
+      setCommonWordsCache((current) => ({ ...current, [target]: relatedWords }));
+    } catch {
+      setCommonWordsDialogData({ word: target, relatedWords: [] });
+    } finally {
+      setCommonWordsDialogLoading(false);
+    }
+  }
+
+  function closeCommonWords() {
+    setCommonWordsOpen(false);
+    setCommonWordsTarget(null);
   }
 
   function closeTopStructure() { setStructureStack((stack) => stack.slice(0, -1)); }
@@ -806,12 +855,12 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                         <button
                           key={item}
                           type="button"
-                          onClick={() => setCommonWordsOpen(true)}
+                          onClick={() => void openCommonWords(currentWord)}
                           className="flex min-h-[88px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] p-3 text-center transition hover:border-white/20 hover:bg-white/[0.09] active:scale-[0.98]"
-                          aria-label="Показать часто используемые слова с этими иероглифами"
-                          title="Часто используется"
+                          aria-label="Показать слова, которые используются вместе с этим словом"
+                          title="Друзья этого слова"
                         >
-                          <span className="text-sm font-medium leading-5 text-white/80">Часто<br />используется</span>
+                          <span className="text-sm font-medium leading-5 text-white/80">{frequencyData?.word === currentWord ? frequencyData.relatedWords.length : "…"}<br />друзей</span>
                         </button>
                       ) : (
                         <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
@@ -982,8 +1031,8 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
       {commonWordsOpen && (
         <div
           className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
-          onMouseDown={(event) => { if (event.target === event.currentTarget) setCommonWordsOpen(false); }}
-          onTouchStart={(event) => { if (event.target === event.currentTarget) setCommonWordsOpen(false); }}
+          onMouseDown={(event) => { if (event.target === event.currentTarget) closeCommonWords(); }}
+          onTouchStart={(event) => { if (event.target === event.currentTarget) closeCommonWords(); }}
           role="presentation"
         >
           <section
@@ -996,63 +1045,33 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
           >
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
               <div className="min-w-0">
-                <h2 id="common-words-modal-title" className="text-lg font-semibold text-white/95">Часто используется</h2>
-                <p className="mt-1 text-xs leading-5 text-white/45">До 10 самых частых слов с каждым иероглифом из текущей карточки.</p>
+                <h2 id="common-words-modal-title" className="text-lg font-semibold text-white/95">{commonWordsDialogLoading ? "…" : commonWordsDialogData?.relatedWords.length ?? 0} друзей</h2>
+                <p className="mt-1 text-xs leading-5 text-white/45">С этими иероглифами данное слово дружит больше всех</p>
               </div>
-              <button type="button" onClick={() => setCommonWordsOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Закрыть">×</button>
+              <button type="button" onClick={closeCommonWords} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Закрыть">×</button>
             </div>
             <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
-              {frequencyLoading ? (
+              {commonWordsDialogLoading ? (
                 <div className="py-12 text-center text-sm text-white/45">Загрузка частотных слов…</div>
-              ) : frequencyError ? (
-                <div className="rounded-2xl border border-red-300/15 bg-red-400/[0.06] px-4 py-3 text-sm text-red-100/80">{frequencyError}</div>
-              ) : frequencyData ? (
-                <div className="space-y-6">
-                  {frequencyData.characters.map(({ character, commonWords = [] }) => (
-                    <section key={character}>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white/85">
-                        <span className="text-2xl">{character}</span>
-                        <span>Слова с иероглифом {character}</span>
-                      </h3>
-                      {commonWords.length ? (
-                        <div className="space-y-2">
-                          {commonWords.map((item, wordIndex) => {
-                            const probability = item.frequency?.["W-CD%"];
-                            const perMillion = item.frequency?.["W/million"];
-                            const probabilityNumber = probability == null ? null : Number(probability);
-                            return (
-                              <div key={item.word} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 sm:p-4">
-                                <div className="flex items-start gap-3">
-                                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-black/20 font-mono text-[10px] text-white/40">{wordIndex + 1}</span>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                                      <span className="text-2xl font-medium text-white/90">{item.word}</span>
-                                      {item.pinyin && <span className="text-sm text-white/50">{item.pinyin}</span>}
-                                    </div>
-                                    {item.translation && <p className="mt-1 text-sm text-white/65">{item.translation}</p>}
-                                    <div className="mt-3 grid grid-cols-2 gap-2">
-                                      <div className="rounded-xl border border-white/[0.06] bg-black/20 p-2.5">
-                                        <div className="text-[10px] leading-4 text-white/40">Доля субтитров</div>
-                                        <div className="mt-1 font-mono text-sm text-white/80">{probabilityNumber == null || !Number.isFinite(probabilityNumber) ? "—" : `${probabilityNumber.toLocaleString("ru-RU", { maximumFractionDigits: 2 })}%`}</div>
-                                      </div>
-                                      <div className="rounded-xl border border-white/[0.06] bg-black/20 p-2.5">
-                                        <div className="text-[10px] leading-4 text-white/40">На миллион слов</div>
-                                        <div className="mt-1 font-mono text-sm text-white/80">{perMillion == null ? "—" : typeof perMillion === "number" ? Number(perMillion).toLocaleString("ru-RU", { maximumFractionDigits: 2 }) : perMillion}</div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+              ) : commonWordsDialogData ? (
+                <>
+                  <h3 className="mb-3 text-sm font-semibold text-white/85">Слово {commonWordsDialogData.word}</h3>
+                  {commonWordsDialogData.relatedWords.length ? (
+                    <div className="space-y-2">
+                      {commonWordsDialogData.relatedWords.map((item) => (
+                        <div key={item.word} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 sm:p-4">
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                            <span className="text-2xl font-medium text-white/90">{item.word}</span>
+                            {item.pinyin && <span className="text-sm text-white/50">{item.pinyin}</span>}
+                          </div>
+                          {item.translation && <p className="mt-1 text-sm text-white/65">{item.translation}</p>}
                         </div>
-                      ) : (
-                        <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-sm text-white/45">Подходящие слова в таблице частотности не найдены.</p>
-                      )}
-                    </section>
-                  ))}
-                  <p className="border-t border-white/[0.08] pt-4 text-xs leading-5 text-white/35">«На миллион слов» — частота в корпусе китайских субтитров. Доля субтитров показывает, в какой части корпуса встречается слово; это ориентир по фильмам и субтитрам, а не гарантия для любого отдельного фильма. Перевод и пиньинь отображаются, если они есть в словарных данных приложения.</p>
-                </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-sm text-white/45">Подходящие слова не найдены.</p>
+                  )}
+                </>
               ) : (
                 <p className="py-8 text-center text-sm text-white/45">Данные пока недоступны.</p>
               )}
@@ -1170,7 +1189,13 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
             onMouseDown={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
-            <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-5 text-center sm:px-7">
+            <button
+              type="button"
+              onClick={() => void openCommonWords(node.char)}
+              className="absolute left-4 top-4 z-20 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs text-white/70 transition hover:bg-white/10"
+              title="Слова, с которыми используется этот иероглиф"
+            >{commonWordsCache[node.char]?.length ?? "…"} друзей</button>
+            <div className="shrink-0 border-b border-white/[0.08] px-5 pb-4 pt-12 text-center sm:px-7">
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#fff4e6]/80">{node.translation}</h2>
               <div className="mt-1 text-[23px] text-white/40">{node.pinyin}</div>
             </div>
@@ -1189,6 +1214,13 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
                         key={`${node.char}-component-${component.char}-${componentIndex}`}
                         className={`relative rounded-2xl border px-4 py-4 text-center transition ${hasChildren ? "border-white/10 bg-white/[0.045]" : "border-white/[0.07] bg-white/[0.025]"}`}
                       >
+                        <button
+                          type="button"
+                          onClick={() => void openCommonWords(component.char)}
+                          className="absolute left-2 top-2 z-10 rounded-full border border-white/[0.08] bg-black/20 px-2 py-1 text-[10px] leading-none text-white/65 transition hover:bg-white/10 hover:text-white"
+                          aria-label={"Показать слова, связанные с иероглифом " + component.char}
+                          title="Слова, с которыми используется этот компонент"
+                        >{commonWordsCache[component.char]?.length ?? "…"} друзей</button>
                         {component.role && (
                           <button
                             type="button"
