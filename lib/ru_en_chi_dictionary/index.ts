@@ -1,6 +1,7 @@
 import hskDictionary from "./hsk.json";
+import radicalDictionary from "./chinese_214_simplified_radicals_russian.json";
 
-type HskEntry = {
+type DictionaryEntry = {
   hanzi?: string;
   pinyin?: string;
   translations?: {
@@ -8,11 +9,14 @@ type HskEntry = {
   };
 };
 
-const entries = hskDictionary as HskEntry[];
+const hskEntries = hskDictionary as DictionaryEntry[];
+const radicalEntries = radicalDictionary as DictionaryEntry[];
 
+// Radical entries take priority; HSK fills in words and characters not covered there.
 const russianTranslations = new Map<string, string>();
 const pinyinByWord = new Map<string, string>();
-for (const entry of entries) {
+
+for (const entry of radicalEntries as DictionaryEntry[]) {
   const word = entry.hanzi?.trim();
   const translations = entry.translations?.rus?.map((value) => value.trim()).filter(Boolean);
   if (word && entry.pinyin?.trim() && !pinyinByWord.has(word)) pinyinByWord.set(word, entry.pinyin.trim());
@@ -21,7 +25,16 @@ for (const entry of entries) {
   }
 }
 
-/** Returns a Russian translation from the local HSK dictionary, if available. */
+for (const entry of hskEntries) {
+  const word = entry.hanzi?.trim();
+  const translations = entry.translations?.rus?.map((value) => value.trim()).filter(Boolean);
+  if (word && entry.pinyin?.trim() && !pinyinByWord.has(word)) pinyinByWord.set(word, entry.pinyin.trim());
+  if (word && translations?.length && !russianTranslations.has(word)) {
+    russianTranslations.set(word, translations.join("; "));
+  }
+}
+
+/** Returns a Russian translation from the radical dictionary first, then HSK. */
 export function getRussianTranslation(word: string): string | undefined {
   return russianTranslations.get(word.trim());
 }
@@ -36,7 +49,7 @@ export function getRussianTranslations(words: Iterable<string>): Record<string, 
   return result;
 }
 
-/** Returns Russian translations for HSK entries that are single characters. */
+/** Returns Russian translations for single-character entries in either dictionary. */
 export function getSingleCharacterRussianTranslations(): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [word, translation] of russianTranslations) {
@@ -45,7 +58,7 @@ export function getSingleCharacterRussianTranslations(): Record<string, string> 
   return result;
 }
 
-/** Returns pinyin from the local HSK dictionary, if available. */
+/** Returns pinyin from the radical dictionary first, then HSK. */
 export function getPinyin(word: string): string | undefined {
   return pinyinByWord.get(word.trim());
 }
@@ -60,7 +73,7 @@ export function getPinyins(words: Iterable<string>): Record<string, string> {
   return result;
 }
 
-/** Returns pinyin for HSK entries that are single characters. */
+/** Returns pinyin for single-character entries in either dictionary. */
 export function getSingleCharacterPinyins(): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [word, value] of pinyinByWord) {
