@@ -2,7 +2,7 @@
   "id": "study_and_work",
   "title": "Учёба и работа",
   "decks": [
-    {"id": "study", "title": "Учёба", "file": "decks/study.json"},
-    {"id": "work", "title": "Работа", "file": "decks/work.json"}
+    { "id": "study", "title": "Учёба", "words": ["学校", "读", "老师", "题", "字", "书", "学生", "学习"] },
+    { "id": "work", "title": "Работа", "words": ["工作"] }
   ]
 }
