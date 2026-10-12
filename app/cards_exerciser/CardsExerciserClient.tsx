@@ -11,6 +11,7 @@ import FSRS6DebugPanel from "@/lib/FSRS-6/our_system/FSRS6DebugPanel";
 import { logFSRS } from "@/lib/FSRS-6/our_system/debugLog";
 import uiDecks from "@/data/ui-interface-decks.json";
 import Hint from "@/components/hint";
+import { getPinyin } from "@/lib/ru_en_chi_dictionary";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -51,7 +52,7 @@ type CharacterStructure = {
   etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
-type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string> };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string> };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -135,7 +136,7 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {} }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {} }: Props) {
   const [index, setIndex] = useState(0);
   const [side, setSide] = useState<"front" | "back">("front");
   const [answer, setAnswer] = useState("");
@@ -195,7 +196,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
   const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
-  const correctPinyin = deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
+  const correctPinyin = dictionaryPinyins[currentWord] ?? getPinyin(currentWord) ?? deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
   const translation = dictionaryTranslations[currentWord] ?? deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
 
   function componentRoleFor(parentChar: string, childChar: string): "semantic" | "phonetic" | undefined {
@@ -228,7 +229,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
 
     return {
       char,
-      pinyin: info?.pinyin?.join(", ") || undefined,
+      pinyin: dictionaryPinyins[char] || getPinyin(char) || info?.pinyin?.join(", ") || undefined,
       meaning: dictionaryTranslations[char] || info?.definition || undefined,
       components: children.length ? children : undefined,
     };
@@ -249,7 +250,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           })
         : [];
     return {
-      pinyin: info.pinyin.join(", ") || pinyins[char] || "pinyin placeholder",
+      pinyin: dictionaryPinyins[char] || getPinyin(char) || info.pinyin.join(", ") || pinyins[char] || "pinyin placeholder",
       translation: dictionaryTranslations[char] || info.definition || translations[char] || "перевод placeholder",
       components,
       etymology: info.etymology,
@@ -262,7 +263,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     const manual = deckCard?.characterStructure?.[char];
     if (!manual?.components?.length) return automatic;
     return {
-      pinyin: manual.pinyin ?? pinyins[char] ?? "pinyin placeholder",
+      pinyin: dictionaryPinyins[char] ?? getPinyin(char) ?? manual.pinyin ?? pinyins[char] ?? "pinyin placeholder",
       translation: dictionaryTranslations[char] ?? manual.translation ?? translations[char] ?? "перевод placeholder",
       components: manual.components,
       etymology: null,
