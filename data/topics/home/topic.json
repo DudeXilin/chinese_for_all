@@ -2,9 +2,9 @@
   "id": "home",
   "title": "Дом",
   "decks": [
-    {"id": "bedroom", "title": "Спальня", "file": "decks/bedroom.json"},
-    {"id": "bathroom", "title": "Ванная", "file": "decks/bathroom.json"},
-    {"id": "kitchen", "title": "Кухня", "file": "decks/kitchen.json"},
-    {"id": "entryway", "title": "Прихожая", "file": "decks/entryway.json"}
+    { "id": "bedroom", "title": "Спальня", "words": [] },
+    { "id": "bathroom", "title": "Ванная", "words": ["洗"] },
+    { "id": "kitchen", "title": "Кухня", "words": ["桌子"] },
+    { "id": "entryway", "title": "Прихожая", "words": ["门"] }
   ]
 }
