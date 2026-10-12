@@ -2,7 +2,7 @@
   "id": "body_health",
   "title": "Тело и здоровье",
   "decks": [
-    {"id":"body_parts","title":"Части тела","file":"decks/body_parts.json"},
-    {"id":"medicine","title":"Медицина","file":"decks/medicine.json"}
+    { "id": "body_parts", "title": "Части тела", "words": [] },
+    { "id": "medicine", "title": "Медицина", "words": ["医院", "药"] }
   ]
 }
