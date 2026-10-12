@@ -18,9 +18,10 @@ for a free stunning liquid glass effect implementation and making it free for ev
 for a free script that let's you write Chinese characters. 
 
 - https://github.com/open-spaced-repetition/ts-fsrs 
-for a free and effective memorizing-algorithm.   
+for a free and effective memorizing-algorithm.
 
+- https://github.com/LiudmilaLV/json_hsk
+for translating an HSK en-ch dictionary in Russian.
 
 
 Licensed under the People Flourishing License, Version 1.0. See LICENSE.
-
