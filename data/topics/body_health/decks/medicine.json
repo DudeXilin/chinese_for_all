@@ -1,8 +1,0 @@
-{
-  "id": "medicine",
-  "title": "Медицина",
-  "words": [
-    {"word":"医院","pinyin":"yīyuàn","translation":"hospital"},
-    {"word":"药","pinyin":"yào","translation":"medicine; drug; cure"}
-  ]
-}
