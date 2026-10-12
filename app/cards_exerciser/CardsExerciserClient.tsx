@@ -51,7 +51,7 @@ type CharacterStructure = {
   components: StructureComponent[];
   etymology?: CharacterEtymology | null;
 };
-export type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
+export type DeckCard = { word: string; pinyin?: string; translation?: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
 type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string> };
 
 const translations: Record<string, string> = {
