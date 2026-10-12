@@ -2,15 +2,7 @@
   "id": "food_and_drinks",
   "title": "Еда и напитки",
   "decks": [
-    {
-      "id": "drinks",
-      "title": "Напитки",
-      "file": "decks/drinks.json"
-    },
-    {
-      "id": "popular_food",
-      "title": "Популярная еда",
-      "file": "decks/popular_food.json"
-    }
+    { "id": "drinks", "title": "Напитки", "words": ["喝", "水", "茶", "咖啡"] },
+    { "id": "popular_food", "title": "Популярная еда", "words": ["米饭", "鸡蛋", "吃", "菜", "苹果", "水果"] }
   ]
 }
