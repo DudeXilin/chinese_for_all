@@ -2,7 +2,7 @@
   "id": "verbs",
   "title": "Глаголы",
   "decks": [
-    {"id": "feelings_verbs", "title": "Глаголы чувств", "file": "decks/feelings_verbs.json"},
-    {"id": "perception_verbs", "title": "Глаголы восприятия", "file": "decks/perception_verbs.json"}
+    { "id": "feelings_verbs", "title": "Глаголы чувств", "words": ["喜欢", "爱", "想"] },
+    { "id": "perception_verbs", "title": "Глаголы восприятия", "words": ["看", "听"] }
   ]
 }
