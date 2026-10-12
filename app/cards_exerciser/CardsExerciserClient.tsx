@@ -51,7 +51,7 @@ type CharacterStructure = {
   etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin: string; translation: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
-type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string> };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -135,7 +135,7 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, cards, theory }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {} }: Props) {
   const [index, setIndex] = useState(0);
   const [side, setSide] = useState<"front" | "back">("front");
   const [answer, setAnswer] = useState("");
@@ -196,7 +196,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
   const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
   const correctPinyin = deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
-  const translation = deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
+  const translation = dictionaryTranslations[currentWord] ?? deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
 
   function componentRoleFor(parentChar: string, childChar: string): "semantic" | "phonetic" | undefined {
     const etymology = getCharacterInfo(parentChar)?.etymology;
@@ -229,7 +229,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
     return {
       char,
       pinyin: info?.pinyin?.join(", ") || undefined,
-      meaning: info?.definition || undefined,
+      meaning: dictionaryTranslations[char] || info?.definition || undefined,
       components: children.length ? children : undefined,
     };
   }
@@ -250,7 +250,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
         : [];
     return {
       pinyin: info.pinyin.join(", ") || pinyins[char] || "pinyin placeholder",
-      translation: info.definition || translations[char] || "перевод placeholder",
+      translation: dictionaryTranslations[char] || info.definition || translations[char] || "перевод placeholder",
       components,
       etymology: info.etymology,
     };
@@ -263,7 +263,7 @@ export default function CardsExerciserClient({ title, words, cards, theory }: Pr
     if (!manual?.components?.length) return automatic;
     return {
       pinyin: manual.pinyin ?? pinyins[char] ?? "pinyin placeholder",
-      translation: manual.translation ?? translations[char] ?? "перевод placeholder",
+      translation: dictionaryTranslations[char] ?? manual.translation ?? translations[char] ?? "перевод placeholder",
       components: manual.components,
       etymology: null,
     };
