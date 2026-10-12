@@ -22,6 +22,7 @@ import introductionsDeck from "@/data/topics/people_and_relationships/decks/intr
 import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
 import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
 import testDeck from "@/data/test_deck.json";
+import { getRussianTranslations, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
@@ -68,6 +69,9 @@ export default async function CardsExerciserPage({
         ? { title: uiDeck.title, words: uiDeck.words }
         : lessonWords[topic as keyof typeof lessonWords];
   const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
+  const dictionaryTranslations = lesson
+    ? { ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(lesson.words) }
+    : getSingleCharacterRussianTranslations();
 
   if (!lesson) {
     return (
@@ -90,6 +94,7 @@ export default async function CardsExerciserPage({
       words={lesson.words}
       cards={"cards" in lesson ? lesson.cards : undefined}
       theory={theory}
+      dictionaryTranslations={dictionaryTranslations}
     />
   );
 }
