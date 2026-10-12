@@ -2,10 +2,10 @@
   "id": "people_and_relationships",
   "title": "Люди и отношения",
   "decks": [
-    {"id":"pronouns","title":"Местоимения","file":"decks/pronouns.json"},
-    {"id":"close_people","title":"Близкие","file":"decks/close_people.json"},
-    {"id":"introductions","title":"Знакомство","file":"decks/introductions.json"},
-    {"id":"communication","title":"Общение","file":"decks/communication.json"},
-    {"id":"politeness","title":"Вежливость","file":"decks/politeness.json"}
+    { "id": "pronouns", "title": "Местоимения", "words": ["我", "你", "他", "她", "我们", "您", "它", "谁", "大家"] },
+    { "id": "close_people", "title": "Близкие", "words": ["女儿", "家", "朋友", "妈妈", "爸爸", "儿子", "孩子", "姐姐"] },
+    { "id": "introductions", "title": "Знакомство", "words": ["名字", "认识", "叫"] },
+    { "id": "communication", "title": "Общение", "words": ["喂", "问", "说", "说话", "打电话"] },
+    { "id": "politeness", "title": "Вежливость", "words": ["不客气", "谢谢", "请", "对不起", "再见", "你好", "您"] }
   ]
 }
