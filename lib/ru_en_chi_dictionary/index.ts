@@ -59,3 +59,12 @@ export function getPinyins(words: Iterable<string>): Record<string, string> {
   }
   return result;
 }
+
+/** Returns pinyin for HSK entries that are single characters. */
+export function getSingleCharacterPinyins(): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [word, value] of pinyinByWord) {
+    if (Array.from(word).length === 1) result[word] = value;
+  }
+  return result;
+}
