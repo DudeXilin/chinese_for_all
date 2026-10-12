@@ -4,27 +4,14 @@ import { PointerEvent, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { GlassInit } from "@/components/glass-init";
 import foodAndDrinksTopic from "@/data/topics/food_and_drinks/topic.json";
-import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
-import popularFoodDeck from "@/data/topics/food_and_drinks/decks/popular_food.json";
 import bodyHealthTopic from "@/data/topics/body_health/topic.json";
-import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
-import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
 import verbsTopic from "@/data/topics/verbs/topic.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
-import studyDeck from "@/data/topics/study_and_work/decks/study.json";
-import workDeck from "@/data/topics/study_and_work/decks/work.json";
 import homeTopic from "@/data/topics/home/topic.json";
-import bedroomDeck from "@/data/topics/home/decks/bedroom.json";
-import bathroomDeck from "@/data/topics/home/decks/bathroom.json";
-import kitchenDeck from "@/data/topics/home/decks/kitchen.json";
-import entrywayDeck from "@/data/topics/home/decks/entryway.json";
+import studyAndWorkTopic from "@/data/topics/study_and_work/topic.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
-import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
-import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
-import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
-import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
-import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
 import testDeckData from "@/data/test_deck.json";
+import { getRussianTranslation } from "@/lib/ru_en_chi_dictionary";
 
 // See docs/LIQUIDGL.md for the six ground rules this page is built around
 // (Rules #1-#6). Summary, since this page leans on all of them at once:
@@ -58,11 +45,6 @@ const sections = [
 
 const topics = ["ТЕСТ КОЛОДА", "Места", "Тема 2", "Еда и напитки", "Люди и отношения", "Тело и здоровье", "Глаголы", "Признаки", "Учёба и работа", "Дом", "Тема 4", "Тема 5", "Тема 6", "Тема 7", "Тема 8", "Тема 9", "Тема 10"];
 const grammarExercises = ["Вопросительные слова", "Счётные слова", "Упражнение 3", "Упражнение 4", "Упражнение 5"];
-
-const studyAndWorkDecks = [
-  { id: "study", title: "Учёба", words: [{word:"学校",pinyin:"xuéxiào",translation:"school"},{word:"读",pinyin:"dú",translation:"read; study"},{word:"老师",pinyin:"lǎoshī",translation:"teacher"},{word:"题",pinyin:"tí",translation:"question/problem in an assignment"},{word:"字",pinyin:"zì",translation:"character; letter"},{word:"书",pinyin:"shū",translation:"book"},{word:"学生",pinyin:"xuésheng",translation:"student"},{word:"学习",pinyin:"xuéxí",translation:"learn; study"}] },
-  { id: "work", title: "Работа", words: [{word:"工作",pinyin:"gōngzuò",translation:"work; job"}] },
-];
 
 const NAVIGATOR_STEP_DESKTOP = 74;
 const NAVIGATOR_STEP_MOBILE = 68;
@@ -253,7 +235,7 @@ export default function LessonsPage() {
                       <div className="lesson-folder-children" aria-hidden={!isOpen}>
                                                   {topic === "Люди и отношения" ? (
                           <>
-                            {[pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck].map((deck) => (
+                            {peopleTopic.decks.map((deck) => (
                               <a className="lesson-island lesson-deck" key={deck.id} href={"/cards_exerciser?topic=people_and_relationships/" + deck.id}>
                                 {deck.title}
                               </a>
@@ -269,10 +251,10 @@ export default function LessonsPage() {
                         ) : (topic === "Еда и напитки" ? (
                           <>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=food_and_drinks/drinks"}>
-                              {drinksDeck.title}
+                              {foodAndDrinksTopic.decks[0].title}
                             </a>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=food_and_drinks/popular_food"}>
-                              {popularFoodDeck.title}
+                              {foodAndDrinksTopic.decks[1].title}
                             </a>
                             <button
                               className="lesson-island lesson-deck lesson-structure-button"
@@ -285,10 +267,10 @@ export default function LessonsPage() {
                         ) : (topic === "Тело и здоровье" ? (
                           <>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=body_health/body_parts"}>
-                              {bodyPartsDeck.title}
+                              {bodyHealthTopic.decks[0].title}
                             </a>
                             <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=body_health/medicine"}>
-                              {medicineDeck.title}
+                              {bodyHealthTopic.decks[1].title}
                             </a>
                             <button
                               className="lesson-island lesson-deck lesson-structure-button"
@@ -317,8 +299,8 @@ export default function LessonsPage() {
                           </>
                         ) : topic === "Учёба и работа" ? (
                           <>
-                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/study"}>{studyDeck.title}</a>
-                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/work"}>{workDeck.title}</a>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/study"}>{homeTopic.title === "" ? "" : "Учёба"}</a>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/work"}>{ "Работа" }</a>
                             <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("study_and_work")}>Структура папки</button>
                           </>
                         ) : (
@@ -409,25 +391,27 @@ export default function LessonsPage() {
           <div className="ui-words-backdrop" onClick={() => setStructureTopic(null)} />
           <div className="ui-words-panel">
             <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setStructureTopic(null)}>×</button>
-            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : structureTopic === "verbs" ? verbsTopic.title : structureTopic === "adjectives" ? adjectivesTopic.title : structureTopic === "study_and_work" ? "Учёба и работа" : peopleTopic.title}</div>
+            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : structureTopic === "verbs" ? verbsTopic.title : structureTopic === "adjectives" ? adjectivesTopic.title : structureTopic === "study_and_work" ? studyAndWorkTopic.title : peopleTopic.title}</div>
             <div className="ui-words-tree">
               {(structureTopic === "food_and_drinks"
-                ? [drinksDeck, popularFoodDeck]
+                ? foodAndDrinksTopic.decks
                 : structureTopic === "body_health"
-                  ? [bodyPartsDeck, medicineDeck]
+                  ? bodyHealthTopic.decks
                   : structureTopic === "verbs"
                     ? verbsTopic.decks
                     : structureTopic === "adjectives"
                       ? adjectivesTopic.decks
                       : structureTopic === "study_and_work"
-                        ? [studyDeck, workDeck]
-                        : [pronounsDeck, closePeopleDeck, introductionsDeck, communicationDeck, politenessDeck]
+                        ? studyAndWorkTopic.decks
+                        : structureTopic === "home"
+                          ? homeTopic.decks
+                          : peopleTopic.decks
               ).map((deck) => (
                 <details className="ui-words-branch" key={deck.id} open>
                   <summary>{deck.title}</summary>
                   <div className="ui-words-leaves">
-                    {("words" in deck ? deck.words : []).map((card) => (
-                      <div className="ui-words-leaf" key={card.word}>{card.translation}</div>
+                    {deck.words.map((word) => (
+                      <div className="ui-words-leaf" key={word}>{getRussianTranslation(word) ?? word}</div>
                     ))}
                   </div>
                 </details>
