@@ -3,24 +3,13 @@ import lessonWords from "@/data/lesson-words.json";
 import measureWords from "@/data/measure-words.json";
 import lessonTheory from "@/data/theory/measure_words_theory.json";
 import uiDecks from "@/data/ui-interface-decks.json";
-import drinksDeck from "@/data/topics/food_and_drinks/decks/drinks.json";
-import popularFoodDeck from "@/data/topics/food_and_drinks/decks/popular_food.json";
-import bodyPartsDeck from "@/data/topics/body_health/decks/body_parts.json";
-import medicineDeck from "@/data/topics/body_health/decks/medicine.json";
-import feelingsVerbsDeck from "@/data/topics/verbs/decks/feelings_verbs.json";
-import perceptionVerbsDeck from "@/data/topics/verbs/decks/perception_verbs.json";
 import adjectivesTopic from "@/data/topics/adjectives/topic.json";
-import studyDeck from "@/data/topics/study_and_work/decks/study.json";
-import bedroomDeck from "@/data/topics/home/decks/bedroom.json";
-import bathroomDeck from "@/data/topics/home/decks/bathroom.json";
-import kitchenDeck from "@/data/topics/home/decks/kitchen.json";
-import entrywayDeck from "@/data/topics/home/decks/entryway.json";
-import workDeck from "@/data/topics/study_and_work/decks/work.json";
-import pronounsDeck from "@/data/topics/people_and_relationships/decks/pronouns.json";
-import closePeopleDeck from "@/data/topics/people_and_relationships/decks/close_people.json";
-import introductionsDeck from "@/data/topics/people_and_relationships/decks/introductions.json";
-import communicationDeck from "@/data/topics/people_and_relationships/decks/communication.json";
-import politenessDeck from "@/data/topics/people_and_relationships/decks/politeness.json";
+import foodAndDrinksTopic from "@/data/topics/food_and_drinks/topic.json";
+import bodyHealthTopic from "@/data/topics/body_health/topic.json";
+import verbsTopic from "@/data/topics/verbs/topic.json";
+import studyAndWorkTopic from "@/data/topics/study_and_work/topic.json";
+import homeTopic from "@/data/topics/home/topic.json";
+import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import testDeck from "@/data/test_deck.json";
 import { getPinyins, getRussianTranslations, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 
@@ -34,28 +23,23 @@ export default async function CardsExerciserPage({
   const { topic: topicParam } = await searchParams;
   const topic = topicParam ?? "places";
   const uiDeck = uiDecks[topic as keyof typeof uiDecks];
-  const topicDecks = {
-    "food_and_drinks/drinks": drinksDeck,
-    "food_and_drinks/popular_food": popularFoodDeck,
-    "body_health/body_parts": bodyPartsDeck,
-    "body_health/medicine": medicineDeck,
-    "verbs/feelings_verbs": feelingsVerbsDeck,
-    "verbs/perception_verbs": perceptionVerbsDeck,
-    "adjectives/form": adjectivesTopic.decks[0],
-    "adjectives/color": adjectivesTopic.decks[1],
-    "study_and_work/study": studyDeck,
-    "study_and_work/work": workDeck,
-    "home/bedroom": bedroomDeck,
-    "home/bathroom": bathroomDeck,
-    "home/kitchen": kitchenDeck,
-    "home/entryway": entrywayDeck,
-    "people_and_relationships/pronouns": pronounsDeck,
-    "people_and_relationships/close_people": closePeopleDeck,
-    "people_and_relationships/introductions": introductionsDeck,
-    "people_and_relationships/communication": communicationDeck,
-    "people_and_relationships/politeness": politenessDeck,
-    "test_deck": testDeck,
+  const topicFolders = {
+    food_and_drinks: foodAndDrinksTopic,
+    body_health: bodyHealthTopic,
+    verbs: verbsTopic,
+    adjectives: adjectivesTopic,
+    study_and_work: studyAndWorkTopic,
+    home: homeTopic,
+    people_and_relationships: peopleTopic,
   } as const;
+  const topicDecks = Object.fromEntries(
+    Object.entries(topicFolders).flatMap(([folder, topicData]) =>
+      topicData.decks.map((deck) => [
+        `${folder}/${deck.id}`,
+        { title: deck.title, words: deck.words.map((word) => ({ word })) },
+      ]),
+    ),
+  ) as Record<string, { title: string; words: DeckCard[] }>;
   const topicDeck = topicDecks[topic as keyof typeof topicDecks] as { title: string; words: DeckCard[] } | undefined;
   const lesson = topicDeck
     ? {
