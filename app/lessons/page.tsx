@@ -391,7 +391,7 @@ export default function LessonsPage() {
           <div className="ui-words-backdrop" onClick={() => setStructureTopic(null)} />
           <div className="ui-words-panel">
             <button className="ui-words-close" type="button" aria-label="Закрыть" onClick={() => setStructureTopic(null)}>×</button>
-            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : structureTopic === "verbs" ? verbsTopic.title : structureTopic === "adjectives" ? adjectivesTopic.title : structureTopic === "study_and_work" ? studyAndWorkTopic.title : peopleTopic.title}</div>
+            <div className="ui-words-title">{structureTopic === "food_and_drinks" ? foodAndDrinksTopic.title : structureTopic === "body_health" ? bodyHealthTopic.title : structureTopic === "verbs" ? verbsTopic.title : structureTopic === "adjectives" ? adjectivesTopic.title : structureTopic === "study_and_work" ? studyAndWorkTopic.title : structureTopic === "home" ? homeTopic.title : peopleTopic.title}</div>
             <div className="ui-words-tree">
               {(structureTopic === "food_and_drinks"
                 ? foodAndDrinksTopic.decks
