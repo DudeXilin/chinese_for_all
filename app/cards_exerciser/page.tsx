@@ -11,7 +11,7 @@ import studyAndWorkTopic from "@/data/topics/study_and_work/topic.json";
 import homeTopic from "@/data/topics/home/topic.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import testDeck from "@/data/test_deck.json";
-import { getPinyins, getRussianTranslations, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
+import { getPinyins, getRussianTranslations, getSingleCharacterPinyins, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
@@ -55,7 +55,7 @@ export default async function CardsExerciserPage({
   const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
   const dictionaryWords = lesson ? lesson.words : [];
   const dictionaryTranslations = { ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(dictionaryWords) };
-  const dictionaryPinyins = getPinyins(dictionaryWords);
+  const dictionaryPinyins = { ...getSingleCharacterPinyins(), ...getPinyins(dictionaryWords) };
 
   if (!lesson) {
     return (
