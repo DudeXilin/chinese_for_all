@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import hskDictionary from "@/lib/ru_en_chi_dictionary/hsk.json";
 
 type FrequencyRow = Record<string, string | number>;
 type FrequencyTable = { data: FrequencyRow[] };
@@ -65,6 +66,19 @@ async function loadIndexes() {
 
   const metadata = new Map<string, { pinyin?: string; translation?: string }>();
   await loadMetadataFromDirectory(join(process.cwd(), "data"), metadata);
+
+  // HSK Russian translations take priority; retain existing metadata as fallback.
+  for (const entry of hskDictionary as Array<{ hanzi?: string; pinyin?: string; translations?: { rus?: string[] } }>) {
+    const word = entry.hanzi?.trim();
+    if (!word) continue;
+    const existing = metadata.get(word);
+    const russian = entry.translations?.rus?.map((value) => value.trim()).filter(Boolean).join("; ");
+    metadata.set(word, {
+      pinyin: entry.pinyin?.trim() || existing?.pinyin,
+      translation: russian || existing?.translation,
+    });
+  }
+
   wordMetadataIndex = metadata;
 }
 
