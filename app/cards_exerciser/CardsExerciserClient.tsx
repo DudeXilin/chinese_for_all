@@ -196,8 +196,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
   const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
-  const correctPinyin = dictionaryPinyins[currentWord] ?? getPinyin(currentWord) ?? deckCard?.pinyin ?? uiWord?.pinyin ?? pinyins[currentWord] ?? "pinyin placeholder";
-  const translation = dictionaryTranslations[currentWord] ?? deckCard?.translation ?? uiWord?.translation ?? translations[currentWord] ?? "перевод placeholder";
+  const correctPinyin = dictionaryPinyins[currentWord] ?? getPinyin(currentWord) ?? "pinyin placeholder";
+  const translation = dictionaryTranslations[currentWord] ?? "перевод placeholder";
 
   function componentRoleFor(parentChar: string, childChar: string): "semantic" | "phonetic" | undefined {
     const etymology = getCharacterInfo(parentChar)?.etymology;
@@ -229,8 +229,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
 
     return {
       char,
-      pinyin: dictionaryPinyins[char] || getPinyin(char) || info?.pinyin?.join(", ") || undefined,
-      meaning: dictionaryTranslations[char] || info?.definition || undefined,
+      pinyin: dictionaryPinyins[char] || getPinyin(char) || undefined,
+      meaning: dictionaryTranslations[char] || undefined,
       components: children.length ? children : undefined,
     };
   }
@@ -250,10 +250,21 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           })
         : [];
     return {
-      pinyin: dictionaryPinyins[char] || getPinyin(char) || info.pinyin.join(", ") || pinyins[char] || "pinyin placeholder",
-      translation: dictionaryTranslations[char] || info.definition || translations[char] || "перевод placeholder",
+      pinyin: dictionaryPinyins[char] || getPinyin(char) || "pinyin placeholder",
+      translation: dictionaryTranslations[char] || "перевод placeholder",
       components,
       etymology: info.etymology,
+    };
+  }
+
+  function sanitizeDictionaryComponent(component: StructureComponent): StructureComponent {
+    return {
+      char: component.char,
+      role: component.role,
+      pinyin: dictionaryPinyins[component.char] ?? getPinyin(component.char),
+      meaning: dictionaryTranslations[component.char],
+      translation: dictionaryTranslations[component.char],
+      components: component.components?.map(sanitizeDictionaryComponent),
     };
   }
 
@@ -263,9 +274,9 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     const manual = deckCard?.characterStructure?.[char];
     if (!manual?.components?.length) return automatic;
     return {
-      pinyin: dictionaryPinyins[char] ?? getPinyin(char) ?? manual.pinyin ?? pinyins[char] ?? "pinyin placeholder",
-      translation: dictionaryTranslations[char] ?? manual.translation ?? translations[char] ?? "перевод placeholder",
-      components: manual.components,
+      pinyin: dictionaryPinyins[char] ?? getPinyin(char) ?? "pinyin placeholder",
+      translation: dictionaryTranslations[char] ?? "перевод placeholder",
+      components: manual.components.map((component) => sanitizeDictionaryComponent(component)),
       etymology: null,
     };
   }
