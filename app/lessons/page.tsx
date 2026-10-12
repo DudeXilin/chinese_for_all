@@ -299,8 +299,8 @@ export default function LessonsPage() {
                           </>
                         ) : topic === "Учёба и работа" ? (
                           <>
-                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/study"}>{homeTopic.title === "" ? "" : "Учёба"}</a>
-                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/work"}>{ "Работа" }</a>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/study"}>{studyAndWorkTopic.decks[0].title}</a>
+                            <a className="lesson-island lesson-deck" href={"/cards_exerciser?topic=study_and_work/work"}>{studyAndWorkTopic.decks[1].title}</a>
                             <button className="lesson-island lesson-deck lesson-structure-button" type="button" onClick={() => setStructureTopic("study_and_work")}>Структура папки</button>
                           </>
                         ) : (
