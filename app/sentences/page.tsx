@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type SentenceResult = { sentence: string; translation: string };
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
 type SentenceDebug = {
   datasetShape: string;
   rootKeys: string[];
@@ -265,6 +265,7 @@ export default function SentencesPage() {
           >
             <option value="sentences_with_translation.json">sentences_with_translation.json — основной набор</option>
             <option value="cmn_sentences_russian_translation.tsv">cmn_sentences_russian_translation.tsv — предложения с русским переводом</option>
+            <option value="AMC_conversations_100K.txt">AMC_conversations_100K.txt — разговорные предложения без перевода</option>
           </select>
           <label htmlFor="known-words" className="mb-2 block text-sm font-medium text-white/85">
             Слова, которые вы знаете
@@ -341,7 +342,7 @@ export default function SentencesPage() {
                     <p className="text-xl leading-9 tracking-wide sm:text-2xl">
                       <HighlightedSentence sentence={result.sentence} target={target.trim()} />
                     </p>
-                    <p className="mt-2 pl-2 text-sm leading-6 text-white/65 sm:text-base">{result.translation}</p>
+                    {result.translation && <p className="mt-2 pl-2 text-sm leading-6 text-white/65 sm:text-base">{result.translation}</p>}
                   </article>
                 ))}
               </div>
