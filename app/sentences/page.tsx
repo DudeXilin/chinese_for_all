@@ -127,7 +127,9 @@ export default function SentencesPage() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debugToolsEnabled, setDebugToolsEnabled] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
   const [debugData, setDebugData] = useState<SentenceDebug | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -178,18 +180,22 @@ export default function SentencesPage() {
       <button
         type="button"
         onClick={() => {
-          setDebugOpen((open) => {
-            const nextOpen = !open;
-            // Hide the site-wide diagnostic bug button while sentence debugging is active.
-            (window as Window & { __cfaSetDebugButtonVisible?: (visible: boolean) => void })
-              .__cfaSetDebugButtonVisible?.(!nextOpen);
-            return nextOpen;
-          });
+          const nextEnabled = !debugToolsEnabled;
+          setDebugToolsEnabled(nextEnabled);
+          setDebugOpen(false);
+          setCopyStatus("");
+          (window as Window & {
+            __cfaSetDebugToolsVisible?: (visible: boolean) => void;
+            __cfaSetDebugButtonVisible?: (visible: boolean) => void;
+          }).__cfaSetDebugToolsVisible?.(nextEnabled);
+          // Backwards-compatible fallback if an older diagnostic script is cached.
+          (window as Window & { __cfaSetDebugButtonVisible?: (visible: boolean) => void })
+            .__cfaSetDebugButtonVisible?.(nextEnabled);
         }}
         className="fixed left-4 top-[4.25rem] z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/70 text-xl backdrop-blur-xl transition hover:bg-white/10"
-        aria-label={debugOpen ? "Скрыть инструменты отладки" : "Показать инструменты отладки"}
-        aria-expanded={debugOpen}
-        title="Debug tools"
+        aria-label={debugToolsEnabled ? "Скрыть все инструменты отладки" : "Показать все инструменты отладки"}
+        aria-expanded={debugToolsEnabled}
+        title={debugToolsEnabled ? "Скрыть все debug tools" : "Показать все debug tools"}
       >
         🐞
       </button>
@@ -271,17 +277,79 @@ export default function SentencesPage() {
         )}
       </div>
 
-      {debugOpen && (
-        <aside className="fixed bottom-4 right-4 z-50 flex max-h-[72dvh] w-[min(94vw,540px)] flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#111]/95 shadow-2xl shadow-black/60 backdrop-blur-2xl">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+      {debugToolsEnabled && !debugOpen && (
+        <button
+          type="button"
+          onClick={() => setDebugOpen(true)}
+          className="fixed bottom-4 right-4 z-40 flex h-11 items-center gap-2 rounded-full border border-white/15 bg-black/85 px-4 text-sm text-white shadow-xl shadow-black/40 backdrop-blur-xl transition hover:bg-white/10"
+          aria-label="Открыть полный debug tool"
+          title="Открыть отладку поиска предложений"
+        >
+          <span className="text-lg">🐞</span>
+          <span>Logs</span>
+        </button>
+      )}
+
+      {debugToolsEnabled && debugOpen && (
+        <aside className="fixed inset-0 z-[60] flex flex-col bg-[#090909]/[0.98] text-white backdrop-blur-2xl">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-6">
             <div>
               <h2 className="font-semibold text-white">🐞 Отладка поиска предложений</h2>
-              <p className="text-[10px] text-white/40">Этапы фильтрации на сервере</p>
+              <p className="text-xs text-white/45">Диагностика поиска и фильтрации на сервере</p>
             </div>
-            <button type="button" onClick={() => setDebugOpen(false)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-lg text-white/60 hover:bg-white/10" aria-label="Скрыть отладку">×</button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const contents = JSON.stringify({
+                    page: window.location.href,
+                    timestamp: new Date().toISOString(),
+                    target,
+                    knownWordsInput: knownInput,
+                    searched,
+                    loading,
+                    error,
+                    results,
+                    debug: debugData,
+                  }, null, 2);
+                  try {
+                    await navigator.clipboard.writeText(contents);
+                    setCopyStatus("Скопировано");
+                  } catch {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = contents;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    const copied = document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                    setCopyStatus(copied ? "Скопировано" : "Не удалось скопировать");
+                  }
+                  window.setTimeout(() => setCopyStatus(""), 1800);
+                }}
+                className="min-h-9 rounded-full border border-white/15 bg-white/10 px-4 text-sm text-white hover:bg-white/15"
+              >
+                {copyStatus || "Копировать всё"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDebugOpen(false);
+                  setCopyStatus("");
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xl text-white/75 hover:bg-white/10"
+                aria-label="Свернуть debug tool"
+                title="Свернуть в кнопку"
+              >
+                ×
+              </button>
+            </div>
           </div>
-          <div className="min-h-0 overflow-y-auto p-4">
-            <DebugPanel debug={debugData} resultsCount={results.length} error={error} />
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="mx-auto w-full max-w-5xl">
+              <DebugPanel debug={debugData} resultsCount={results.length} error={error} />
+            </div>
           </div>
         </aside>
       )}
