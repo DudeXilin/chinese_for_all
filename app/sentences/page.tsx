@@ -168,6 +168,8 @@ export default function SentencesPage() {
   }
   const [target, setTarget] = useState("");
   const [unknownRatio, setUnknownRatio] = useState(0);
+  const [autoRelaxUnknownRatio, setAutoRelaxUnknownRatio] = useState(false);
+  const [searchMeta, setSearchMeta] = useState<{ effectiveUnknownRatio: number; autoRelaxed: boolean; relaxationSteps: number } | null>(null);
   const [results, setResults] = useState<SentenceResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -193,7 +195,7 @@ export default function SentencesPage() {
       const response = await fetch("/api/sentences/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId, minimumKnownRatio: 1 - unknownRatio }),
+        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId, unknownRatio, autoRelaxUnknownRatio }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
@@ -340,6 +342,21 @@ export default function SentencesPage() {
             </div>
           </div>
 
+          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
+            <input
+              type="checkbox"
+              checked={autoRelaxUnknownRatio}
+              onChange={(event) => setAutoRelaxUnknownRatio(event.target.checked)}
+              className="mt-1 h-4 w-4 accent-[#f0d9bd]"
+            />
+            <span>
+              <span className="block text-sm font-medium text-white/85">Автоматически расширять долю незнакомой лексики</span>
+              <span className="mt-1 block text-xs leading-5 text-white/45">
+                Если найдено меньше 10 предложений, увеличивать допустимую долю незнакомых слов на 0.1, пока не найдётся 10 или не будет достигнуто 1.0.
+              </span>
+            </span>
+          </label>
+
           <label htmlFor="target-word" className="mb-2 mt-6 block text-sm font-medium text-white/85">
             Слово или иероглиф для изучения (необязательно)
           </label>
@@ -374,6 +391,12 @@ export default function SentencesPage() {
               <span className="text-sm text-white/45">Найдено: {results.length}</span>
             </div>
 
+            {searchMeta?.autoRelaxed && (
+              <p className="mb-3 rounded-xl border border-amber-200/15 bg-amber-200/[0.05] px-4 py-3 text-sm text-amber-100/80">
+                Для получения результатов допустимая доля незнакомой лексики автоматически увеличена с {unknownRatio.toFixed(2)} до {searchMeta.effectiveUnknownRatio.toFixed(2)}.
+                {results.length < 10 ? ` Найдено ${results.length} предложений — больше подходящих при пороге 1.0 не обнаружено.` : ""}
+              </p>
+            )}
             {results.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-8 text-center text-sm leading-6 text-white/55">
                 Подходящих предложений не найдено. Откройте отладку кнопкой 🐞, чтобы увидеть, на каком этапе предложения отбрасываются.
