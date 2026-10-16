@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type SentenceResult = { sentence: string; translation: string };
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv";
 type SentenceDebug = {
   datasetShape: string;
   rootKeys: string[];
@@ -122,6 +123,7 @@ function DebugPanel({ debug, resultsCount, error }: { debug: SentenceDebug | nul
 
 export default function SentencesPage() {
   const [knownInput, setKnownInput] = useState("我,喜欢,你,朋友,那,个,他,它,她,喝,和,儿,子,了,是,的,一,生,老师,吗,水,酒,杯,茶,桌子,今天,什么,为什么");
+  const [datasetId, setDatasetId] = useState<DatasetId>("sentences_with_translation.json");
   const [knownWordsIsAdmin, setKnownWordsIsAdmin] = useState(false);
   const [knownWordsSaveStatus, setKnownWordsSaveStatus] = useState("");
   const [knownWordsLoading, setKnownWordsLoading] = useState(true);
@@ -190,7 +192,7 @@ export default function SentencesPage() {
       const response = await fetch("/api/sentences/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ knownWords, target: target.trim(), debug: true }),
+        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
@@ -247,6 +249,23 @@ export default function SentencesPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-7">
+          <label htmlFor="sentence-dataset" className="mb-2 block text-sm font-medium text-white/85">
+            Файл с предложениями
+          </label>
+          <select
+            id="sentence-dataset"
+            value={datasetId}
+            onChange={(event) => {
+              setDatasetId(event.target.value as DatasetId);
+              setSearched(false);
+              setError("");
+              setDebugData(null);
+            }}
+            className="mb-6 w-full rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-base text-white outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/5"
+          >
+            <option value="sentences_with_translation.json">sentences_with_translation.json — основной набор</option>
+            <option value="cmn_sentences_russian_translation.tsv">cmn_sentences_russian_translation.tsv — предложения с русским переводом</option>
+          </select>
           <label htmlFor="known-words" className="mb-2 block text-sm font-medium text-white/85">
             Слова, которые вы знаете
           </label>
