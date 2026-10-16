@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type SentenceResult = { sentence: string; translation: string };
 type SentenceDebug = {
@@ -121,7 +121,49 @@ function DebugPanel({ debug, resultsCount, error }: { debug: SentenceDebug | nul
 }
 
 export default function SentencesPage() {
-  const [knownInput, setKnownInput] = useState("");
+  const [knownInput, setKnownInput] = useState("我,喜欢,你,朋友,那,个,他,它,她,喝,和,儿,子,了,是,的,一,生,老师,吗,水,酒,杯,茶,桌子,今天,什么,为什么");
+  const [knownWordsIsAdmin, setKnownWordsIsAdmin] = useState(false);
+  const [knownWordsSaveStatus, setKnownWordsSaveStatus] = useState("");
+  const [knownWordsLoading, setKnownWordsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/sentences/known-words", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Не удалось загрузить сохранённый список.");
+        if (!cancelled) {
+          if (typeof data.knownWords === "string") setKnownInput(data.knownWords);
+          setKnownWordsIsAdmin(data.isAdmin === true);
+        }
+      })
+      .catch(() => {
+        // Keep the built-in default list if the saved file cannot be loaded.
+      })
+      .finally(() => {
+        if (!cancelled) setKnownWordsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSaveKnownWords() {
+    setKnownWordsSaveStatus("");
+    try {
+      const response = await fetch("/api/sentences/known-words", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ knownWords: knownInput }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Не удалось сохранить список.");
+      setKnownInput(data.knownWords);
+      setKnownWordsSaveStatus("Сохранено в GitHub");
+    } catch (err) {
+      setKnownWordsSaveStatus(err instanceof Error ? err.message : "Не удалось сохранить список.");
+    }
+  }
   const [target, setTarget] = useState("");
   const [results, setResults] = useState<SentenceResult[]>([]);
   const [searched, setSearched] = useState(false);
@@ -217,6 +259,23 @@ export default function SentencesPage() {
             className="w-full resize-y rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-base leading-7 text-white outline-none transition placeholder:text-white/25 focus:border-white/30 focus:ring-2 focus:ring-white/5"
           />
           <p className="mt-2 text-xs leading-5 text-white/40">Разделяйте слова запятыми. Поддерживаются также китайские запятые и переносы строк.</p>
+          {knownWordsIsAdmin && (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleSaveKnownWords}
+                disabled={knownWordsLoading}
+                className="min-h-10 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/15 disabled:opacity-50"
+              >
+                Сохранить знакомые слова
+              </button>
+              {knownWordsSaveStatus && (
+                <span role="status" className={knownWordsSaveStatus === "Сохранено в GitHub" ? "text-xs text-emerald-200" : "text-xs text-rose-200"}>
+                  {knownWordsSaveStatus}
+                </span>
+              )}
+            </div>
+          )}
 
           <label htmlFor="target-word" className="mb-2 mt-6 block text-sm font-medium text-white/85">
             Слово или иероглиф для изучения (необязательно)
