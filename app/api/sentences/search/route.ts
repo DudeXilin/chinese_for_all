@@ -113,6 +113,56 @@ function getTranslation(record: SentenceRecord): string {
   return "";
 }
 
+// Remove punctuation and whitespace, but keep letters, digits and Han characters.
+// Anything that is not in the learner's vocabulary will therefore fail segmentation.
+function normalizeSentence(sentence: string): string {
+  return sentence.replace(/[\p{P}\p{S}\s]/gu, "");
+}
+
+function normalizeWord(word: string): string {
+  return word.trim().replace(/[\p{P}\p{S}\s]/gu, "");
+}
+
+/**
+ * Finds an exact segmentation using only known vocabulary entries.
+ * The target must be a complete token, not merely a substring (e.g. 喝 must
+ * not qualify inside an unknown word such as 喝彩). Returns null if any
+ * character cannot be covered by known words or if the target token is absent.
+ */
+function segmentWithKnownWords(
+  sentence: string,
+  knownWordsByLength: string[],
+  target: string,
+): string[] | null {
+  const normalized = normalizeSentence(sentence);
+  if (!normalized) return null;
+
+  const memo = new Map<string, string[] | null>();
+
+  function visit(index: number, targetUsed: boolean): string[] | null {
+    if (index === normalized.length) return targetUsed ? [] : null;
+
+    const memoKey = `${index}:${targetUsed ? 1 : 0}`;
+    if (memo.has(memoKey)) return memo.get(memoKey) ?? null;
+
+    for (const word of knownWordsByLength) {
+      if (!word || !normalized.startsWith(word, index)) continue;
+      const nextTargetUsed = targetUsed || word === target;
+      const suffix = visit(index + word.length, nextTargetUsed);
+      if (suffix !== null) {
+        const result = [word, ...suffix];
+        memo.set(memoKey, result);
+        return result;
+      }
+    }
+
+    memo.set(memoKey, null);
+    return null;
+  }
+
+  return visit(0, false);
+}
+
 export async function POST(request: Request) {
   try {
     const body: unknown = await request.json();
@@ -120,7 +170,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Некорректные данные запроса." }, { status: 400 });
     }
 
-    const target = typeof body.target === "string" ? body.target.trim() : "";
+    const target = typeof body.target === "string" ? normalizeWord(body.target) : "";
     const knownWords: string[] = Array.isArray(body.knownWords)
       ? body.knownWords.filter((word: unknown): word is string => typeof word === "string")
       : [];
@@ -130,8 +180,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Введите слово или иероглиф для изучения." }, { status: 400 });
     }
 
-    const known = new Set<string>(knownWords.map((word: string) => word.trim()).filter(Boolean));
+    const known = new Set<string>(knownWords.map(normalizeWord).filter(Boolean));
     known.add(target);
+    const knownWordsByLength = [...known].sort((a, b) => b.length - a.length);
 
     const dataset = await loadDataset();
     const { entries, rootKeys, shape } = unwrapDataset(dataset);
@@ -141,6 +192,7 @@ export async function POST(request: Request) {
       totalEntries: entries.length,
       targetMatches: 0,
       rejectedUnknownTags: 0,
+      rejectedUnknownWords: 0,
       missingTags: 0,
       missingTranslation: 0,
       accepted: 0,
@@ -148,8 +200,18 @@ export async function POST(request: Request) {
       knownWordsUnique: known.size,
       target,
     };
-    const rejectedSamples: Array<{ reason: string; sentence: string; tags?: string[]; unknownWords?: string[] }> = [];
-    const targetSamples: Array<{ sentence: string; translationFound: boolean; tags: string[] }> = [];
+    const rejectedSamples: Array<{
+      reason: string;
+      sentence: string;
+      tags?: string[];
+      unknownWords?: string[];
+    }> = [];
+    const targetSamples: Array<{
+      sentence: string;
+      translationFound: boolean;
+      tags: string[];
+      segmentation?: string[] | null;
+    }> = [];
     const matches: Array<{ sentence: string; translation: string }> = [];
 
     for (const [sentence, record] of entries) {
@@ -158,24 +220,37 @@ export async function POST(request: Request) {
 
       const taggedWords = getTaggedWords(record.tags);
       if (!Array.isArray(record.tags) || taggedWords.length === 0) stats.missingTags += 1;
-      const unknownWords = taggedWords.filter((word) => !known.has(word));
       const translation = getTranslation(record);
+      const segmentation = segmentWithKnownWords(sentence, knownWordsByLength, target);
 
       if (targetSamples.length < 8) {
-        targetSamples.push({ sentence, translationFound: Boolean(translation), tags: taggedWords.slice(0, 30) });
+        targetSamples.push({
+          sentence,
+          translationFound: Boolean(translation),
+          tags: taggedWords.slice(0, 30),
+          segmentation,
+        });
       }
 
-      if (unknownWords.length > 0) {
+      if (!segmentation) {
+        stats.rejectedUnknownWords += 1;
+        // Keep the legacy counter populated for the existing debug UI.
         stats.rejectedUnknownTags += 1;
         if (rejectedSamples.length < 12) {
-          rejectedSamples.push({ reason: "Есть незнакомые слова в tags", sentence, tags: taggedWords.slice(0, 30), unknownWords: unknownWords.slice(0, 15) });
+          rejectedSamples.push({
+            reason: "Нельзя составить предложение только из known words (или target не является отдельным словом)",
+            sentence,
+            tags: taggedWords.slice(0, 30),
+          });
         }
         continue;
       }
 
       if (!translation) {
         stats.missingTranslation += 1;
-        if (rejectedSamples.length < 12) rejectedSamples.push({ reason: "Не найден перевод", sentence, tags: taggedWords.slice(0, 30) });
+        if (rejectedSamples.length < 12) {
+          rejectedSamples.push({ reason: "Не найден перевод", sentence, tags: taggedWords.slice(0, 30) });
+        }
         continue;
       }
 
