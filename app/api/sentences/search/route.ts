@@ -32,29 +32,34 @@ function loadDataset() {
 function getTaggedWords(tags: unknown): string[] {
   if (!Array.isArray(tags)) return [];
   return tags
-    .map((tag) => {
+    .map((tag: unknown) => {
       if (Array.isArray(tag)) return typeof tag[0] === "string" ? tag[0] : "";
       if (tag && typeof tag === "object" && "word" in tag) {
         return typeof tag.word === "string" ? tag.word : "";
       }
       return "";
     })
-    .filter(Boolean);
+    .filter((word: string) => word.length > 0);
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const target = typeof body.target === "string" ? body.target.trim() : "";
-    const knownWords = Array.isArray(body.knownWords)
-      ? body.knownWords.filter((word: unknown): word is string => typeof word === "string")
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Некорректные данные запроса." }, { status: 400 });
+    }
+
+    const payload = body as { target?: unknown; knownWords?: unknown };
+    const target = typeof payload.target === "string" ? payload.target.trim() : "";
+    const knownWords: string[] = Array.isArray(payload.knownWords)
+      ? payload.knownWords.filter((word: unknown): word is string => typeof word === "string")
       : [];
 
     if (!target) {
       return NextResponse.json({ error: "Введите слово или иероглиф для изучения." }, { status: 400 });
     }
 
-    const known = new Set(knownWords.map((word) => word.trim()).filter(Boolean));
+    const known = new Set<string>(knownWords.map((word: string) => word.trim()).filter(Boolean));
     known.add(target);
 
     const parsed = await loadDataset();
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
     for (const [sentence, record] of entries) {
       if (!sentence || !sentence.includes(target)) continue;
       const taggedWords = getTaggedWords(record.tags);
-      if (taggedWords.some((word) => !known.has(word))) continue;
+      if (taggedWords.some((word: string) => !known.has(word))) continue;
 
       const translation = typeof record.translation === "string" ? record.translation.trim() : "";
       if (!translation) continue;
