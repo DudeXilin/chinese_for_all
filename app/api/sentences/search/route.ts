@@ -7,17 +7,25 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Dataset = Record<string, unknown> | unknown[];
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
 
 const DATASET_PATHS: Record<DatasetId, string> = {
   "sentences_with_translation.json": path.join(process.cwd(), "lib", "TEST_SENTENCES", "sentences_with_translation.json"),
   "cmn_sentences_russian_translation.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "cmn_sentences_russian_translation.tsv"),
+  "AMC_conversations_100K.txt": path.join(process.cwd(), "lib", "TEST_SENTENCES", "AMC_conversations_100K.txt"),
 };
 
 const datasetPromises = new Map<DatasetId, Promise<Dataset>>();
 
 function isDatasetId(value: unknown): value is DatasetId {
-  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv";
+  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv" || value === "AMC_conversations_100K.txt";
+}
+
+function parsePlainText(raw: string): Dataset {
+  return raw.replace(/^\uFEFF/, "").split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((sentence, index) => ({ id: String(index + 1), sentence, translation: "" }));
 }
 
 function parseTsv(raw: string): Dataset {
@@ -49,7 +57,7 @@ function loadDataset(datasetId: DatasetId): Promise<Dataset> {
   if (cached) return cached;
 
   const promise = readFile(DATASET_PATHS[datasetId], "utf8")
-    .then((raw) => datasetId.endsWith(".tsv") ? parseTsv(raw) : JSON.parse(raw) as Dataset)
+    .then((raw) => datasetId.endsWith(".tsv") ? parseTsv(raw) : datasetId.endsWith(".txt") ? parsePlainText(raw) : JSON.parse(raw) as Dataset)
     .catch((error) => {
       datasetPromises.delete(datasetId);
       throw error;
@@ -83,7 +91,7 @@ export async function POST(request: Request) {
       : 1;
 
     const dataset = await loadDataset(datasetId);
-    const output = filterSentences(dataset, target, knownWords, minimumKnownRatio);
+    const output = filterSentences(dataset, target, knownWords, minimumKnownRatio, datasetId.endsWith(".txt"));
     const response: {
       results: typeof output.results;
       count: number;
