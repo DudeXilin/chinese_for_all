@@ -4,23 +4,32 @@ import { FormEvent, useMemo, useState } from "react";
 
 type SentenceResult = { sentence: string; translation: string };
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function HighlightedSentence({ sentence, target }: { sentence: string; target: string }) {
   const parts = useMemo(() => {
-    if (!target) return [sentence];
-    return sentence.split(new RegExp(`(${escapeRegExp(target)})`, "gi"));
+    if (!target) return [{ text: sentence, highlighted: false }];
+    const result: Array<{ text: string; highlighted: boolean }> = [];
+    const source = sentence.toLowerCase();
+    const needle = target.toLowerCase();
+    let cursor = 0;
+    let matchAt = source.indexOf(needle, cursor);
+
+    while (matchAt !== -1) {
+      if (matchAt > cursor) result.push({ text: sentence.slice(cursor, matchAt), highlighted: false });
+      result.push({ text: sentence.slice(matchAt, matchAt + target.length), highlighted: true });
+      cursor = matchAt + target.length;
+      matchAt = source.indexOf(needle, cursor);
+    }
+    if (cursor < sentence.length) result.push({ text: sentence.slice(cursor), highlighted: false });
+    return result;
   }, [sentence, target]);
 
   return (
     <>
       {parts.map((part, index) =>
-        part.toLowerCase() === target.toLowerCase() ? (
-          <span key={index} className="rounded-sm bg-rose-400/15 text-rose-300">{part}</span>
+        part.highlighted ? (
+          <span key={index} className="rounded-sm bg-rose-400/15 text-rose-300">{part.text}</span>
         ) : (
-          <span key={index}>{part}</span>
+          <span key={index}>{part.text}</span>
         ),
       )}
     </>
