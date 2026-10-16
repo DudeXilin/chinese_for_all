@@ -110,11 +110,19 @@ export async function POST(request: Request) {
       results: typeof output.results;
       count: number;
       datasetId: DatasetId;
+      requestedUnknownRatio: number;
+      effectiveUnknownRatio: number;
+      autoRelaxed: boolean;
+      relaxationSteps: number;
       debug?: typeof output.debug;
     } = {
       results: output.results,
       count: output.count,
       datasetId,
+      requestedUnknownRatio,
+      effectiveUnknownRatio,
+      autoRelaxed: relaxationSteps > 0,
+      relaxationSteps,
     };
 
     if (includeDebug) response.debug = output.debug;
