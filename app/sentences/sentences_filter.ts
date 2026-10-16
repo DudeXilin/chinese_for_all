@@ -152,9 +152,9 @@ function normalizeWord(word: string): string {
 }
 
 function isNonLexicalToken(token: string): boolean {
-  // Jieba returns punctuation as tokens. Like the original miner, these do not
-  // contribute to the known-word ratio. Numeric tokens are excluded as well.
-  return /^[\p{P}\p{S}\s\d]+$/u.test(token);
+  // Punctuation, symbols, whitespace, Arabic numerals, and Latin-script tokens
+  // are treated as automatically known and do not affect the known-word ratio.
+  return /^[\p{P}\p{S}\s\dA-Za-z]+$/u.test(token);
 }
 
 function tokenizeSentence(sentence: string): string[] {
