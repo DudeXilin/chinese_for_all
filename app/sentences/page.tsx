@@ -177,7 +177,15 @@ export default function SentencesPage() {
       </a>
       <button
         type="button"
-        onClick={() => setDebugOpen((open) => !open)}
+        onClick={() => {
+          setDebugOpen((open) => {
+            const nextOpen = !open;
+            // Hide the site-wide diagnostic bug button while sentence debugging is active.
+            (window as Window & { __cfaSetDebugButtonVisible?: (visible: boolean) => void })
+              .__cfaSetDebugButtonVisible?.(!nextOpen);
+            return nextOpen;
+          });
+        }}
         className="fixed left-4 top-[4.25rem] z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/70 text-xl backdrop-blur-xl transition hover:bg-white/10"
         aria-label={debugOpen ? "Скрыть инструменты отладки" : "Показать инструменты отладки"}
         aria-expanded={debugOpen}
