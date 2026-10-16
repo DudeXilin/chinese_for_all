@@ -2,7 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-type SentenceResult = { sentence: string; translation: string };
+type SentenceResult = {
+  sentence: string;
+  translation: string;
+  segments?: Array<{ text: string; unknown: boolean }>;
+};
 type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
 type SentenceDebug = {
   datasetShape: string;
@@ -167,6 +171,9 @@ export default function SentencesPage() {
     }
   }
   const [target, setTarget] = useState("");
+  const [unknownRatio, setUnknownRatio] = useState(0);
+  const [autoRelaxUnknownRatio, setAutoRelaxUnknownRatio] = useState(false);
+  const [searchMeta, setSearchMeta] = useState<{ requestedUnknownRatio: number; effectiveUnknownRatio: number; autoRelaxed: boolean; relaxationSteps: number } | null>(null);
   const [results, setResults] = useState<SentenceResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -181,7 +188,9 @@ export default function SentencesPage() {
     setError("");
     setSearched(false);
     setDebugData(null);
+    setSearchMeta(null);
 
+    const requestedUnknownRatio = unknownRatio;
     const knownWords = knownInput
       .split(/[,，、;；\n]+/)
       .map((word) => word.trim())
@@ -192,11 +201,19 @@ export default function SentencesPage() {
       const response = await fetch("/api/sentences/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId }),
+        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId, unknownRatio, autoRelaxUnknownRatio }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
       setResults(Array.isArray(data.results) ? data.results : []);
+      const effectiveUnknownRatio = Number.isFinite(data.effectiveUnknownRatio) ? Math.min(1, Math.max(0, Number(data.effectiveUnknownRatio))) : requestedUnknownRatio;
+      setSearchMeta({
+        requestedUnknownRatio,
+        effectiveUnknownRatio,
+        autoRelaxed: data.autoRelaxed === true,
+        relaxationSteps: Number.isFinite(data.relaxationSteps) ? Number(data.relaxationSteps) : 0,
+      });
+      if (data.autoRelaxed === true) setUnknownRatio(effectiveUnknownRatio);
       setDebugData(data.debug ?? null);
       setSearched(true);
     } catch (err) {
@@ -297,6 +314,63 @@ export default function SentencesPage() {
             </div>
           )}
 
+          <div className="mt-6">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+              <label htmlFor="unknown-ratio" className="text-sm font-medium text-white/85">
+                Максимальная доля незнакомой лексики
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="unknown-ratio-number"
+                  type="number"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={unknownRatio}
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    if (event.target.value !== "" && Number.isFinite(value)) {
+                      setUnknownRatio(Math.min(1, Math.max(0, value)));
+                    }
+                  }}
+                  aria-label="Доля незнакомой лексики от 0 до 1"
+                  className="w-24 rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-center font-mono text-sm text-white outline-none focus:border-white/30"
+                />
+                <span className="text-xs text-white/40">из 1.0</span>
+              </div>
+            </div>
+            <input
+              id="unknown-ratio"
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={unknownRatio}
+              onChange={(event) => setUnknownRatio(Number(event.target.value))}
+              aria-label="Максимальная доля незнакомой лексики"
+              className="w-full cursor-pointer accent-[#f0d9bd]"
+            />
+            <div className="mt-1 flex justify-between text-xs text-white/40">
+              <span>0.0 — все слова знакомы</span>
+              <span>1.0 — могут быть все незнакомыми</span>
+            </div>
+          </div>
+
+          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
+            <input
+              type="checkbox"
+              checked={autoRelaxUnknownRatio}
+              onChange={(event) => setAutoRelaxUnknownRatio(event.target.checked)}
+              className="mt-1 h-4 w-4 accent-[#f0d9bd]"
+            />
+            <span>
+              <span className="block text-sm font-medium text-white/85">Автоматически расширять долю незнакомой лексики</span>
+              <span className="mt-1 block text-xs leading-5 text-white/45">
+                Если найдено меньше 10 предложений, увеличивать допустимую долю незнакомых слов на 0.1, пока не найдётся 10 или не будет достигнуто 1.0.
+              </span>
+            </span>
+          </label>
+
           <label htmlFor="target-word" className="mb-2 mt-6 block text-sm font-medium text-white/85">
             Слово или иероглиф для изучения (необязательно)
           </label>
@@ -327,10 +401,23 @@ export default function SentencesPage() {
         {searched && (
           <section className="mt-8" aria-live="polite">
             <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-xl font-semibold">Примеры предложений</h2>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2 className="text-xl font-semibold">Примеры предложений</h2>
+                {searchMeta && (
+                  <span className="text-sm text-white/55">
+                    Доля незнакомых слов: {Math.round(searchMeta.effectiveUnknownRatio * 100)}%
+                  </span>
+                )}
+              </div>
               <span className="text-sm text-white/45">Найдено: {results.length}</span>
             </div>
 
+            {searchMeta?.autoRelaxed && (
+              <p className="mb-3 rounded-xl border border-amber-200/15 bg-amber-200/[0.05] px-4 py-3 text-sm text-amber-100/80">
+                Для получения результатов допустимая доля незнакомой лексики автоматически увеличена с {searchMeta.requestedUnknownRatio.toFixed(2)} до {searchMeta.effectiveUnknownRatio.toFixed(2)}. Ползунок и поле значения обновлены до {searchMeta.effectiveUnknownRatio.toFixed(2)}.
+                {results.length < 10 ? ` Найдено ${results.length} предложений — больше подходящих при пороге 1.0 не обнаружено.` : ""}
+              </p>
+            )}
             {results.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-8 text-center text-sm leading-6 text-white/55">
                 Подходящих предложений не найдено. Откройте отладку кнопкой 🐞, чтобы увидеть, на каком этапе предложения отбрасываются.
@@ -340,7 +427,20 @@ export default function SentencesPage() {
                 {results.map((result, index) => (
                   <article key={`${index}-${result.sentence}`} className="px-5 py-5 sm:px-6 sm:py-6">
                     <p className="text-xl leading-9 tracking-wide sm:text-2xl">
-                      <HighlightedSentence sentence={result.sentence} target={target.trim()} />
+                      {result.segments?.length ? result.segments.map((segment, segmentIndex) => {
+                        const isTarget = Boolean(target.trim()) && segment.text.toLowerCase().includes(target.trim().toLowerCase());
+                        return (
+                          <span
+                            key={segmentIndex}
+                            className={[
+                              segment.unknown ? "underline decoration-wavy decoration-2 underline-offset-2 decoration-emerald-400" : "",
+                              isTarget ? "rounded-sm bg-rose-400/15 text-rose-300" : "",
+                            ].filter(Boolean).join(" ")}
+                          >
+                            {segment.text}
+                          </span>
+                        );
+                      }) : <HighlightedSentence sentence={result.sentence} target={target.trim()} />}
                     </p>
                     {result.translation && <p className="mt-2 pl-2 text-sm leading-6 text-white/65 sm:text-base">{result.translation}</p>}
                   </article>

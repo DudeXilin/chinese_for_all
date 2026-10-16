@@ -13,7 +13,11 @@ export type SentenceRecord = {
 
 type Dataset = Record<string, unknown> | unknown[];
 
-export type SentenceResult = { sentence: string; translation: string };
+export type SentenceResult = {
+  sentence: string;
+  translation: string;
+  segments: Array<{ text: string; unknown: boolean }>;
+};
 
 type RejectedSample = {
   reason: string;
@@ -148,9 +152,9 @@ function normalizeWord(word: string): string {
 }
 
 function isNonLexicalToken(token: string): boolean {
-  // Jieba returns punctuation as tokens. Like the original miner, these do not
-  // contribute to the known-word ratio. Numeric tokens are excluded as well.
-  return /^[\p{P}\p{S}\s\d]+$/u.test(token);
+  // Punctuation, symbols, whitespace, Arabic numerals, and Latin-script tokens
+  // are treated as automatically known and do not affect the known-word ratio.
+  return /^[\p{P}\p{S}\s\dA-Za-z]+$/u.test(token);
 }
 
 function tokenizeSentence(sentence: string): string[] {
@@ -171,13 +175,11 @@ function roundRatio(value: number): number {
 }
 
 /**
- * Filters and sorts sentences using the custom-understanding ratio from
- * chinese-sentence-miner: known lexical tokens / all lexical tokens.
+ * Filters and sorts sentences by the share of known lexical tokens.
+ * Examples with the fewest unknown words proportionally appear first.
  *
- * For this app the default threshold is 1.0 (all words must be known), because
- * examples are meant to be understandable practice, not merely mostly-known
- * reading. The target must occur as an exact Jieba token, never as a substring
- * inside a different word (e.g. 喝 does not match 喝彩).
+ * The default threshold is 1.0 (all words must be known). The target must
+ * occur as an exact Jieba token, never as a substring inside another word.
  */
 export function filterSentences(
   dataset: Dataset,
@@ -211,7 +213,12 @@ export function filterSentences(
 
   const rejectedSamples: RejectedSample[] = [];
   const targetSamples: TargetSample[] = [];
-  const matches: Array<SentenceResult & { knownRatio: number; tokenCount: number }> = [];
+  const matches: Array<SentenceResult & {
+    knownRatio: number;
+    exactKnownRatio: number;
+    knownCount: number;
+    tokenCount: number;
+  }> = [];
 
   for (const [sentence, record] of entries) {
     if (!sentence || (target && !sentence.includes(target))) continue;
@@ -224,7 +231,8 @@ export function filterSentences(
     const tokens = tokenizeSentence(sentence);
     const lexicalTokens = getLexicalTokens(tokens);
     const knownCount = lexicalTokens.filter((token) => known.has(token)).length;
-    const knownRatio = lexicalTokens.length ? roundRatio(knownCount / lexicalTokens.length) : 0;
+    const exactKnownRatio = lexicalTokens.length ? knownCount / lexicalTokens.length : 0;
+    const knownRatio = roundRatio(exactKnownRatio);
     const targetFoundAsToken = !target || lexicalTokens.some((token) => token === target);
 
     if (targetSamples.length < 8) {
@@ -278,18 +286,27 @@ export function filterSentences(
     }
 
     stats.accepted += 1;
-    matches.push({ sentence, translation, knownRatio, tokenCount: lexicalTokens.length });
+    matches.push({
+      sentence,
+      translation,
+      segments: tokens.map((token) => ({ text: token, unknown: !isNonLexicalToken(token) && !known.has(normalizeWord(token)) })),
+      knownRatio,
+      exactKnownRatio,
+      knownCount,
+      tokenCount: lexicalTokens.length,
+    });
   }
 
-  // Original miner ranks by custom ratio (highest first). If ratios tie,
-  // prefer shorter lexical sequences and then shorter sentence strings.
+  // Sort by the exact known-word share (descending), avoiding rounded-ratio
+  // ties. If shares tie, prefer more known words, then shorter sentences.
   matches.sort((a, b) =>
-    b.knownRatio - a.knownRatio ||
+    b.exactKnownRatio - a.exactKnownRatio ||
+    b.knownCount - a.knownCount ||
     a.tokenCount - b.tokenCount ||
     a.sentence.length - b.sentence.length
   );
 
-  const results = matches.map(({ sentence, translation }) => ({ sentence, translation }));
+  const results = matches.map(({ sentence, translation, segments }) => ({ sentence, translation, segments }));
 
   return {
     results,
