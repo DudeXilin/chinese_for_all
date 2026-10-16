@@ -8,8 +8,26 @@ export const dynamic = "force-dynamic";
 type SentenceRecord = {
   translation?: string;
   tags?: unknown[];
+  sentence?: string;
+  chinese?: string;
+  text?: string;
   [key: string]: unknown;
 };
+
+let datasetPromise: Promise<Record<string, SentenceRecord> | SentenceRecord[]> | undefined;
+
+function loadDataset() {
+  if (!datasetPromise) {
+    const filePath = path.join(process.cwd(), "lib", "TEST_SENTENCES", "sentences_with_translation.json");
+    datasetPromise = readFile(filePath, "utf8")
+      .then((raw) => JSON.parse(raw) as Record<string, SentenceRecord> | SentenceRecord[])
+      .catch((error) => {
+        datasetPromise = undefined;
+        throw error;
+      });
+  }
+  return datasetPromise;
+}
 
 function getTaggedWords(tags: unknown): string[] {
   if (!Array.isArray(tags)) return [];
@@ -39,19 +57,15 @@ export async function POST(request: Request) {
     const known = new Set(knownWords.map((word) => word.trim()).filter(Boolean));
     known.add(target);
 
-    const filePath = path.join(process.cwd(), "lib", "TEST_SENTENCES", "sentences_with_translation.json");
-    const raw = await readFile(filePath, "utf8");
-    const parsed = JSON.parse(raw) as Record<string, SentenceRecord> | Array<SentenceRecord>;
-
+    const parsed = await loadDataset();
     const entries: Array<[string, SentenceRecord]> = Array.isArray(parsed)
-      ? parsed.map((record, index) => [
+      ? parsed.map((record) => [
           typeof record.sentence === "string" ? record.sentence : String(record.chinese ?? record.text ?? ""),
           record,
         ])
       : Object.entries(parsed);
 
     const matches: Array<{ sentence: string; translation: string }> = [];
-
     for (const [sentence, record] of entries) {
       if (!sentence || !sentence.includes(target)) continue;
       const taggedWords = getTaggedWords(record.tags);
