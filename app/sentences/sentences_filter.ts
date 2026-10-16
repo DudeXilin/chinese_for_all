@@ -184,6 +184,7 @@ export function filterSentences(
   targetInput: string,
   knownWordsInput: string[],
   minimumKnownRatio = DEFAULT_MINIMUM_KNOWN_RATIO,
+  allowMissingTranslation = false,
 ): SentenceFilterOutput {
   const target = normalizeWord(targetInput);
   const known = new Set(knownWordsInput.map(normalizeWord).filter(Boolean));
@@ -268,7 +269,7 @@ export function filterSentences(
       continue;
     }
 
-    if (!translation) {
+    if (!translation && !allowMissingTranslation) {
       stats.missingTranslation += 1;
       if (rejectedSamples.length < 12) {
         rejectedSamples.push({ reason: "Не найден перевод", sentence, tags: taggedWords.slice(0, 30), tokens: tokens.slice(0, 60), knownRatio });
