@@ -175,13 +175,11 @@ function roundRatio(value: number): number {
 }
 
 /**
- * Filters and sorts sentences using the custom-understanding ratio from
- * chinese-sentence-miner: known lexical tokens / all lexical tokens.
+ * Filters and sorts sentences by the share of known lexical tokens.
+ * Examples with the fewest unknown words proportionally appear first.
  *
- * For this app the default threshold is 1.0 (all words must be known), because
- * examples are meant to be understandable practice, not merely mostly-known
- * reading. The target must occur as an exact Jieba token, never as a substring
- * inside a different word (e.g. 喝 does not match 喝彩).
+ * The default threshold is 1.0 (all words must be known). The target must
+ * occur as an exact Jieba token, never as a substring inside another word.
  */
 export function filterSentences(
   dataset: Dataset,
@@ -215,7 +213,12 @@ export function filterSentences(
 
   const rejectedSamples: RejectedSample[] = [];
   const targetSamples: TargetSample[] = [];
-  const matches: Array<SentenceResult & { knownRatio: number; tokenCount: number }> = [];
+  const matches: Array<SentenceResult & {
+    knownRatio: number;
+    exactKnownRatio: number;
+    knownCount: number;
+    tokenCount: number;
+  }> = [];
 
   for (const [sentence, record] of entries) {
     if (!sentence || (target && !sentence.includes(target))) continue;
@@ -228,7 +231,8 @@ export function filterSentences(
     const tokens = tokenizeSentence(sentence);
     const lexicalTokens = getLexicalTokens(tokens);
     const knownCount = lexicalTokens.filter((token) => known.has(token)).length;
-    const knownRatio = lexicalTokens.length ? roundRatio(knownCount / lexicalTokens.length) : 0;
+    const exactKnownRatio = lexicalTokens.length ? knownCount / lexicalTokens.length : 0;
+    const knownRatio = roundRatio(exactKnownRatio);
     const targetFoundAsToken = !target || lexicalTokens.some((token) => token === target);
 
     if (targetSamples.length < 8) {
@@ -287,14 +291,17 @@ export function filterSentences(
       translation,
       segments: tokens.map((token) => ({ text: token, unknown: !isNonLexicalToken(token) && !known.has(normalizeWord(token)) })),
       knownRatio,
+      exactKnownRatio,
+      knownCount,
       tokenCount: lexicalTokens.length,
     });
   }
 
-  // Original miner ranks by custom ratio (highest first). If ratios tie,
-  // prefer shorter lexical sequences and then shorter sentence strings.
+  // Sort by the exact known-word share (descending), avoiding rounded-ratio
+  // ties. If shares tie, prefer more known words, then shorter sentences.
   matches.sort((a, b) =>
-    b.knownRatio - a.knownRatio ||
+    b.exactKnownRatio - a.exactKnownRatio ||
+    b.knownCount - a.knownCount ||
     a.tokenCount - b.tokenCount ||
     a.sentence.length - b.sentence.length
   );
