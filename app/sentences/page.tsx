@@ -169,7 +169,7 @@ export default function SentencesPage() {
   const [target, setTarget] = useState("");
   const [unknownRatio, setUnknownRatio] = useState(0);
   const [autoRelaxUnknownRatio, setAutoRelaxUnknownRatio] = useState(false);
-  const [searchMeta, setSearchMeta] = useState<{ effectiveUnknownRatio: number; autoRelaxed: boolean; relaxationSteps: number } | null>(null);
+  const [searchMeta, setSearchMeta] = useState<{ requestedUnknownRatio: number; effectiveUnknownRatio: number; autoRelaxed: boolean; relaxationSteps: number } | null>(null);
   const [results, setResults] = useState<SentenceResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -184,7 +184,9 @@ export default function SentencesPage() {
     setError("");
     setSearched(false);
     setDebugData(null);
+    setSearchMeta(null);
 
+    const requestedUnknownRatio = unknownRatio;
     const knownWords = knownInput
       .split(/[,，、;；\n]+/)
       .map((word) => word.trim())
@@ -200,6 +202,14 @@ export default function SentencesPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
       setResults(Array.isArray(data.results) ? data.results : []);
+      const effectiveUnknownRatio = Number.isFinite(data.effectiveUnknownRatio) ? Math.min(1, Math.max(0, Number(data.effectiveUnknownRatio))) : requestedUnknownRatio;
+      setSearchMeta({
+        requestedUnknownRatio,
+        effectiveUnknownRatio,
+        autoRelaxed: data.autoRelaxed === true,
+        relaxationSteps: Number.isFinite(data.relaxationSteps) ? Number(data.relaxationSteps) : 0,
+      });
+      if (data.autoRelaxed === true) setUnknownRatio(effectiveUnknownRatio);
       setDebugData(data.debug ?? null);
       setSearched(true);
     } catch (err) {
@@ -393,7 +403,7 @@ export default function SentencesPage() {
 
             {searchMeta?.autoRelaxed && (
               <p className="mb-3 rounded-xl border border-amber-200/15 bg-amber-200/[0.05] px-4 py-3 text-sm text-amber-100/80">
-                Для получения результатов допустимая доля незнакомой лексики автоматически увеличена с {unknownRatio.toFixed(2)} до {searchMeta.effectiveUnknownRatio.toFixed(2)}.
+                Для получения результатов допустимая доля незнакомой лексики автоматически увеличена с {searchMeta.requestedUnknownRatio.toFixed(2)} до {searchMeta.effectiveUnknownRatio.toFixed(2)}. Ползунок и поле значения обновлены до {searchMeta.effectiveUnknownRatio.toFixed(2)}.
                 {results.length < 10 ? ` Найдено ${results.length} предложений — больше подходящих при пороге 1.0 не обнаружено.` : ""}
               </p>
             )}
