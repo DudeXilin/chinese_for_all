@@ -397,7 +397,14 @@ export default function SentencesPage() {
         {searched && (
           <section className="mt-8" aria-live="polite">
             <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-xl font-semibold">Примеры предложений</h2>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2 className="text-xl font-semibold">Примеры предложений</h2>
+                {searchMeta && (
+                  <span className="text-sm text-white/55">
+                    Доля незнакомых слов: {Math.round(searchMeta.effectiveUnknownRatio * 100)}%
+                  </span>
+                )}
+              </div>
               <span className="text-sm text-white/45">Найдено: {results.length}</span>
             </div>
 
