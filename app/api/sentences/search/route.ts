@@ -36,10 +36,16 @@ function parseTsv(raw: string): Dataset {
   for (const row of rows) {
     if (!row.trim()) continue;
     const columns = row.split("\t");
-    if (columns.length < 4) continue;
+    // Supported formats:
+    // 3 columns: id, Chinese sentence, Russian translation
+    // 4+ columns: id, language, Chinese sentence, translation
+    if (columns.length < 3) continue;
 
-    const [id, language, sentence, ...translationParts] = columns;
-    const translation = translationParts.join("\t").trim();
+    const [id, second, third, ...translationParts] = columns;
+    const hasLanguageColumn = columns.length >= 4;
+    const language = hasLanguageColumn ? second : "zh";
+    const sentence = hasLanguageColumn ? third : second;
+    const translation = (hasLanguageColumn ? translationParts : [third, ...translationParts]).join("\t").trim();
     if (!sentence?.trim() || !translation) continue;
 
     sentences.push({
