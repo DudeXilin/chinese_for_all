@@ -43,10 +43,6 @@ export async function POST(request: Request) {
       ? Math.min(1, Math.max(0, body.minimumKnownRatio))
       : 1;
 
-    if (!target.trim()) {
-      return NextResponse.json({ error: "Введите слово или иероглиф для изучения." }, { status: 400 });
-    }
-
     const dataset = await loadDataset();
     const output = filterSentences(dataset, target, knownWords, minimumKnownRatio);
     const response: {
