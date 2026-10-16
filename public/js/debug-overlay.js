@@ -215,6 +215,12 @@
       button.style.display = visible ? "block" : "none";
     };
 
+    // Page-level debug toggle controls every diagnostic surface, including this overlay.
+    window.__cfaSetDebugToolsVisible = function (visible) {
+      button.style.display = visible ? "block" : "none";
+      if (!visible && overlay) overlay.style.display = "none";
+    };
+
     if (location.pathname === "/cards_exerciser" || location.pathname.startsWith("/cards_exerciser/")) {
       button.style.display = "none";
     }
