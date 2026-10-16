@@ -167,6 +167,7 @@ export default function SentencesPage() {
     }
   }
   const [target, setTarget] = useState("");
+  const [unknownRatio, setUnknownRatio] = useState(0);
   const [results, setResults] = useState<SentenceResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -192,7 +193,7 @@ export default function SentencesPage() {
       const response = await fetch("/api/sentences/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId }),
+        body: JSON.stringify({ knownWords, target: target.trim(), debug: true, datasetId, minimumKnownRatio: 1 - unknownRatio }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
@@ -296,6 +297,48 @@ export default function SentencesPage() {
               )}
             </div>
           )}
+
+          <div className="mt-6">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+              <label htmlFor="unknown-ratio" className="text-sm font-medium text-white/85">
+                Максимальная доля незнакомой лексики
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="unknown-ratio-number"
+                  type="number"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={unknownRatio}
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    if (event.target.value !== "" && Number.isFinite(value)) {
+                      setUnknownRatio(Math.min(1, Math.max(0, value)));
+                    }
+                  }}
+                  aria-label="Доля незнакомой лексики от 0 до 1"
+                  className="w-24 rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-center font-mono text-sm text-white outline-none focus:border-white/30"
+                />
+                <span className="text-xs text-white/40">из 1.0</span>
+              </div>
+            </div>
+            <input
+              id="unknown-ratio"
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={unknownRatio}
+              onChange={(event) => setUnknownRatio(Number(event.target.value))}
+              aria-label="Максимальная доля незнакомой лексики"
+              className="w-full cursor-pointer accent-[#f0d9bd]"
+            />
+            <div className="mt-1 flex justify-between text-xs text-white/40">
+              <span>0.0 — все слова знакомы</span>
+              <span>1.0 — могут быть все незнакомыми</span>
+            </div>
+          </div>
 
           <label htmlFor="target-word" className="mb-2 mt-6 block text-sm font-medium text-white/85">
             Слово или иероглиф для изучения (необязательно)
