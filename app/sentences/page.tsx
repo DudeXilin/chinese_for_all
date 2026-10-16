@@ -7,7 +7,7 @@ type SentenceResult = {
   translation: string;
   segments?: Array<{ text: string; unknown: boolean }>;
 };
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "20k_russian_simplified.tsv";
 type SentenceDebug = {
   datasetShape: string;
   rootKeys: string[];
@@ -280,9 +280,10 @@ export default function SentencesPage() {
             }}
             className="mb-6 w-full rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-base text-white outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/5"
           >
-            <option value="sentences_with_translation.json">sentences_with_translation.json — основной набор</option>
-            <option value="cmn_sentences_russian_translation.tsv">cmn_sentences_russian_translation.tsv — предложения с русским переводом</option>
-            <option value="AMC_conversations_100K.txt">AMC_conversations_100K.txt — разговорные предложения без перевода</option>
+            <option value="sentences_with_translation.json">sentences_with_translation.json</option>
+            <option value="cmn_sentences_russian_translation.tsv">cmn_sentences_russian_translation.tsv</option>
+            <option value="AMC_conversations_100K.txt">AMC_conversations_100K.txt</option>
+            <option value="20k_russian_simplified.tsv">20k_russian_simplified.tsv</option>
           </select>
           <label htmlFor="known-words" className="mb-2 block text-sm font-medium text-white/85">
             Слова, которые вы знаете
