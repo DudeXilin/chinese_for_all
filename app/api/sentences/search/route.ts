@@ -86,12 +86,26 @@ export async function POST(request: Request) {
       ? body.knownWords.filter((word: unknown): word is string => typeof word === "string")
       : [];
     const includeDebug = body.debug === true;
-    const minimumKnownRatio = typeof body.minimumKnownRatio === "number"
-      ? Math.min(1, Math.max(0, body.minimumKnownRatio))
-      : 1;
+    const requestedUnknownRatio = typeof body.unknownRatio === "number"
+      ? Math.min(1, Math.max(0, body.unknownRatio))
+      : typeof body.minimumKnownRatio === "number"
+        ? 1 - Math.min(1, Math.max(0, body.minimumKnownRatio))
+        : 0;
+    const autoRelaxUnknownRatio = body.autoRelaxUnknownRatio === true;
 
     const dataset = await loadDataset(datasetId);
-    const output = filterSentences(dataset, target, knownWords, minimumKnownRatio, datasetId.endsWith(".txt"));
+    const allowMissingTranslation = datasetId.endsWith(".txt");
+    let effectiveUnknownRatio = requestedUnknownRatio;
+    let output = filterSentences(dataset, target, knownWords, 1 - effectiveUnknownRatio, allowMissingTranslation);
+    let relaxationSteps = 0;
+
+    // If fewer than ten examples match, relax the allowed unknown-vocabulary
+    // share in 0.1 increments, stopping at ten results or the 1.0 ceiling.
+    while (autoRelaxUnknownRatio && output.count < 10 && effectiveUnknownRatio < 1) {
+      effectiveUnknownRatio = Math.min(1, Math.round((effectiveUnknownRatio + 0.1) * 100) / 100);
+      relaxationSteps += 1;
+      output = filterSentences(dataset, target, knownWords, 1 - effectiveUnknownRatio, allowMissingTranslation);
+    }
     const response: {
       results: typeof output.results;
       count: number;
