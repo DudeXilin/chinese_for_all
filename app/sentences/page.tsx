@@ -3,6 +3,21 @@
 import { FormEvent, useMemo, useState } from "react";
 
 type SentenceResult = { sentence: string; translation: string };
+type SentenceDebug = {
+  datasetShape: string;
+  rootKeys: string[];
+  totalEntries: number;
+  targetMatches: number;
+  rejectedUnknownTags: number;
+  missingTags: number;
+  missingTranslation: number;
+  accepted: number;
+  knownWordsReceived: number;
+  knownWordsUnique: number;
+  target: string;
+  targetSamples: Array<{ sentence: string; translationFound: boolean; tags: string[] }>;
+  rejectedSamples: Array<{ reason: string; sentence: string; tags?: string[]; unknownWords?: string[] }>;
+};
 
 function HighlightedSentence({ sentence, target }: { sentence: string; target: string }) {
   const parts = useMemo(() => {
@@ -36,6 +51,75 @@ function HighlightedSentence({ sentence, target }: { sentence: string; target: s
   );
 }
 
+function DebugPanel({ debug, resultsCount, error }: { debug: SentenceDebug | null; resultsCount: number; error: string }) {
+  if (!debug && !error) {
+    return (
+      <div className="text-sm leading-6 text-white/55">
+        <p>Пока нет данных. Введите слова и нажмите «Привести примеры предложений» — панель покажет этапы фильтрации.</p>
+      </div>
+    );
+  }
+
+  if (!debug) {
+    return <pre className="whitespace-pre-wrap break-words text-xs text-rose-200">{error || "Ответ API не содержит debug-данных."}</pre>;
+  }
+
+  return (
+    <div className="space-y-4 text-xs leading-5 text-white/75">
+      <section>
+        <h3 className="mb-2 font-semibold text-white">Сводка поиска</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ["Записей в базе", debug.totalEntries],
+            ["Содержат цель", debug.targetMatches],
+            ["Отброшено: незнакомые tags", debug.rejectedUnknownTags],
+            ["Без tags", debug.missingTags],
+            ["Без перевода", debug.missingTranslation],
+            ["Подошло", debug.accepted],
+            ["Результатов на экране", resultsCount],
+            ["Знакомых слов (уник.)", debug.knownWordsUnique],
+          ].map(([label, value]) => (
+            <div key={String(label)} className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+              <div className="text-[10px] leading-4 text-white/40">{label}</div>
+              <div className="font-mono text-base text-white">{value}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 break-words text-white/45">Цель: {debug.target} · Получено слов: {debug.knownWordsReceived}</p>
+        <p className="break-words text-white/45">Формат: {debug.datasetShape}</p>
+        <p className="break-words text-white/45">Ключи JSON: {debug.rootKeys.join(", ") || "(нет)"}</p>
+      </section>
+
+      <section>
+        <h3 className="mb-2 font-semibold text-white">Предложения, где найдена цель ({debug.targetSamples.length})</h3>
+        {debug.targetSamples.length === 0 ? (
+          <p className="text-amber-200">В базе не найдено ни одного предложения, содержащего точную строку цели.</p>
+        ) : debug.targetSamples.map((item, index) => (
+          <div key={index} className="mb-2 rounded-lg border border-white/10 bg-black/20 p-2">
+            <p className="text-base text-white">{item.sentence}</p>
+            <p className="mt-1 text-white/45">Перевод: {item.translationFound ? "есть" : "не найден"}</p>
+            <p className="break-words text-white/45">tags: {item.tags.join(" · ") || "(пусто)"}</p>
+          </div>
+        ))}
+      </section>
+
+      <section>
+        <h3 className="mb-2 font-semibold text-white">Почему предложения отбрасываются ({debug.rejectedSamples.length} примеров)</h3>
+        {debug.rejectedSamples.length === 0 ? (
+          <p className="text-white/45">Нет примеров отклонённых предложений.</p>
+        ) : debug.rejectedSamples.map((item, index) => (
+          <div key={index} className="mb-2 rounded-lg border border-rose-300/15 bg-rose-300/[0.04] p-2">
+            <p className="text-white/90">{item.reason}</p>
+            <p className="mt-1 text-base text-white">{item.sentence}</p>
+            {item.unknownWords?.length ? <p className="mt-1 break-words text-rose-200">Незнакомые: {item.unknownWords.join(" · ")}</p> : null}
+            {item.tags?.length ? <p className="mt-1 break-words text-white/40">tags: {item.tags.join(" · ")}</p> : null}
+          </div>
+        ))}
+      </section>
+    </div>
+  );
+}
+
 export default function SentencesPage() {
   const [knownInput, setKnownInput] = useState("");
   const [target, setTarget] = useState("");
@@ -43,11 +127,14 @@ export default function SentencesPage() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [debugData, setDebugData] = useState<SentenceDebug | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSearched(false);
+    setDebugData(null);
 
     if (!target.trim()) {
       setError("Введите слово или иероглиф, который хотите изучать.");
@@ -64,11 +151,12 @@ export default function SentencesPage() {
       const response = await fetch("/api/sentences/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ knownWords, target: target.trim() }),
+        body: JSON.stringify({ knownWords, target: target.trim(), debug: true }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось найти предложения.");
-      setResults(data.results || []);
+      setResults(Array.isArray(data.results) ? data.results : []);
+      setDebugData(data.debug ?? null);
       setSearched(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Произошла неизвестная ошибка.");
@@ -81,11 +169,22 @@ export default function SentencesPage() {
     <main className="min-h-screen overflow-x-hidden bg-[#090909] px-4 pb-16 pt-20 text-white sm:px-6">
       <a
         href="/"
-        className="fixed left-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/60 text-2xl text-white/80 backdrop-blur-xl transition-colors hover:bg-white/10"
-        aria-label="На главную"
+        className="fixed left-4 top-4 z-30 flex h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 text-sm text-white/80 backdrop-blur-xl transition-colors hover:bg-white/10"
+        aria-label="Вернуться в главное меню"
       >
-        &lt;
+        <span className="text-xl leading-none">&lt;</span>
+        <span>Вернуться в главное меню</span>
       </a>
+      <button
+        type="button"
+        onClick={() => setDebugOpen((open) => !open)}
+        className="fixed left-4 top-[4.25rem] z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/70 text-xl backdrop-blur-xl transition hover:bg-white/10"
+        aria-label={debugOpen ? "Скрыть инструменты отладки" : "Показать инструменты отладки"}
+        aria-expanded={debugOpen}
+        title="Debug tools"
+      >
+        🐞
+      </button>
 
       <div className="mx-auto w-full max-w-3xl">
         <header className="mb-8 text-center">
@@ -146,7 +245,7 @@ export default function SentencesPage() {
 
             {results.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-8 text-center text-sm leading-6 text-white/55">
-                Подходящих предложений не найдено. Попробуйте добавить больше знакомых слов или проверить написание изучаемого слова.
+                Подходящих предложений не найдено. Откройте отладку кнопкой 🐞, чтобы увидеть, на каком этапе предложения отбрасываются.
               </div>
             ) : (
               <div className="divide-y divide-white/[0.08] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
@@ -163,6 +262,21 @@ export default function SentencesPage() {
           </section>
         )}
       </div>
+
+      {debugOpen && (
+        <aside className="fixed bottom-4 right-4 z-50 flex max-h-[72dvh] w-[min(94vw,540px)] flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#111]/95 shadow-2xl shadow-black/60 backdrop-blur-2xl">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+            <div>
+              <h2 className="font-semibold text-white">🐞 Отладка поиска предложений</h2>
+              <p className="text-[10px] text-white/40">Этапы фильтрации на сервере</p>
+            </div>
+            <button type="button" onClick={() => setDebugOpen(false)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-lg text-white/60 hover:bg-white/10" aria-label="Скрыть отладку">×</button>
+          </div>
+          <div className="min-h-0 overflow-y-auto p-4">
+            <DebugPanel debug={debugData} resultsCount={results.length} error={error} />
+          </div>
+        </aside>
+      )}
     </main>
   );
 }
