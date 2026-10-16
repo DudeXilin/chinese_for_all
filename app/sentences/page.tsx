@@ -2,7 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-type SentenceResult = { sentence: string; translation: string };
+type SentenceResult = {
+  sentence: string;
+  translation: string;
+  segments?: Array<{ text: string; unknown: boolean }>;
+};
 type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
 type SentenceDebug = {
   datasetShape: string;
@@ -423,7 +427,20 @@ export default function SentencesPage() {
                 {results.map((result, index) => (
                   <article key={`${index}-${result.sentence}`} className="px-5 py-5 sm:px-6 sm:py-6">
                     <p className="text-xl leading-9 tracking-wide sm:text-2xl">
-                      <HighlightedSentence sentence={result.sentence} target={target.trim()} />
+                      {result.segments?.length ? result.segments.map((segment, segmentIndex) => {
+                        const isTarget = Boolean(target.trim()) && segment.text.toLowerCase().includes(target.trim().toLowerCase());
+                        return (
+                          <span
+                            key={segmentIndex}
+                            className={[
+                              segment.unknown ? "underline decoration-wavy decoration-2 underline-offset-2 decoration-emerald-400" : "",
+                              isTarget ? "rounded-sm bg-rose-400/15 text-rose-300" : "",
+                            ].filter(Boolean).join(" ")}
+                          >
+                            {segment.text}
+                          </span>
+                        );
+                      }) : <HighlightedSentence sentence={result.sentence} target={target.trim()} />}
                     </p>
                     {result.translation && <p className="mt-2 pl-2 text-sm leading-6 text-white/65 sm:text-base">{result.translation}</p>}
                   </article>
