@@ -42,7 +42,7 @@ async function readKnownWords() {
   }
 
   const existing = await response.json();
-  const encoded = typeof existing.content === "string" ? existing.content.replace(/\\n/g, "") : "";
+  const encoded = typeof existing.content === "string" ? existing.content.replace(/\n/g, "") : "";
   if (!encoded) return DEFAULT_KNOWN_WORDS;
 
   return Buffer.from(encoded, "base64").toString("utf8").trim() || DEFAULT_KNOWN_WORDS;
@@ -51,7 +51,7 @@ async function readKnownWords() {
 function normalizeKnownWords(value: unknown) {
   if (typeof value !== "string") return null;
   const words = value
-    .split(/[,，、;；\\n]+/)
+    .split(/[,，、;；\n]+/)
     .map((word) => word.trim())
     .filter(Boolean);
   if (words.length > 1000 || words.some((word) => Array.from(word).length > 100)) return null;
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Не удалось получить текущую версию файла из GitHub." }, { status: 502 });
   }
 
-  const encoded = Buffer.from(knownWords + "\\n", "utf8").toString("base64");
+  const encoded = Buffer.from(knownWords + "\n", "utf8").toString("base64");
   const updateResponse = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
     method: "PUT",
     headers,
