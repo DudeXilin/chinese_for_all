@@ -85,13 +85,13 @@ function DebugPanel({ debug, resultsCount, error }: { debug: SentenceDebug | nul
             </div>
           ))}
         </div>
-        <p className="mt-2 break-words text-white/45">Цель: {debug.target} · Получено слов: {debug.knownWordsReceived}</p>
+        <p className="mt-2 break-words text-white/45">Цель: {debug.target || "не задана"} · Получено слов: {debug.knownWordsReceived}</p>
         <p className="break-words text-white/45">Формат: {debug.datasetShape}</p>
         <p className="break-words text-white/45">Ключи JSON: {debug.rootKeys.join(", ") || "(нет)"}</p>
       </section>
 
       <section>
-        <h3 className="mb-2 font-semibold text-white">Предложения, где найдена цель ({debug.targetSamples.length})</h3>
+        <h3 className="mb-2 font-semibold text-white">{debug.target ? `Предложения, где найдена цель (${debug.targetSamples.length})` : `Примеры проверенных предложений (${debug.targetSamples.length})`}</h3>
         {debug.targetSamples.length === 0 ? (
           <p className="text-amber-200">В базе не найдено ни одного предложения, содержащего точную строку цели.</p>
         ) : debug.targetSamples.map((item, index) => (
@@ -137,11 +137,6 @@ export default function SentencesPage() {
     setError("");
     setSearched(false);
     setDebugData(null);
-
-    if (!target.trim()) {
-      setError("Введите слово или иероглиф, который хотите изучать.");
-      return;
-    }
 
     const knownWords = knownInput
       .split(/[,，、;；\n]+/)
@@ -205,7 +200,7 @@ export default function SentencesPage() {
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.28em] text-white/40">Chinese Free for Everyone</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Предложения</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/55 sm:text-base">
-            Подбирайте примеры, используя только знакомые слова, и изучайте выбранное слово в контексте.
+            Находите предложения, которые можно прочитать, зная все слова в них.
           </p>
         </header>
 
@@ -224,13 +219,13 @@ export default function SentencesPage() {
           <p className="mt-2 text-xs leading-5 text-white/40">Разделяйте слова запятыми. Поддерживаются также китайские запятые и переносы строк.</p>
 
           <label htmlFor="target-word" className="mb-2 mt-6 block text-sm font-medium text-white/85">
-            Слово или иероглиф для изучения
+            Слово или иероглиф для изучения (необязательно)
           </label>
           <input
             id="target-word"
             value={target}
             onChange={(event) => setTarget(event.target.value)}
-            placeholder="Например: 朋友"
+            placeholder="Оставьте пустым, чтобы искать любые знакомые предложения"
             autoComplete="off"
             className="w-full rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-lg text-white outline-none transition placeholder:text-white/25 focus:border-white/30 focus:ring-2 focus:ring-white/5"
           />
@@ -240,7 +235,7 @@ export default function SentencesPage() {
             disabled={loading}
             className="mt-6 flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#f0d9bd] px-5 py-3 font-semibold text-[#211a14] transition hover:bg-[#f7e7d4] disabled:cursor-wait disabled:opacity-60"
           >
-            {loading ? "Подбираем предложения…" : "Привести примеры предложений"}
+            {loading ? "Подбираем предложения…" : target.trim() ? "Привести примеры предложений" : "Найти знакомые предложения"}
           </button>
         </form>
 
