@@ -13,7 +13,11 @@ export type SentenceRecord = {
 
 type Dataset = Record<string, unknown> | unknown[];
 
-export type SentenceResult = { sentence: string; translation: string };
+export type SentenceResult = {
+  sentence: string;
+  translation: string;
+  segments: Array<{ text: string; unknown: boolean }>;
+};
 
 type RejectedSample = {
   reason: string;
@@ -278,7 +282,13 @@ export function filterSentences(
     }
 
     stats.accepted += 1;
-    matches.push({ sentence, translation, knownRatio, tokenCount: lexicalTokens.length });
+    matches.push({
+      sentence,
+      translation,
+      segments: tokens.map((token) => ({ text: token, unknown: !isNonLexicalToken(token) && !known.has(normalizeWord(token)) })),
+      knownRatio,
+      tokenCount: lexicalTokens.length,
+    });
   }
 
   // Original miner ranks by custom ratio (highest first). If ratios tie,
@@ -289,7 +299,7 @@ export function filterSentences(
     a.sentence.length - b.sentence.length
   );
 
-  const results = matches.map(({ sentence, translation }) => ({ sentence, translation }));
+  const results = matches.map(({ sentence, translation, segments }) => ({ sentence, translation, segments }));
 
   return {
     results,
