@@ -213,7 +213,7 @@ export function filterSentences(
   const matches: Array<SentenceResult & { knownRatio: number; tokenCount: number }> = [];
 
   for (const [sentence, record] of entries) {
-    if (!sentence || !target || !sentence.includes(target)) continue;
+    if (!sentence || (target && !sentence.includes(target))) continue;
     stats.targetMatches += 1;
 
     const taggedWords = getTaggedWords(record.tags);
@@ -224,7 +224,7 @@ export function filterSentences(
     const lexicalTokens = getLexicalTokens(tokens);
     const knownCount = lexicalTokens.filter((token) => known.has(token)).length;
     const knownRatio = lexicalTokens.length ? roundRatio(knownCount / lexicalTokens.length) : 0;
-    const targetFoundAsToken = lexicalTokens.some((token) => token === target);
+    const targetFoundAsToken = !target || lexicalTokens.some((token) => token === target);
 
     if (targetSamples.length < 8) {
       targetSamples.push({
