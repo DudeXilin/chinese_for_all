@@ -7,19 +7,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Dataset = Record<string, unknown> | unknown[];
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "20k_russian_simplified.tsv";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "80k_ru_ch_sentences_simplified.tsv";
 
 const DATASET_PATHS: Record<DatasetId, string> = {
   "sentences_with_translation.json": path.join(process.cwd(), "lib", "TEST_SENTENCES", "sentences_with_translation.json"),
   "cmn_sentences_russian_translation.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "cmn_sentences_russian_translation.tsv"),
   "AMC_conversations_100K.txt": path.join(process.cwd(), "lib", "TEST_SENTENCES", "AMC_conversations_100K.txt"),
-  "20k_russian_simplified.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "20k_russian_simplified.tsv"),
+  "80k_ru_ch_sentences_simplified.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "80k_ru_ch_sentences_simplified.tsv"),
 };
 
 const datasetPromises = new Map<DatasetId, Promise<Dataset>>();
 
 function isDatasetId(value: unknown): value is DatasetId {
-  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv" || value === "AMC_conversations_100K.txt" || value === "20k_russian_simplified.tsv";
+  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv" || value === "AMC_conversations_100K.txt" || value === "80k_ru_ch_sentences_simplified.tsv";
 }
 
 function parsePlainText(raw: string): Dataset {
