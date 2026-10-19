@@ -7,7 +7,7 @@ type SentenceResult = {
   translation: string;
   segments?: Array<{ text: string; unknown: boolean }>;
 };
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "20k_russian_simplified.tsv";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "80k_ru_ch_sentences_simplified.tsv";
 type SentenceDebug = {
   datasetShape: string;
   rootKeys: string[];
@@ -283,7 +283,7 @@ export default function SentencesPage() {
             <option value="sentences_with_translation.json">sentences_with_translation.json</option>
             <option value="cmn_sentences_russian_translation.tsv">cmn_sentences_russian_translation.tsv</option>
             <option value="AMC_conversations_100K.txt">AMC_conversations_100K.txt</option>
-            <option value="20k_russian_simplified.tsv">20k_russian_simplified.tsv</option>
+            <option value="80k_ru_ch_sentences_simplified.tsv">80k_ru_ch_sentences_simplified.tsv</option>
           </select>
           <label htmlFor="known-words" className="mb-2 block text-sm font-medium text-white/85">
             Слова, которые вы знаете
