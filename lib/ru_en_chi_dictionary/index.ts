@@ -37,7 +37,7 @@ for (const entry of hskEntries) {
     russianTranslations.set(word, translations.join("; "));
   }
   if (word && entry.pos?.trim() && !partOfSpeechByWord.has(word)) {
-    const labels = entry.pos.split(/[,;\\s]+/).map((code) => PARTS_OF_SPEECH[code.trim().toLowerCase()]?.ru).filter(Boolean);
+    const labels = entry.pos.split(/[,;\s]+/).map((code) => PARTS_OF_SPEECH[code.trim().toLowerCase()]?.ru).filter(Boolean);
     if (labels.length) partOfSpeechByWord.set(word, [...new Set(labels)].join(", "));
   }
 }
