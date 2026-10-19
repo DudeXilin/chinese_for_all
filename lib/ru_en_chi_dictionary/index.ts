@@ -1,5 +1,6 @@
 import hskDictionary from "./hsk.generated";
 import radicalDictionary from "./chinese_214_simplified_radicals_russian.json";
+import { PARTS_OF_SPEECH } from "./parts-of-speech";
 
 type DictionaryEntry = {
   hanzi?: string;
@@ -8,6 +9,7 @@ type DictionaryEntry = {
     rus?: string[];
     eng?: string[];
   };
+  pos?: string;
 };
 
 const hskEntries = hskDictionary as DictionaryEntry[];
@@ -16,6 +18,7 @@ const radicalEntries = radicalDictionary as DictionaryEntry[];
 // Radical entries take priority; HSK fills in words and characters not covered there.
 const russianTranslations = new Map<string, string>();
 const pinyinByWord = new Map<string, string>();
+const partOfSpeechByWord = new Map<string, string>();
 
 for (const entry of radicalEntries) {
   const word = entry.hanzi?.trim();
@@ -32,6 +35,10 @@ for (const entry of hskEntries) {
   if (word && entry.pinyin?.trim() && !pinyinByWord.has(word)) pinyinByWord.set(word, entry.pinyin.trim());
   if (word && translations?.length && !russianTranslations.has(word)) {
     russianTranslations.set(word, translations.join("; "));
+  }
+  if (word && entry.pos?.trim() && !partOfSpeechByWord.has(word)) {
+    const labels = entry.pos.split(/[,;\\s]+/).map((code) => PARTS_OF_SPEECH[code.trim().toLowerCase()]?.ru).filter(Boolean);
+    if (labels.length) partOfSpeechByWord.set(word, [...new Set(labels)].join(", "));
   }
 }
 
@@ -79,6 +86,17 @@ export function getSingleCharacterPinyins(): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [word, value] of pinyinByWord) {
     if (Array.from(word).length === 1) result[word] = value;
+  }
+  return result;
+}
+
+
+/** Returns Russian part-of-speech labels for the requested words. */
+export function getPartOfSpeechTranslations(words: Iterable<string>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const word of words) {
+    const value = partOfSpeechByWord.get(word.trim());
+    if (value) result[word] = value;
   }
   return result;
 }
