@@ -7,18 +7,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Dataset = Record<string, unknown> | unknown[];
-type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt";
+type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "80k_ru_ch_sentences_simplified.tsv";
 
 const DATASET_PATHS: Record<DatasetId, string> = {
   "sentences_with_translation.json": path.join(process.cwd(), "lib", "TEST_SENTENCES", "sentences_with_translation.json"),
   "cmn_sentences_russian_translation.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "cmn_sentences_russian_translation.tsv"),
   "AMC_conversations_100K.txt": path.join(process.cwd(), "lib", "TEST_SENTENCES", "AMC_conversations_100K.txt"),
+  "80k_ru_ch_sentences_simplified.tsv": path.join(process.cwd(), "lib", "TEST_SENTENCES", "80k_ru_ch_sentences_simplified.tsv"),
 };
 
 const datasetPromises = new Map<DatasetId, Promise<Dataset>>();
 
 function isDatasetId(value: unknown): value is DatasetId {
-  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv" || value === "AMC_conversations_100K.txt";
+  return value === "sentences_with_translation.json" || value === "cmn_sentences_russian_translation.tsv" || value === "AMC_conversations_100K.txt" || value === "80k_ru_ch_sentences_simplified.tsv";
 }
 
 function parsePlainText(raw: string): Dataset {
@@ -35,10 +36,16 @@ function parseTsv(raw: string): Dataset {
   for (const row of rows) {
     if (!row.trim()) continue;
     const columns = row.split("\t");
-    if (columns.length < 4) continue;
+    // Supported formats:
+    // 3 columns: id, Chinese sentence, Russian translation
+    // 4+ columns: id, language, Chinese sentence, translation
+    if (columns.length < 3) continue;
 
-    const [id, language, sentence, ...translationParts] = columns;
-    const translation = translationParts.join("\t").trim();
+    const [id, second, third, ...translationParts] = columns;
+    const hasLanguageColumn = columns.length >= 4;
+    const language = hasLanguageColumn ? second : "zh";
+    const sentence = hasLanguageColumn ? third : second;
+    const translation = (hasLanguageColumn ? translationParts : [third, ...translationParts]).join("\t").trim();
     if (!sentence?.trim() || !translation) continue;
 
     sentences.push({
