@@ -1,7 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import hskDictionary from "@/lib/ru_en_chi_dictionary/hsk.json";
+import hskDictionary from "@/lib/ru_en_chi_dictionary/hsk.generated";
 
 type FrequencyRow = Record<string, string | number>;
 type FrequencyTable = { data: FrequencyRow[] };
