@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated from the source TSV before dev/build
+/lib/ru_en_chi_dictionary/hsk.generated.ts
