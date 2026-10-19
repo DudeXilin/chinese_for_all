@@ -1,4 +1,4 @@
-import hskDictionary from "./hsk.json";
+import hskDictionary from "./hsk.generated";
 import radicalDictionary from "./chinese_214_simplified_radicals_russian.json";
 
 type DictionaryEntry = {
@@ -6,6 +6,7 @@ type DictionaryEntry = {
   pinyin?: string;
   translations?: {
     rus?: string[];
+    eng?: string[];
   };
 };
 
@@ -16,7 +17,7 @@ const radicalEntries = radicalDictionary as DictionaryEntry[];
 const russianTranslations = new Map<string, string>();
 const pinyinByWord = new Map<string, string>();
 
-for (const entry of radicalEntries as DictionaryEntry[]) {
+for (const entry of radicalEntries) {
   const word = entry.hanzi?.trim();
   const translations = entry.translations?.rus?.map((value) => value.trim()).filter(Boolean);
   if (word && entry.pinyin?.trim() && !pinyinByWord.has(word)) pinyinByWord.set(word, entry.pinyin.trim());
