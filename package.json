@@ -2,7 +2,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/generate-hsk-dictionary.mjs",
     "build": "next build",
+    "prebuild": "node scripts/generate-hsk-dictionary.mjs",
     "start": "next start",
     "lint": "eslint ."
   },
