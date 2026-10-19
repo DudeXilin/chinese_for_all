@@ -52,7 +52,7 @@ type CharacterStructure = {
   etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin?: string; translation?: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
-type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string> };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string>; dictionaryPartsOfSpeech?: Record<string, string> };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -136,7 +136,7 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {} }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {} }: Props) {
   const [index, setIndex] = useState(0);
   const [side, setSide] = useState<"front" | "back">("front");
   const [answer, setAnswer] = useState("");
@@ -901,7 +901,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                       ) : (
                         <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
                           <div className="text-[9px] uppercase tracking-[0.14em] text-white/25">{item}</div>
-                          <div className="mt-2 text-xs text-white/55">placeholder</div>
+                          <div className="mt-2 text-xs leading-5 text-white/65">{item === "Часть речи" ? (dictionaryPartsOfSpeech[currentWord] ?? "—") : "placeholder"}</div>
                         </div>
                       ))}
                     </div>
