@@ -750,12 +750,12 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#090909] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)]" />
-      <div className="fixed left-4 top-4 z-[1000] flex flex-col gap-2">
+    <main className={embedded ? "relative w-full text-white" : "min-h-screen overflow-x-hidden bg-[#090909] text-white"}>
+      {!embedded && <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)] />}
+      {!embedded && <div className="fixed left-4 top-4 z-[1000] flex flex-col gap-2">
         <a href="/lessons" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
         <button type="button" onClick={() => setDebugOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-xl shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label={debugOpen ? "Скрыть debug" : "Показать debug"}>🐞</button>
-      </div>
+      </div>}
 
       {finished ? (
         <div className={`relative flex ${embedded ? "min-h-[280px]" : "min-h-screen"} items-center justify-center px-6 text-center`}>
@@ -766,8 +766,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           </div>
         </div>
       ) : (
-        <div className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-5 pt-5 sm:px-6">
-          <header className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
+        <div className={`relative mx-auto flex w-full ${embedded ? "max-w-3xl px-0 py-0" : "min-h-screen max-w-5xl flex-col px-4 pb-5 pt-5 sm:px-6"}`}>
+          {!embedded && <header className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
             <div className="mt-5 flex w-full max-w-xl items-center gap-3">
               {theory && (
                 <button type="button" onClick={() => setTheoryOpen(true)} className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-white/45 shadow-lg backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.09] hover:text-white/75" aria-label="Открыть теорию">
@@ -778,9 +778,9 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
               <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{index + 1} / {words.length}</span>
 
             </div>
-          </header>
+          </header>}
 
-          <section className="mx-auto mt-5 w-full max-w-3xl">
+          <section className={`mx-auto w-full max-w-3xl ${embedded ? "mt-0" : "mt-5"}`}>
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">\n              {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
