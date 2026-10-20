@@ -752,11 +752,13 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
 
   return (
     <main className={embedded ? "relative w-full text-white" : "min-h-screen overflow-x-hidden bg-[#090909] text-white"}>
-      {!embedded && <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)] />}
-      {!embedded && <div className="fixed left-4 top-4 z-[1000] flex flex-col gap-2">
-        <a href="/lessons" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
-        <button type="button" onClick={() => setDebugOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-xl shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label={debugOpen ? "Скрыть debug" : "Показать debug"}>🐞</button>
-      </div>}
+      {!embedded ? <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.10),transparent_38%),radial-gradient(circle_at_15%_70%,rgba(255,255,255,0.045),transparent_28%)]" /> : null}
+      {!embedded ? (
+        <div className="fixed left-4 top-4 z-50 flex flex-col gap-2">
+          <a href="/lessons" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-2xl leading-none text-white/80 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label="Назад">&lt;</a>
+          <button type="button" onClick={() => setDebugOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-xl shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.1]" aria-label={debugOpen ? "Скрыть debug" : "Показать debug"}>🐞</button>
+        </div>
+      ) : null}
 
       {finished ? (
         <div className={`relative flex ${embedded ? "min-h-[280px]" : "min-h-screen"} items-center justify-center px-6 text-center`}>
