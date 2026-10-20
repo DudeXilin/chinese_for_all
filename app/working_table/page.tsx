@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import WorkingTableCard from "./WorkingTableCard";
 
 export default function WorkingTablePage() {
   const [debugVisible, setDebugVisible] = useState(false);
@@ -51,15 +52,8 @@ export default function WorkingTablePage() {
         </svg>
       </a>
 
-      <button
-        type="button"
-        aria-label="Колода карт"
-        className="absolute left-5 top-1/2 h-52 w-36 -translate-y-1/2 rounded-[1.35rem] border border-white/20 bg-gradient-to-br from-[#292929] via-[#171717] to-[#0d0d0d] shadow-[0_24px_70px_rgba(0,0,0,0.65)] outline-none transition duration-300 hover:border-white/30 focus-visible:ring-2 focus-visible:ring-white/50 sm:left-[max(8vw,calc((100vw-1500px)/2+8vw))] sm:h-64 sm:w-44"
-      >
-        <span className="absolute inset-0 translate-x-2 translate-y-2 rounded-[1.35rem] border border-white/10 bg-[#171717]" />
-        <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-[1.35rem] border border-white/10 bg-[#202020]" />
-        <span className="absolute inset-0 rounded-[1.35rem] border border-white/15 bg-gradient-to-br from-white/[0.035] to-transparent" />
-      </button>
+      <WorkingTableCard />
+
     </main>
   );
 }
