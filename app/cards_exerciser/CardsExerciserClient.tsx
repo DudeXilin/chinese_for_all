@@ -713,6 +713,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       });
 
       if (index >= words.length - 1) {
+        if (embedded) { onClose?.(); return; }
         setFinished(true);
         return;
       }
