@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
 import { GlassInit } from "@/components/glass-init";
 import { FSRSStatistics } from "./fsrs-statistics";
+import { ProfileSettings } from "./settings-button";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -77,6 +78,8 @@ export default async function ProfilePage() {
           </div>
 
           <FSRSStatistics cards={fsrsCards ?? []} />
+
+          <ProfileSettings />
 
           <LogoutButton />
 
