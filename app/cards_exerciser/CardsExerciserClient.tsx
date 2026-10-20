@@ -52,7 +52,7 @@ type CharacterStructure = {
   etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin?: string; translation?: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
-type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string>; dictionaryPartsOfSpeech?: Record<string, string> };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string>; dictionaryPartsOfSpeech?: Record<string, string>; embedded?: boolean; initialSide?: "front" | "back"; onClose?: () => void };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -136,9 +136,9 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {} }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {}, embedded = false, initialSide = "front", onClose }: Props) {
   const [index, setIndex] = useState(0);
-  const [side, setSide] = useState<"front" | "back">("front");
+  const [side, setSide] = useState<"front" | "back">(initialSide);
   const [answer, setAnswer] = useState("");
   const [finished, setFinished] = useState(false);
   const [theoryOpen, setTheoryOpen] = useState(false);
@@ -758,11 +758,11 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       </div>
 
       {finished ? (
-        <div className="relative flex min-h-screen items-center justify-center px-6 text-center">
+        <div className={`relative flex ${embedded ? "min-h-[280px]" : "min-h-screen"} items-center justify-center px-6 text-center`}>
           <div className="max-w-xl">
             <div className="text-6xl">💪</div>
             <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-5xl">Вы решили все карточки из этой колоды!</h1>
-            <a href="/lessons" className="mt-8 inline-flex rounded-full border border-white/10 bg-white/[0.08] px-6 py-3 text-sm text-white/85 shadow-xl backdrop-blur-2xl transition hover:bg-white/[0.13]">Вернуться к выбору уроков</a>
+            {embedded ? <button type="button" onClick={onClose} className="mt-8 inline-flex rounded-full border border-white/10 bg-white/[0.08] px-6 py-3 text-sm text-white/85 shadow-xl backdrop-blur-2xl transition hover:bg-white/[0.13]">Закрыть</button> : <a href="/lessons" className="mt-8 inline-flex rounded-full border border-white/10 bg-white/[0.08] px-6 py-3 text-sm text-white/85 shadow-xl backdrop-blur-2xl transition hover:bg-white/[0.13]">Вернуться к выбору уроков</a>}
           </div>
         </div>
       ) : (
@@ -781,7 +781,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           </header>
 
           <section className="mx-auto mt-5 w-full max-w-3xl">
-            <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
+            <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">\n              {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
                   {lastFSRSResult && index === lastFSRSResult.index + 1 && (
