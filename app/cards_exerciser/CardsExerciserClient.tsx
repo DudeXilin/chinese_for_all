@@ -769,7 +769,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           </div>
         </div>
       ) : (
-        <div className={`relative mx-auto flex w-full ${embedded ? "max-w-3xl px-0 py-0" : "min-h-screen max-w-5xl flex-col px-4 pb-5 pt-5 sm:px-6"}`}>
+        <div className={`relative mx-auto flex w-full justify-center ${embedded ? "max-w-3xl px-0 py-0" : "min-h-screen max-w-5xl flex-col px-4 pb-5 pt-5 sm:px-6"}`}>
           {!embedded && <header className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
             <div className="mt-5 flex w-full max-w-xl items-center gap-3">
               {theory && (
@@ -787,7 +787,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">\n              {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
-                  {lastFSRSResult && index === lastFSRSResult.index + 1 && (
+                  {!embedded && lastFSRSResult && index === lastFSRSResult.index + 1 && (
                     <button
                       type="button"
                       onClick={undoLastRating}
@@ -918,7 +918,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
             </article>
           </section>
 
-          {side === "back" && (() => {
+          {!embedded && side === "back" && (() => {
             const now = getAuthoritativeNow();
             const options = preview(currentFSRSCard, now);
             const formatInterval = (due: string) => {
