@@ -43,6 +43,16 @@ export default function WorkingTableCard() {
       if (payload.exhausted) {
         setExhausted(true);
       } else {
+        if (payload.authenticated === true) {
+          const reviewResponse = await fetch("/api/fsrs/review", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ word: (payload.word as WordData).hanzi, answer: null, rating: 1 }),
+          });
+          const reviewPayload = await reviewResponse.json();
+          if (!reviewResponse.ok) throw new Error(reviewPayload.error || "Не удалось добавить слово в FSRS.");
+        }
         setWord(payload.word as WordData);
       }
     } catch (caught) {
