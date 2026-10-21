@@ -1,1 +1,132 @@
-__PAGE_CONTENT__
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { getPinyins, getRussianTranslations } from "@/lib/ru_en_chi_dictionary";
+import WorkingTableCard from "./WorkingTableCard";
+
+type CollectionCard = { word: string; scheduled_days: number; due: string; stability: number; reps: number };
+
+export default function WorkingTablePage() {
+  const [debugVisible, setDebugVisible] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const [collectionLoading, setCollectionLoading] = useState(false);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [collectionCards, setCollectionCards] = useState<CollectionCard[]>([]);
+  const [showEasy, setShowEasy] = useState(true);
+  const [showHard, setShowHard] = useState(true);
+
+  async function openCollection() {
+    setCollectionOpen(true);
+    setCollectionLoading(true);
+    setCollectionError(null);
+    try {
+      const response = await fetch("/api/fsrs/cards", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Не удалось загрузить коллекцию.");
+      setCollectionCards(Array.isArray(payload.cards) ? payload.cards.filter((card: unknown): card is CollectionCard => {
+        if (!card || typeof card !== "object") return false;
+        const item = card as Partial<CollectionCard>;
+        return typeof item.word === "string" && typeof item.scheduled_days === "number";
+      }) : []);
+    } catch (error) {
+      setCollectionError(error instanceof Error ? error.message : "Не удалось загрузить коллекцию.");
+    } finally {
+      setCollectionLoading(false);
+    }
+  }
+
+  const filteredCollection = useMemo(() => collectionCards.filter((card) => {
+    const hard = card.scheduled_days < 30;
+    return hard ? showHard : showEasy;
+  }).sort((a, b) => a.scheduled_days - b.scheduled_days || a.word.localeCompare(b.word, "zh-Hans")), [collectionCards, showEasy, showHard]);
+  const collectionTranslations = useMemo(() => getRussianTranslations(collectionCards.map((card) => card.word)), [collectionCards]);
+  const collectionPinyins = useMemo(() => getPinyins(collectionCards.map((card) => card.word)), [collectionCards]);
+
+  useEffect(() => {
+    const syncDebugTools = () => {
+      const setter = (window as Window & { __cfaSetDebugToolsVisible?: (visible: boolean) => void }).__cfaSetDebugToolsVisible;
+      setter?.(debugVisible);
+    };
+    syncDebugTools();
+    return () => {
+      const setter = (window as Window & { __cfaSetDebugToolsVisible?: (visible: boolean) => void }).__cfaSetDebugToolsVisible;
+      setter?.(true);
+    };
+  }, [debugVisible]);
+
+  return (
+    <main className="relative min-h-svh overflow-hidden bg-[#090909] text-white">
+      <div className="fixed left-4 top-4 z-30 flex flex-col gap-2">
+        <a
+          href="/"
+          aria-label="Вернуться в главное меню"
+          title="Главное меню"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.07] text-2xl text-white/85 shadow-lg backdrop-blur-xl transition hover:bg-white/[0.13]"
+        >
+          <span aria-hidden="true">‹</span>
+        </a>
+        <button
+          type="button"
+          aria-label={debugVisible ? "Скрыть debug-tools" : "Показать debug-tools"}
+          aria-pressed={debugVisible}
+          title="Debug-tools"
+          onClick={() => setDebugVisible((visible) => !visible)}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border text-xl shadow-lg backdrop-blur-xl transition ${debugVisible ? "border-white/30 bg-white/15" : "border-white/15 bg-white/[0.07] hover:bg-white/[0.13]"}`}
+        >
+          🐞
+        </button>
+      </div>
+
+      <a
+        href="/profile"
+        aria-label="Профиль"
+        title="Профиль"
+        className="fixed right-4 top-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/[0.09] text-white/90 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.16]"
+      >
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+          <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z" />
+        </svg>
+      </a>
+
+      <button
+        type="button"
+        onClick={openCollection}
+        aria-label="Открыть личную коллекцию"
+        title="Коллекция"
+        className="fixed right-4 top-20 z-30 flex h-12 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm text-white/85 shadow-lg backdrop-blur-2xl transition hover:bg-white/[0.15]"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z" /><path d="M4 6v16M8 7h8M8 11h8" /></svg>
+        <span>Коллекция</span>
+        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs tabular-nums">{collectionCards.length}</span>
+      </button>
+
+      <WorkingTableCard />
+
+      {collectionOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-8" role="dialog" aria-modal="true" aria-label="Личная коллекция слов" onMouseDown={(event) => { if (event.target === event.currentTarget) setCollectionOpen(false); }}>
+          <section className="relative flex max-h-[88svh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#151515]/95 text-white shadow-2xl">
+            <header className="flex items-start justify-between border-b border-white/10 px-5 py-4 sm:px-7">
+              <div><h2 className="text-xl font-semibold">Коллекция</h2><p className="mt-1 text-sm text-white/45">Слова, добавленные в вашу систему FSRS</p></div>
+              <button type="button" onClick={() => setCollectionOpen(false)} aria-label="Закрыть коллекцию" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-xl text-white/65 hover:bg-white/[0.12]">×</button>
+            </header>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-white/10 px-5 py-3 text-sm sm:px-7">
+              <label className="flex cursor-pointer items-center gap-2 text-white/75"><input type="checkbox" checked={showEasy} onChange={(event) => setShowEasy(event.target.checked)} className="h-4 w-4 accent-white" />Лёгкие слова <span className="text-white/35">≥ 30 дней</span></label>
+              <label className="flex cursor-pointer items-center gap-2 text-white/75"><input type="checkbox" checked={showHard} onChange={(event) => setShowHard(event.target.checked)} className="h-4 w-4 accent-white" />Сложные слова <span className="text-white/35">меньше 30 дней</span></label>
+            </div>
+            <div className="min-h-40 flex-1 overflow-y-auto px-5 py-3 sm:px-7">
+              {collectionLoading ? <p className="py-10 text-center text-sm text-white/45">Загрузка коллекции…</p> : collectionError ? <p className="py-10 text-center text-sm text-red-200">{collectionError}</p> : filteredCollection.length === 0 ? <p className="py-10 text-center text-sm text-white/45">{collectionCards.length === 0 ? "Коллекция пока пуста. Откройте первую карточку на рабочем столе." : "Нет слов, соответствующих выбранным фильтрам."}</p> : (
+                <ul className="divide-y divide-white/[0.07]">
+                  {filteredCollection.map((card) => {
+                    const hard = card.scheduled_days < 30;
+                    return <li key={card.word} className="flex items-center gap-4 py-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-2xl">{card.word}</div><div className="min-w-0 flex-1"><div className="truncate text-sm text-white/85">{collectionTranslations[card.word] || "Перевод не найден"}</div><div className="mt-1 text-xs text-white/40">{collectionPinyins[card.word] || ""}</div></div><div className="text-right"><span className={`inline-flex rounded-full border px-2 py-1 text-[11px] ${hard ? "border-amber-300/20 bg-amber-300/[0.07] text-amber-100/75" : "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-100/75"}`}>{hard ? "Сложное" : "Лёгкое"}</span><div className="mt-1 text-[10px] text-white/35">{Math.max(0, Math.round(card.scheduled_days))} дн.</div></div></li>;
+                  })}
+                </ul>
+              )}
+            </div>
+            <footer className="border-t border-white/10 px-5 py-3 text-xs text-white/35 sm:px-7">Показано: {filteredCollection.length} из {collectionCards.length}</footer>
+          </section>
+        </div>
+      )}
+    </main>
+  );
+}
