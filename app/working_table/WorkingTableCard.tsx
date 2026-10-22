@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardsExerciserClient from "@/app/cards_exerciser/CardsExerciserClient";
 import {
   getPinyins,
@@ -28,6 +28,20 @@ export default function WorkingTableCard() {
   const [exhausted, setExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<HskProgress | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/working-table/next-card", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Не удалось загрузить прогресс HSK.");
+        if (!cancelled && payload.progress) setProgress(payload.progress as HskProgress);
+      })
+      .catch((caught) => {
+        if (!cancelled) setError(caught instanceof Error ? caught.message : "Не удалось загрузить прогресс HSK.");
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   async function openNextCard() {
     if (word || exhausted || error) {
