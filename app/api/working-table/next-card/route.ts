@@ -26,10 +26,11 @@ export async function GET() {
       .from("user_unwanted_words")
       .select("word")
       .eq("user_id", userId);
-    if (unwantedError) {
+    if (unwantedError && unwantedError.code !== "42P01" && unwantedError.code !== "PGRST205") {
       console.error("[Working table] failed to load unwanted words", unwantedError);
-      return Response.json({ error: "Не удалось загрузить список ненужных слов. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+      return Response.json({ error: "Не удалось загрузить список ненужных слов." }, { status: 500 });
     }
+    if (unwantedError) console.warn("[Working table] user_unwanted_words schema is not installed yet.");
     unwantedWords = new Set((unwanted ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string"));
   }
   if (userId) {
