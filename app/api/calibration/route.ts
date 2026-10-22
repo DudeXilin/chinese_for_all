@@ -3,14 +3,17 @@ import hskDictionary from "@/lib/ru_en_chi_dictionary/hsk.generated";
 import { createCard } from "@/lib/FSRS-6/our_system";
 
 type HskEntry = {
+  chinese?: string;
   hanzi?: string;
   level?: string | number;
   frequency?: string | number;
 };
 
+const getWord = (entry: HskEntry) => (entry.chinese ?? entry.hanzi)?.trim();
+
 const entries = hskDictionary as HskEntry[];
 const DAY_MS = 24 * 60 * 60 * 1000;
-const CALIBRATION_WORDS = new Set(entries.map((entry) => entry.hanzi?.trim()).filter((word): word is string => Boolean(word)));
+const CALIBRATION_WORDS = new Set(entries.map(getWord).filter((word): word is string => Boolean(word)));
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -19,6 +22,13 @@ export async function GET(request: Request) {
 
   if (!userId) {
     return Response.json({ error: "Войдите в аккаунт, чтобы сохранить калибровку." }, { status: 401 });
+  }
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user?.user_metadata?.calibrated === true) {
+    return Response.json({ alreadyCalibrated: true }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   }
 
   const { count, error: countError } = await supabase
@@ -45,12 +55,12 @@ export async function GET(request: Request) {
 
   const words = entries
     .filter((entry) => {
-      const word = entry.hanzi?.trim();
+      const word = getWord(entry);
       const entryLevel = Number(entry.level);
       const frequency = Number(entry.frequency);
       return Boolean(word) && entryLevel === level && Number.isFinite(frequency) && frequency >= 0;
     })
-    .map((entry) => ({ word: entry.hanzi!.trim(), frequency: Number(entry.frequency) }))
+    .map((entry) => ({ word: getWord(entry)!, frequency: Number(entry.frequency) }))
     .sort((a, b) => a.frequency - b.frequency || a.word.localeCompare(b.word, "zh-Hans"))
     .filter((entry, index, list) => list.findIndex((candidate) => candidate.word === entry.word) === index);
 
@@ -82,9 +92,6 @@ export async function POST(request: Request) {
   }
 
   const selectedWords = [...new Set((body.words as string[]).map((word) => word.trim()).filter(Boolean))];
-  if (selectedWords.length === 0) {
-    return Response.json({ error: "Отметьте хотя бы одно слово, чтобы завершить калибровку." }, { status: 400 });
-  }
   if (selectedWords.length > 5000 || selectedWords.some((word) => !CALIBRATION_WORDS.has(word))) {
     return Response.json({ error: "В списке есть неизвестные слова или слишком много слов." }, { status: 400 });
   }
@@ -115,10 +122,23 @@ export async function POST(request: Request) {
     updated_at: now.toISOString(),
   }));
 
-  const { error: insertError } = await supabase.from("fsrs_cards").insert(rows);
-  if (insertError) {
-    console.error("[Calibration] failed to save calibrated cards", insertError);
-    return Response.json({ error: "Не удалось сохранить калибровку. Попробуйте ещё раз." }, { status: 500 });
+  if (rows.length > 0) {
+    const { error: insertError } = await supabase.from("fsrs_cards").insert(rows);
+    if (insertError) {
+      console.error("[Calibration] failed to save calibrated cards", insertError);
+      return Response.json({ error: "Не удалось сохранить калибровку. Попробуйте ещё раз." }, { status: 500 });
+    }
+  }
+
+  const { error: metadataError } = await supabase.auth.updateUser({
+    data: { calibrated: true },
+  });
+  if (metadataError && rows.length === 0) {
+    console.error("[Calibration] failed to save empty calibration state", metadataError);
+    return Response.json({ error: "Не удалось сохранить завершение калибровки. Попробуйте ещё раз." }, { status: 500 });
+  }
+  if (metadataError) {
+    console.error("[Calibration] cards saved, but metadata flag failed", metadataError);
   }
 
   return Response.json({ success: true, count: rows.length }, {
