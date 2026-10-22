@@ -101,6 +101,16 @@ export default function WorkingTableCard() {
 
   return (
     <>
+      <div className="absolute left-1/2 top-[12%] z-10 w-[min(90vw,34rem)] -translate-x-1/2 text-center sm:top-[14%]" aria-live="polite">
+        {progress ? (
+          <>
+            <p className="text-sm font-medium tracking-wide text-white/80 sm:text-base">До {progress.level} уровня HSK {progress.remaining} {progress.remaining === 1 ? "слово" : progress.remaining >= 2 && progress.remaining <= 4 ? "слова" : "слов"}</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.08] shadow-inner" role="progressbar" aria-label={`Прогресс до HSK ${progress.level}`} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.completed}>
+              <div className="h-full rounded-full bg-gradient-to-r from-[#d9c39f] to-[#f3e4c7] transition-[width] duration-500" style={{ width: `${progress.total > 0 ? Math.min(100, (progress.completed / progress.total) * 100) : 0}%` }} />
+            </div>
+          </>
+        ) : error ? <p className="text-sm text-red-200">{error}</p> : <p className="text-sm text-white/45">Загрузка прогресса HSK…</p>}
+      </div>
       <button
         type="button"
         aria-label="Открыть следующую карточку"
