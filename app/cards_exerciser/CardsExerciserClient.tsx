@@ -12,6 +12,7 @@ import { logFSRS } from "@/lib/FSRS-6/our_system/debugLog";
 import uiDecks from "@/data/ui-interface-decks.json";
 import Hint from "@/components/hint";
 import { getPinyin } from "@/lib/ru_en_chi_dictionary";
+import UnwantedWordDialog from "@/components/UnwantedWordDialog";
 
 type TheoryItem = string | { label?: string; text: string };
 
@@ -151,8 +152,6 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   const [unwantedOpen, setUnwantedOpen] = useState(false);
   const [unwantedBusy, setUnwantedBusy] = useState(false);
   const [unwantedError, setUnwantedError] = useState("");
-  const [unwantedCanConfirm, setUnwantedCanConfirm] = useState(false);
-  const unwantedScrollRef = useRef<HTMLDivElement>(null);
   const [commonWordsOpen, setCommonWordsOpen] = useState(false);
   const [commonWordsTarget, setCommonWordsTarget] = useState<string | null>(null);
   const [commonWordsDialogData, setCommonWordsDialogData] = useState<{ word: string; relatedWords: Array<{ word: string; pinyin: string | null; translation: string | null; frequency: Record<string, string | number | null> | null }> } | null>(null);
@@ -336,17 +335,10 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     setCommonWordsTarget(null);
   }
 
-  useEffect(() => {
-    if (!unwantedOpen) return;
-    const element = unwantedScrollRef.current;
-    if (element && element.scrollHeight <= element.clientHeight + 12) setUnwantedCanConfirm(true);
-  }, [unwantedOpen, frequencyData, currentWord]);
-
   async function openUnwantedDialog() {
     setUnwantedOpen(true);
     setUnwantedBusy(false);
     setUnwantedError("");
-    setUnwantedCanConfirm(false);
     if (!frequencyData || frequencyData.word !== currentWord) {
       try {
         const response = await fetch("/api/frequency?word=" + encodeURIComponent(currentWord), { cache: "force-cache" });
@@ -363,7 +355,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   }
 
   async function confirmUnwantedWord() {
-    if (!unwantedCanConfirm || unwantedBusy) return;
+    if (unwantedBusy) return;
     setUnwantedBusy(true);
     setUnwantedError("");
     try {
@@ -1033,62 +1025,52 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
 
 
       {unwantedOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 px-3 py-4 backdrop-blur-md sm:px-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !unwantedBusy) setUnwantedOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="unwanted-title" className="relative flex max-h-[min(90dvh,860px)] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#171717]/[0.98] text-white/85 shadow-2xl shadow-black/60" onMouseDown={(event) => event.stopPropagation()}>
-            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
-              <h2 id="unwanted-title" className="text-lg font-semibold text-white">Точно отказаться от слова?</h2>
-              <button type="button" onClick={() => setUnwantedOpen(false)} disabled={unwantedBusy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-40" aria-label="Закрыть">×</button>
-            </header>
-            <div ref={unwantedScrollRef} onScroll={(event) => { const el = event.currentTarget; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 12) setUnwantedCanConfirm(true); }} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-4 border-b border-white/10 pb-5">                <div className="min-w-0">
-                  <div className="text-6xl font-medium leading-tight text-white sm:text-8xl">{currentWord}</div>
-                  <p className="mt-2 text-sm leading-6 text-white/60">{translation}</p>
-                </div>
-                <div className="pt-2 text-right">
-                  <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Вероятность в фильмах</div>
-                  <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["W-CD%"] != null ? `${frequencyData.wordFrequency["W-CD%"]}%` : "—"}</div>
-                </div>
-                <div className="pt-2 text-right">
-                  <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Частотность в словаре</div>
-                  <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["rank"] != null ? `топ ${frequencyData.wordFrequency["rank"]}` : "—"}</div>
-                </div>
-              </div>
-              <div className="py-4">
-                <h3 className="mb-3 text-sm font-semibold text-white/75">10 самых частотных друзей слова</h3>
-                {frequencyLoading && frequencyData?.word !== currentWord ? <p className="py-8 text-center text-sm text-white/45">Загрузка друзей…</p> : frequencyData?.word === currentWord && frequencyData.relatedWords.length ? (
-                  <div className="space-y-2">
-                    {frequencyData.relatedWords.slice(0, 10).map((item, friendIndex) => (
-                      <div key={item.word} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-3 py-3 sm:px-4">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className="w-5 shrink-0 font-mono text-xs text-white/30">{friendIndex + 1}.</span>
-                          <div className="min-w-0">
-                            <div className="text-2xl leading-tight text-white/90">{item.word}</div>
-                            <p className="mt-1 text-sm leading-5 text-white/60">{item.translation || "Перевод не найден"}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">В фильмах</div>
-                          <div className="font-mono text-xs text-white/75">{item.frequency?.["W-CD%"] == null ? "—" : `${item.frequency["W-CD%"]}%`}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">Топ</div>
-                          <div className="font-mono text-xs text-white/75">{item.frequency?.["rank"] == null ? "—" : item.frequency["rank"]}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-5 text-sm text-white/45">Частотные друзья для этого слова не найдены.</p>}
-              </div>
-              <p className="mt-2 border-t border-white/[0.08] pt-4 text-xs leading-5 text-white/35">После отказа слово исчезнет из новых карточек и примеров предложений. Его можно будет вернуть из коллекции.</p>
-              {unwantedError && <p role="alert" className="mt-3 rounded-xl border border-rose-300/15 bg-rose-300/[0.06] px-3 py-2 text-sm text-rose-100/80">{unwantedError}</p>}
+        <UnwantedWordDialog
+          word={currentWord}
+          translation={translation}
+          busy={unwantedBusy}
+          error={unwantedError}
+          onCancel={() => { if (!unwantedBusy) setUnwantedOpen(false); }}
+          onConfirm={() => void confirmUnwantedWord()}
+        >
+          <div className="grid grid-cols-2 gap-3 border-b border-white/10 pb-4 sm:gap-5">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3">
+              <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Вероятность в фильмах</div>
+              <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["W-CD%"] != null ? `${frequencyData.wordFrequency["W-CD%"]}%` : "—"}</div>
             </div>
-            <footer className="shrink-0 border-t border-white/10 px-5 py-4 sm:px-7">
-              <button type="button" onClick={() => void confirmUnwantedWord()} disabled={!unwantedCanConfirm || unwantedBusy} className="w-full rounded-2xl border border-rose-200/20 bg-rose-200/[0.10] px-5 py-3.5 text-sm font-semibold text-rose-50 transition hover:bg-rose-200/[0.16] disabled:cursor-not-allowed disabled:opacity-35">{unwantedBusy ? "Сохраняем…" : unwantedCanConfirm ? "Отказаться от слова" : "Пролистайте окно до конца"}</button>
-            </footer>
-          </section>
-        </div>
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3">
+              <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Частотность в словаре</div>
+              <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["rank"] != null ? `топ ${frequencyData.wordFrequency["rank"]}` : "—"}</div>
+            </div>
+          </div>
+          <div className="py-4">
+            <h3 className="mb-3 text-sm font-semibold text-white/75">10 самых частотных друзей слова</h3>
+            {frequencyLoading && frequencyData?.word !== currentWord ? <p className="py-8 text-center text-sm text-white/45">Загрузка друзей…</p> : frequencyData?.word === currentWord && frequencyData.relatedWords.length ? (
+              <div className="space-y-2">
+                {frequencyData.relatedWords.slice(0, 10).map((item, friendIndex) => (
+                  <div key={item.word} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-3 py-3 sm:px-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="w-5 shrink-0 font-mono text-xs text-white/30">{friendIndex + 1}.</span>
+                      <div className="min-w-0">
+                        <div className="text-2xl leading-tight text-white/90">{item.word}</div>
+                        <p className="mt-1 text-sm leading-5 text-white/60">{item.translation || "Перевод не найден"}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">В фильмах</div>
+                      <div className="font-mono text-xs text-white/75">{item.frequency?.["W-CD%"] == null ? "—" : `${item.frequency["W-CD%"]}%`}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">Топ</div>
+                      <div className="font-mono text-xs text-white/75">{item.frequency?.["rank"] == null ? "—" : item.frequency["rank"]}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-5 text-sm text-white/45">Частотные друзья для этого слова не найдены.</p>}
+          </div>
+        </UnwantedWordDialog>
       )}
-
       {frequencyOpen && (
         <div
           className="fixed inset-0 z-[160] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
