@@ -122,8 +122,8 @@ export default function CalibrationClient() {
                   aria-label={word}
                   className={`flex shrink-0 items-center justify-center rounded-lg border font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/80 ${isSelected ? "border-emerald-300/80 bg-emerald-400/25 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.15)]" : "border-white/[0.09] bg-white/[0.035] text-white/85 hover:border-white/20 hover:bg-white/[0.08]"}`}
                   style={{
-                    width: `calc(clamp(2.65rem, 5.8vw, 4rem) * ${length} + ${(length - 1) * 0.375}rem)`,
-                    height: "clamp(2.65rem, 5.8vw, 4rem)",
+                    width: `${length * 2.75}rem`,
+                    height: "clamp(2.75rem, 5.8vw, 4rem)",
                     fontSize: "clamp(1rem, 2.2vw, 1.55rem)",
                   }}
                 >
