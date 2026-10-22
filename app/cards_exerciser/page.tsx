@@ -12,15 +12,83 @@ import homeTopic from "@/data/topics/home/topic.json";
 import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import testDeck from "@/data/test_deck.json";
 import { getPinyins, getRussianTranslations, getSingleCharacterPinyins, getSingleCharacterRussianTranslations, getPartOfSpeechTranslations } from "@/lib/ru_en_chi_dictionary";
+import { createClient } from "@/lib/supabase/server";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
 export default async function CardsExerciserPage({
   searchParams,
 }: {
-  searchParams: Promise<{ topic?: string }>;
+  searchParams: Promise<{ topic?: string; mode?: string }>;
 }) {
-  const { topic: topicParam } = await searchParams;
+  const { topic: topicParam, mode } = await searchParams;
+
+  if (mode === "hard") {
+    const supabase = await createClient();
+    const { data: claims } = await supabase.auth.getClaims();
+    const userId = claims?.claims?.sub;
+
+    if (!userId) {
+      return (
+        <main className="cards-exerciser-page flex min-h-screen items-center justify-center px-4 py-8 text-white">
+          <section className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
+            <h1 className="text-2xl font-semibold">Сложные слова</h1>
+            <p className="mt-3 text-sm leading-6 text-white/55">Войдите в аккаунт, чтобы загрузить карточки из вашей системы FSRS.</p>
+            <a href="/profile" className="mt-6 inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-white/85 transition hover:bg-white/15">Войти в аккаунт</a>
+            <a href="/working_table" className="mt-4 block text-sm text-white/45 transition hover:text-white/75">Вернуться на рабочий стол</a>
+          </section>
+        </main>
+      );
+    }
+
+    const { data: fsrsCards, error } = await supabase
+      .from("fsrs_cards")
+      .select("word, scheduled_days")
+      .eq("user_id", userId)
+      .lt("scheduled_days", 30)
+      .order("scheduled_days", { ascending: true });
+
+    if (error) {
+      console.error("[FSRS-6] failed to load difficult cards", error);
+      return (
+        <main className="cards-exerciser-page flex min-h-screen items-center justify-center px-4 py-8 text-white">
+          <section className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
+            <h1 className="text-2xl font-semibold">Не удалось загрузить карточки</h1>
+            <p className="mt-3 text-sm text-white/55">Попробуйте обновить страницу позже.</p>
+            <a href="/working_table" className="mt-6 inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-white/85 transition hover:bg-white/15">Вернуться на рабочий стол</a>
+          </section>
+        </main>
+      );
+    }
+
+    const hardWords = (fsrsCards ?? []).map((card) => card.word);
+    if (hardWords.length === 0) {
+      return (
+        <main className="cards-exerciser-page flex min-h-screen items-center justify-center px-4 py-8 text-white">
+          <section className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
+            <h1 className="text-2xl font-semibold">Сложных карточек пока нет</h1>
+            <p className="mt-3 text-sm leading-6 text-white/55">Здесь появятся слова с интервалом FSRS меньше 30 дней.</p>
+            <a href="/working_table" className="mt-6 inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-white/85 transition hover:bg-white/15">Вернуться на рабочий стол</a>
+          </section>
+        </main>
+      );
+    }
+
+    const dictionaryTranslations = { ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(hardWords) };
+    const dictionaryPinyins = { ...getSingleCharacterPinyins(), ...getPinyins(hardWords) };
+    const dictionaryPartsOfSpeech = getPartOfSpeechTranslations(hardWords);
+
+    return (
+      <CardsExerciserClient
+        title="Сложные слова"
+        words={hardWords}
+        dictionaryTranslations={dictionaryTranslations}
+        dictionaryPinyins={dictionaryPinyins}
+        dictionaryPartsOfSpeech={dictionaryPartsOfSpeech}
+      />
+    );
+  }
+
   const topic = topicParam ?? "places";
   const uiDeck = uiDecks[topic as keyof typeof uiDecks];
   const topicFolders = {
