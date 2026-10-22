@@ -10,6 +10,8 @@ import {
   getPartOfSpeechTranslations,
 } from "@/lib/ru_en_chi_dictionary";
 
+type HskProgress = { level: number; remaining: number; total: number; completed: number };
+
 type WordData = {
   hanzi: string;
   pinyin: string;
@@ -25,6 +27,7 @@ export default function WorkingTableCard() {
   const [loading, setLoading] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<HskProgress | null>(null);
 
   async function openNextCard() {
     if (word || exhausted || error) {
@@ -40,6 +43,7 @@ export default function WorkingTableCard() {
       const response = await fetch("/api/working-table/next-card", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Не удалось загрузить карточку.");
+      if (payload.progress) setProgress(payload.progress as HskProgress);
       if (payload.exhausted) {
         setExhausted(true);
       } else {
@@ -53,7 +57,11 @@ export default function WorkingTableCard() {
           const reviewPayload = await reviewResponse.json();
           if (!reviewResponse.ok) throw new Error(reviewPayload.error || "Не удалось добавить слово в FSRS.");
         }
-        setWord(payload.word as WordData);
+        const openedWord = payload.word as WordData;
+        if (payload.progress && openedWord.level === payload.progress.level) {
+          setProgress({ ...payload.progress, remaining: Math.max(0, payload.progress.remaining - 1), completed: Math.min(payload.progress.total, payload.progress.completed + 1) });
+        }
+        setWord(openedWord);
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Не удалось загрузить карточку.");
