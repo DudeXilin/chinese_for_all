@@ -91,9 +91,9 @@ export async function POST(request: Request) {
     .eq("user_id", userId)
     .eq("word", word)
     .maybeSingle();
-  if (unwantedError) {
+  if (unwantedError && unwantedError.code !== "42P01" && unwantedError.code !== "PGRST205") {
     console.error("[FSRS-6] failed to check unwanted-word status", unwantedError);
-    return Response.json({ error: "Не удалось проверить статус слова. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+    return Response.json({ error: "Не удалось проверить статус слова." }, { status: 500 });
   }
   if (unwantedEntry) {
     return Response.json({ error: "Это слово отмечено как ненужное. Верните его в коллекции, чтобы снова изучать." }, { status: 409 });
