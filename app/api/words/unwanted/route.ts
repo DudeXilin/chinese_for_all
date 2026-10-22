@@ -22,6 +22,18 @@ export async function POST(request: Request) {
   if (body.action === "exclude") {
     const { error } = await supabase.from("user_unwanted_words").upsert({ user_id: userId, word }, { onConflict: "user_id,word" });
     if (error) return Response.json({ error: "Не удалось отметить слово ненужным." }, { status: 500 });
+    // Remove its FSRS card and review history so it no longer counts as studied
+    // and becomes available in the new-word queue if the user restores it later.
+    const { error: cardDeleteError } = await supabase
+      .from("fsrs_cards")
+      .delete()
+      .eq("user_id", userId)
+      .eq("word", word);
+    if (cardDeleteError) {
+      await supabase.from("user_unwanted_words").delete().eq("user_id", userId).eq("word", word);
+      console.error("[Unwanted words] failed to remove FSRS card", cardDeleteError);
+      return Response.json({ error: "Не удалось убрать слово из FSRS." }, { status: 500 });
+    }
   } else {
     const { error } = await supabase.from("user_unwanted_words").delete().eq("user_id", userId).eq("word", word);
     if (error) return Response.json({ error: "Не удалось вернуть слово." }, { status: 500 });
