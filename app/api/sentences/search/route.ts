@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { filterSentences } from "@/app/sentences/sentences_filter";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,6 +101,22 @@ export async function POST(request: Request) {
         : 0;
     const autoRelaxUnknownRatio = body.autoRelaxUnknownRatio === true;
 
+    const supabase = await createClient();
+    const { data: claims } = await supabase.auth.getClaims();
+    const userId = claims?.claims?.sub;
+    let unwantedWords: string[] = [];
+    if (userId) {
+      const { data: unwanted, error: unwantedError } = await supabase
+        .from("user_unwanted_words")
+        .select("word")
+        .eq("user_id", userId);
+      if (unwantedError) {
+        console.error("[Sentence search] failed to load unwanted words", unwantedError);
+        return NextResponse.json({ error: "Не удалось загрузить список ненужных слов. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+      }
+      unwantedWords = (unwanted ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string");
+    }
+
     const dataset = await loadDataset(datasetId);
     const allowMissingTranslation = datasetId.endsWith(".txt");
     let effectiveUnknownRatio = requestedUnknownRatio;
@@ -113,6 +130,10 @@ export async function POST(request: Request) {
       relaxationSteps += 1;
       output = filterSentences(dataset, target, knownWords, 1 - effectiveUnknownRatio, allowMissingTranslation);
     }
+    const safeResults = unwantedWords.some((word) => target.includes(word))
+      ? []
+      : output.results.filter((item) => !unwantedWords.some((word) => item.sentence.includes(word)));
+
     const response: {
       results: typeof output.results;
       count: number;
@@ -123,8 +144,8 @@ export async function POST(request: Request) {
       relaxationSteps: number;
       debug?: typeof output.debug;
     } = {
-      results: output.results,
-      count: output.count,
+      results: safeResults,
+      count: safeResults.length,
       datasetId,
       requestedUnknownRatio,
       effectiveUnknownRatio,
