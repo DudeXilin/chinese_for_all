@@ -62,7 +62,24 @@ export default async function CardsExerciserPage({
       );
     }
 
-    const hardWords = (fsrsCards ?? []).map((card) => card.word);
+    const { data: unwantedRows, error: unwantedError } = await supabase
+      .from("user_unwanted_words")
+      .select("word")
+      .eq("user_id", userId);
+    if (unwantedError) {
+      console.error("[FSRS-6] failed to load unwanted words", unwantedError);
+      return (
+        <main className="cards-exerciser-page flex min-h-screen items-center justify-center px-4 py-8 text-white">
+          <section className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
+            <h1 className="text-2xl font-semibold">Не удалось загрузить коллекцию</h1>
+            <p className="mt-3 text-sm text-white/55">Проверьте, что схема user_unwanted_words добавлена в Supabase.</p>
+            <a href="/working_table" className="mt-6 inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-white/85">Вернуться на рабочий стол</a>
+          </section>
+        </main>
+      );
+    }
+    const unwantedWords = new Set((unwantedRows ?? []).map((row) => row.word));
+    const hardWords = (fsrsCards ?? []).map((card) => card.word).filter((word) => !unwantedWords.has(word));
     if (hardWords.length === 0) {
       redirect("/sentences?source=collection");
     }
@@ -114,6 +131,25 @@ export default async function CardsExerciserPage({
         ? { title: uiDeck.title, words: uiDeck.words }
         : lessonWords[topic as keyof typeof lessonWords];
   const theory = lessonTheory[topic as keyof typeof lessonTheory] as unknown as Theory | undefined;
+  const { data: claimsForUnwanted } = await (await createClient()).auth.getClaims();
+  const currentUserId = claimsForUnwanted?.claims?.sub;
+  let unwantedWords = new Set<string>();
+  if (currentUserId) {
+    const supabase = await createClient();
+    const { data: unwantedRows, error: unwantedError } = await supabase
+      .from("user_unwanted_words")
+      .select("word")
+      .eq("user_id", currentUserId);
+    if (unwantedError) {
+      console.error("[Cards exerciser] failed to load unwanted words", unwantedError);
+    } else {
+      unwantedWords = new Set((unwantedRows ?? []).map((row) => row.word));
+    }
+  }
+  if (lesson) {
+    lesson.words = lesson.words.filter((word) => !unwantedWords.has(word));
+    if ("cards" in lesson) lesson.cards = lesson.cards.filter((card) => !unwantedWords.has(card.word));
+  }
   const dictionaryWords = lesson ? lesson.words : [];
   const dictionaryTranslations = { ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(dictionaryWords) };
   const dictionaryPinyins = { ...getSingleCharacterPinyins(), ...getPinyins(dictionaryWords) };
