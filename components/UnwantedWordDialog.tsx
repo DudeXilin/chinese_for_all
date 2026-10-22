@@ -14,13 +14,23 @@ type UnwantedWordDialogProps = {
 
 export default function UnwantedWordDialog({ word, translation, busy, error, onCancel, onConfirm, children }: UnwantedWordDialogProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [canConfirm, setCanConfirm] = useState(false);
 
   useEffect(() => {
     setCanConfirm(false);
-    const element = scrollRef.current;
-    if (element && element.scrollHeight <= element.clientHeight + 12) setCanConfirm(true);
-  }, [word, children]);
+    const scroller = scrollRef.current;
+    const content = contentRef.current;
+    if (!scroller || !content) return;
+    const measure = () => {
+      const overflows = scroller.scrollHeight > scroller.clientHeight + 12;
+      setCanConfirm(!overflows || scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 12);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [word]);
 
   function handleScroll() {
     const element = scrollRef.current;
@@ -39,9 +49,11 @@ export default function UnwantedWordDialog({ word, translation, busy, error, onC
           <button type="button" onClick={onCancel} disabled={busy} className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-40" aria-label="Закрыть">×</button>
         </header>
         <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
-          {children}
-          <p className="mt-4 border-t border-white/[0.08] pt-4 text-xs leading-5 text-white/35">После отказа слово исчезнет из новых карточек и примеров предложений. Его можно будет вернуть из коллекции.</p>
-          {error && <p role="alert" className="mt-3 rounded-xl border border-rose-300/15 bg-rose-300/[0.06] px-3 py-2 text-sm text-rose-100/80">{error}</p>}
+          <div ref={contentRef}>
+            {children}
+            <p className="mt-4 border-t border-white/[0.08] pt-4 text-xs leading-5 text-white/35">После отказа слово исчезнет из новых карточек и примеров предложений. Его можно будет вернуть из коллекции.</p>
+            {error && <p role="alert" className="mt-3 rounded-xl border border-rose-300/15 bg-rose-300/[0.06] px-3 py-2 text-sm text-rose-100/80">{error}</p>}
+          </div>
         </div>
         <footer className="shrink-0 border-t border-white/10 px-5 py-4 sm:px-7">
           <button type="button" onClick={onConfirm} disabled={!canConfirm || busy} className="w-full rounded-2xl border border-rose-200/20 bg-rose-200/[0.10] px-5 py-3.5 text-sm font-semibold text-rose-50 transition hover:bg-rose-200/[0.16] disabled:cursor-not-allowed disabled:opacity-35">{busy ? "Сохраняем…" : canConfirm ? "Отказаться от слова" : "Пролистайте окно до конца"}</button>
