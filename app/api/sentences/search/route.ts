@@ -110,9 +110,9 @@ export async function POST(request: Request) {
         .from("user_unwanted_words")
         .select("word")
         .eq("user_id", userId);
-      if (unwantedError) {
+      if (unwantedError && unwantedError.code !== "42P01" && unwantedError.code !== "PGRST205") {
         console.error("[Sentence search] failed to load unwanted words", unwantedError);
-        return NextResponse.json({ error: "Не удалось загрузить список ненужных слов. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+        return NextResponse.json({ error: "Не удалось загрузить список ненужных слов." }, { status: 500 });
       }
       unwantedWords = (unwanted ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string");
     }
