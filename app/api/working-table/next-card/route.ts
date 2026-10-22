@@ -33,6 +33,23 @@ export async function GET() {
     reviewedWords = new Set((data ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string"));
   }
 
+  const validEntries = entries.filter((entry) => {
+    const word = entry.hanzi?.trim();
+    const level = Number(entry.level);
+    const frequency = Number(entry.frequency);
+    return Boolean(word) && Number.isFinite(level) && level > 0 && Number.isFinite(frequency) && frequency >= 0;
+  });
+  const levels = [...new Set(validEntries.map((entry) => Number(entry.level)))].sort((a, b) => a - b);
+  const targetLevel = levels.find((level) => validEntries.some((entry) => Number(entry.level) === level && !reviewedWords.has(entry.hanzi!.trim()))) ?? levels[levels.length - 1] ?? 1;
+  const targetLevelEntries = validEntries.filter((entry) => Number(entry.level) === targetLevel);
+  const targetLevelRemaining = targetLevelEntries.filter((entry) => !reviewedWords.has(entry.hanzi!.trim())).length;
+  const progress = {
+    level: targetLevel,
+    remaining: targetLevelRemaining,
+    total: targetLevelEntries.length,
+    completed: targetLevelEntries.length - targetLevelRemaining,
+  };
+
   const candidate = entries
     .filter((entry) => {
       const word = entry.hanzi?.trim();
@@ -52,7 +69,7 @@ export async function GET() {
     })[0];
 
   if (!candidate?.hanzi) {
-    return Response.json({ exhausted: true, authenticated: Boolean(userId) }, {
+    return Response.json({ exhausted: true, authenticated: Boolean(userId), progress }, {
       headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
     });
   }
@@ -66,6 +83,7 @@ export async function GET() {
   return Response.json({
     authenticated: Boolean(userId),
     exhausted: false,
+    progress,
     word: {
       hanzi: word,
       pinyin: candidate.pinyin ?? "",
