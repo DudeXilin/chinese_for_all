@@ -31,6 +31,18 @@ export async function POST() {
     return Response.json({ error: "История повторений удалена, но не удалось удалить карточки. Попробуйте ещё раз." }, { status: 500 });
   }
 
+  // Reset the calibration flag as part of the same user-requested reset.
+  const { error: calibrationError } = await supabase.auth.updateUser({
+    data: { calibrated: false },
+  });
+
+  if (calibrationError) {
+    console.error("[FSRS reset] failed to reset calibration flag", calibrationError);
+    return Response.json({
+      error: "Статистика удалена, но не удалось сбросить статус калибровки. Попробуйте ещё раз.",
+    }, { status: 500 });
+  }
+
   return Response.json({ success: true }, {
     headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
   });
