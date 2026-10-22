@@ -134,21 +134,45 @@ export default function SentencesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/sentences/known-words", { cache: "no-store" })
-      .then(async (response) => {
+    const loadKnownWords = async () => {
+      let savedWords = "";
+      let isAdmin = false;
+      try {
+        const response = await fetch("/api/sentences/known-words", { cache: "no-store" });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Не удалось загрузить сохранённый список.");
-        if (!cancelled) {
-          if (typeof data.knownWords === "string") setKnownInput(data.knownWords);
-          setKnownWordsIsAdmin(data.isAdmin === true);
+        if (response.ok) {
+          savedWords = typeof data.knownWords === "string" ? data.knownWords : "";
+          isAdmin = data.isAdmin === true;
         }
-      })
-      .catch(() => {
+      } catch {
         // Keep the built-in default list if the saved file cannot be loaded.
-      })
-      .finally(() => {
-        if (!cancelled) setKnownWordsLoading(false);
-      });
+      }
+
+      if (cancelled) return;
+      setKnownWordsIsAdmin(isAdmin);
+
+      const source = new URLSearchParams(window.location.search).get("source");
+      if (source === "collection") {
+        try {
+          const response = await fetch("/api/sentences/collection-words", { cache: "no-store" });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Не удалось загрузить слова из коллекции.");
+          if (!cancelled && Array.isArray(data.words)) {
+            setKnownInput(data.words.join(","));
+          } else if (!cancelled && savedWords) {
+            setKnownInput(savedWords);
+          }
+        } catch {
+          if (!cancelled && savedWords) setKnownInput(savedWords);
+        }
+      } else if (savedWords) {
+        setKnownInput(savedWords);
+      }
+
+      if (!cancelled) setKnownWordsLoading(false);
+    };
+
+    void loadKnownWords();
     return () => {
       cancelled = true;
     };
@@ -226,12 +250,12 @@ export default function SentencesPage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#090909] px-4 pb-16 pt-20 text-white sm:px-6">
       <a
-        href="/"
-        className="fixed left-4 top-4 z-30 flex h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 text-sm text-white/80 backdrop-blur-xl transition-colors hover:bg-white/10"
-        aria-label="Вернуться в главное меню"
+        href="/working_table"
+        className="fixed left-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-2xl text-white/80 backdrop-blur-xl transition hover:bg-white/[0.1]"
+        aria-label="Вернуться на рабочий стол"
+        title="Рабочий стол"
       >
-        <span className="text-xl leading-none">&lt;</span>
-        <span>Вернуться в главное меню</span>
+        &lt;
       </a>
       <button
         type="button"
