@@ -9,6 +9,16 @@ export async function GET() {
     return Response.json({ error: "Требуется авторизация." }, { status: 401 });
   }
 
+  const { data: unwantedRows, error: unwantedError } = await supabase
+    .from("user_unwanted_words")
+    .select("word")
+    .eq("user_id", userId);
+  if (unwantedError) {
+    console.error("[Sentences collection words] failed to load unwanted words", unwantedError);
+    return Response.json({ error: "Не удалось загрузить список ненужных слов." }, { status: 500 });
+  }
+  const unwantedWords = new Set((unwantedRows ?? []).map((row) => row.word));
+
   // Only include words whose current FSRS scheduled interval is greater than
   // 30 days. These are the "easy words" shown in the collection.
   const { data: cards, error } = await supabase
@@ -24,7 +34,7 @@ export async function GET() {
 
   const words = [...new Set(
     (cards ?? [])
-      .filter((row) => typeof row.scheduled_days === "number" && row.scheduled_days > 30)
+      .filter((row) => typeof row.scheduled_days === "number" && row.scheduled_days > 30 && !unwantedWords.has(row.word))
       .map((row) => row.word)
       .filter((word): word is string => typeof word === "string" && word.trim().length > 0)
       .map((word) => word.trim()),
