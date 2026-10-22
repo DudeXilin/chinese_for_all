@@ -784,7 +784,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
           </header>}
 
           <section className={`mx-auto w-full max-w-3xl ${embedded ? "mt-0" : "mt-5"}`}>
-            <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">\n              {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
+            <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
+              {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
                   {!embedded && lastFSRSResult && index === lastFSRSResult.index + 1 && (
