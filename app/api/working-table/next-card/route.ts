@@ -33,6 +33,22 @@ export async function GET() {
     reviewedWords = new Set((data ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string"));
   }
 
+  if (userId) {
+    const { data: cards, error: cardsError } = await supabase
+      .from("fsrs_cards")
+      .select("word")
+      .eq("user_id", userId);
+
+    if (cardsError) {
+      console.error("[Working table] failed to load FSRS cards", cardsError);
+      return Response.json({ error: "Не удалось загрузить карточки FSRS." }, { status: 500 });
+    }
+
+    for (const row of cards ?? []) {
+      if (typeof row.word === "string") reviewedWords.add(row.word);
+    }
+  }
+
   const validEntries = entries.filter((entry) => {
     const word = entry.hanzi?.trim();
     const level = Number(entry.level);
