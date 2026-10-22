@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getPinyins, getRussianTranslations } from "@/lib/ru_en_chi_dictionary";
+import { getPinyins, getRussianTranslations, getSingleCharacterPinyins, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 import WorkingTableCard from "./WorkingTableCard";
 
 type CollectionCard = { word: string; scheduled_days: number; due: string; stability: number; reps: number; unwanted?: boolean };
@@ -54,8 +54,8 @@ export default function WorkingTablePage() {
     const hard = card.scheduled_days < 30;
     return hard ? showHard : showEasy;
   }).sort((a, b) => Number(Boolean(b.unwanted)) - Number(Boolean(a.unwanted)) || a.scheduled_days - b.scheduled_days || a.word.localeCompare(b.word, "zh-Hans")), [collectionCards, showEasy, showHard, showUnwanted]);
-  const collectionTranslations = useMemo(() => getRussianTranslations(collectionCards.map((card) => card.word)), [collectionCards]);
-  const collectionPinyins = useMemo(() => getPinyins(collectionCards.map((card) => card.word)), [collectionCards]);
+  const collectionTranslations = useMemo(() => ({ ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(collectionCards.map((card) => card.word)) }), [collectionCards]);
+  const collectionPinyins = useMemo(() => ({ ...getSingleCharacterPinyins(), ...getPinyins(collectionCards.map((card) => card.word)) }), [collectionCards]);
 
   useEffect(() => {
     const syncDebugTools = () => {
