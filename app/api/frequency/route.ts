@@ -7,6 +7,7 @@ type FrequencyRow = Record<string, string | number>;
 type FrequencyTable = { data: FrequencyRow[] };
 
 let wordIndex: Map<string, FrequencyRow> | null = null;
+let wordRanks: Map<string, number> | null = null;
 let characterIndex: Map<string, FrequencyRow> | null = null;
 let wordMetadataIndex: Map<string, { pinyin?: string; translation?: string }> | null = null;
 
@@ -62,6 +63,7 @@ async function loadIndexes() {
   const characters = JSON.parse(characterJson) as FrequencyTable;
 
   wordIndex = new Map(words.data.map((row) => [String(row.Word ?? ""), row]));
+  wordRanks = new Map([...words.data].sort((a, b) => Number(b.WCount ?? 0) - Number(a.WCount ?? 0)).map((row, index) => [String(row.Word ?? ""), index + 1]));
   characterIndex = new Map(characters.data.map((row) => [String(row.Character ?? ""), row]));
 
   const metadata = new Map<string, { pinyin?: string; translation?: string }>();
@@ -82,9 +84,9 @@ async function loadIndexes() {
   wordMetadataIndex = metadata;
 }
 
-function selectFields(row: FrequencyRow | undefined, fields: string[]) {
+function selectFields(row: FrequencyRow | undefined, fields: string[], rank?: number) {
   if (!row) return null;
-  return Object.fromEntries(fields.map((field) => [field, row[field] ?? null]));
+  return { ...Object.fromEntries(fields.map((field) => [field, row[field] ?? null])), rank: rank ?? null };
 }
 
 export async function GET(request: NextRequest) {
@@ -122,13 +124,13 @@ export async function GET(request: NextRequest) {
           word: candidate,
           pinyin: metadata?.pinyin ?? null,
           translation: metadata?.translation ?? null,
-          frequency: selectFields(row, wordFields),
+          frequency: selectFields(row, wordFields, wordRanks?.get(candidate)),
         };
       });
 
     return NextResponse.json({
       word,
-      wordFrequency: selectFields(wordRow, wordFields),
+      wordFrequency: selectFields(wordRow, wordFields, wordRanks?.get(word)),
       relatedWords,
       characters: Array.from(new Set(Array.from(word))).map((character) => {
         const commonWords = (wordIndex ? Array.from(wordIndex.values()) : [])
