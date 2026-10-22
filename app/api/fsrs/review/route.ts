@@ -85,6 +85,20 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid FSRS review payload" }, { status: 400 });
   }
 
+  const { data: unwantedEntry, error: unwantedError } = await supabase
+    .from("user_unwanted_words")
+    .select("word")
+    .eq("user_id", userId)
+    .eq("word", word)
+    .maybeSingle();
+  if (unwantedError) {
+    console.error("[FSRS-6] failed to check unwanted-word status", unwantedError);
+    return Response.json({ error: "Не удалось проверить статус слова. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+  }
+  if (unwantedEntry) {
+    return Response.json({ error: "Это слово отмечено как ненужное. Верните его в коллекции, чтобы снова изучать." }, { status: 409 });
+  }
+
   // The device clock is deliberately ignored. FSRS receives an authoritative
   // server timestamp so a wrong clock on a phone/computer cannot move a card
   // forward or backward by hours/days.
