@@ -98,23 +98,22 @@ export default function CalibrationClient() {
               type="button"
               disabled={loading || saving}
               onClick={() => void loadLevel(nextLevel)}
-              className="min-h-9 rounded-lg border border-white/15 bg-white/[0.06] px-2 py-2 text-xs font-medium text-white/85 transition hover:bg-white/[0.11] disabled:opacity-40 sm:px-3 sm:text-sm"
+              className="min-h-9 rounded-lg border border-white/15 bg-white/[0.06] px-2 py-2 text-sm font-medium text-white/85 transition hover:bg-white/[0.11] disabled:opacity-40 sm:px-3 sm:text-lg"
             >
               К словам из HSK {nextLevel}
             </button>
           ) : <span />}
           <div className="min-w-0 text-center">
-            <h1 className="text-sm font-medium leading-tight text-white/85 sm:text-lg">
-              <span className="block">Отметьте <strong className="font-bold text-white">хорошо</strong></span>
+            <h1 className="text-xl font-medium leading-tight text-white/85 sm:text-2xl">
+              <span className="block">Отметьте <strong className="font-bold text-white underline underline-offset-4 decoration-2">хорошо</strong></span>
               <span className="block">выученные слова</span>
             </h1>
-            <p className="mt-1 text-xs text-white/45 sm:text-sm">HSK {level}</p>
           </div>
           <button
             type="button"
             disabled={saving || loading}
             onClick={() => void finishCalibration()}
-            className="min-h-9 rounded-lg border border-emerald-300/30 bg-emerald-400/15 px-3 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/25 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4 sm:text-sm"
+            className="min-h-9 rounded-lg border border-emerald-300/30 bg-emerald-400/15 px-3 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/25 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4 sm:text-lg"
           >
             Готово
           </button>
@@ -145,9 +144,11 @@ export default function CalibrationClient() {
                   aria-label={word}
                   className={`flex shrink-0 items-center justify-center rounded-lg border font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/80 ${isSelected ? "border-emerald-300/80 bg-emerald-400/25 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.15)]" : "border-white/[0.09] bg-white/[0.035] text-white/85 hover:border-white/20 hover:bg-white/[0.08]"}`}
                   style={{
-                    width: `${length * 2.55}rem`,
-                    height: "clamp(2.6rem, 6.5vh, 4.5rem)",
-                    fontSize: "clamp(1rem, 2.2vw, 1.55rem)",
+                    width: `${length * 2.75}rem`,
+                    height: "clamp(2.75rem, 6.5vh, 4.5rem)",
+                    aspectRatio: `${length} / 1`,
+                    fontSize: "clamp(1.3rem, 2.86vw, 2rem)",
+                    lineHeight: 1,
                   }}
                 >
                   {word}
