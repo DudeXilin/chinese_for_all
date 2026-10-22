@@ -9,20 +9,26 @@ export async function GET() {
     return Response.json({ error: "Требуется авторизация." }, { status: 401 });
   }
 
-  const [{ data: cards, error: cardsError }, { data: reviews, error: reviewsError }] = await Promise.all([
-    supabase.from("fsrs_cards").select("word").eq("user_id", userId),
-    supabase.from("fsrs_reviews").select("word").eq("user_id", userId),
-  ]);
+  // Only include words whose current FSRS scheduled interval is greater than
+  // 30 days. These are the "easy words" shown in the collection.
+  const { data: cards, error } = await supabase
+    .from("fsrs_cards")
+    .select("word, scheduled_days")
+    .eq("user_id", userId)
+    .gt("scheduled_days", 30);
 
-  if (cardsError || reviewsError) {
-    console.error("[Sentences collection words] failed to load FSRS words", { cardsError, reviewsError });
-    return Response.json({ error: "Не удалось загрузить слова из вашей коллекции FSRS." }, { status: 500 });
+  if (error) {
+    console.error("[Sentences collection words] failed to load easy FSRS words", error);
+    return Response.json({ error: "Не удалось загрузить лёгкие слова из вашей коллекции FSRS." }, { status: 500 });
   }
 
-  const words = [...new Set([
-    ...(cards ?? []).map((row) => row.word),
-    ...(reviews ?? []).map((row) => row.word),
-  ].filter((word): word is string => typeof word === "string" && word.trim().length > 0).map((word) => word.trim()))];
+  const words = [...new Set(
+    (cards ?? [])
+      .filter((row) => typeof row.scheduled_days === "number" && row.scheduled_days > 30)
+      .map((row) => row.word)
+      .filter((word): word is string => typeof word === "string" && word.trim().length > 0)
+      .map((word) => word.trim()),
+  )];
 
   return Response.json({ words }, {
     headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
