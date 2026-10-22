@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getPinyins, getRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 import WorkingTableCard from "./WorkingTableCard";
 
-type CollectionCard = { word: string; scheduled_days: number; due: string; stability: number; reps: number };
+type CollectionCard = { word: string; scheduled_days: number; due: string; stability: number; reps: number; unwanted?: boolean };
 
 export default function WorkingTablePage() {
   const [debugVisible, setDebugVisible] = useState(false);
@@ -14,20 +14,34 @@ export default function WorkingTablePage() {
   const [collectionCards, setCollectionCards] = useState<CollectionCard[]>([]);
   const [showEasy, setShowEasy] = useState(true);
   const [showHard, setShowHard] = useState(true);
+  const [showUnwanted, setShowUnwanted] = useState(false);
+  const [unwantedWords, setUnwantedWords] = useState<string[]>([]);
 
   async function openCollection() {
     setCollectionOpen(true);
     setCollectionLoading(true);
     setCollectionError(null);
     try {
-      const response = await fetch("/api/fsrs/cards", { cache: "no-store" });
+      const [response, unwantedResponse] = await Promise.all([
+        fetch("/api/fsrs/cards", { cache: "no-store" }),
+        fetch("/api/words/unwanted", { cache: "no-store" }),
+      ]);
       const payload = await response.json();
+      const unwantedPayload = await unwantedResponse.json();
       if (!response.ok) throw new Error(payload.error || "Не удалось загрузить коллекцию.");
-      setCollectionCards(Array.isArray(payload.cards) ? payload.cards.filter((card: unknown): card is CollectionCard => {
+      if (!unwantedResponse.ok) throw new Error(unwantedPayload.error || "Не удалось загрузить ненужные слова.");
+      const unwanted = Array.isArray(unwantedPayload.words) ? unwantedPayload.words.filter((word: unknown): word is string => typeof word === "string") : [];
+      setUnwantedWords(unwanted);
+      const cards: CollectionCard[] = Array.isArray(payload.cards) ? payload.cards.filter((card: unknown): card is CollectionCard => {
         if (!card || typeof card !== "object") return false;
         const item = card as Partial<CollectionCard>;
         return typeof item.word === "string" && typeof item.scheduled_days === "number";
-      }) : []);
+      }) : [];
+      const byWord = new Map(cards.map((card) => [card.word, { ...card, unwanted: unwanted.includes(card.word) }]));
+      for (const word of unwanted) {
+        if (!byWord.has(word)) byWord.set(word, { word, scheduled_days: 0, due: "", stability: 0, reps: 0, unwanted: true });
+      }
+      setCollectionCards([...byWord.values()]);
     } catch (error) {
       setCollectionError(error instanceof Error ? error.message : "Не удалось загрузить коллекцию.");
     } finally {
@@ -36,9 +50,10 @@ export default function WorkingTablePage() {
   }
 
   const filteredCollection = useMemo(() => collectionCards.filter((card) => {
+    if (card.unwanted) return showUnwanted;
     const hard = card.scheduled_days < 30;
     return hard ? showHard : showEasy;
-  }).sort((a, b) => a.scheduled_days - b.scheduled_days || a.word.localeCompare(b.word, "zh-Hans")), [collectionCards, showEasy, showHard]);
+  }).sort((a, b) => Number(Boolean(b.unwanted)) - Number(Boolean(a.unwanted)) || a.scheduled_days - b.scheduled_days || a.word.localeCompare(b.word, "zh-Hans")), [collectionCards, showEasy, showHard, showUnwanted]);
   const collectionTranslations = useMemo(() => getRussianTranslations(collectionCards.map((card) => card.word)), [collectionCards]);
   const collectionPinyins = useMemo(() => getPinyins(collectionCards.map((card) => card.word)), [collectionCards]);
 
@@ -119,13 +134,14 @@ export default function WorkingTablePage() {
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-white/10 px-5 py-3 text-sm sm:px-7">
               <label className="flex cursor-pointer items-center gap-2 text-white/75"><input type="checkbox" checked={showEasy} onChange={(event) => setShowEasy(event.target.checked)} className="h-4 w-4 accent-white" />Лёгкие слова <span className="text-white/35">≥ 30 дней</span></label>
               <label className="flex cursor-pointer items-center gap-2 text-white/75"><input type="checkbox" checked={showHard} onChange={(event) => setShowHard(event.target.checked)} className="h-4 w-4 accent-white" />Сложные слова <span className="text-white/35">меньше 30 дней</span></label>
+              <label className="flex cursor-pointer items-center gap-2 text-white/75"><input type="checkbox" checked={showUnwanted} onChange={(event) => setShowUnwanted(event.target.checked)} className="h-4 w-4 accent-white" />Ненужные слова <span className="text-white/35">{unwantedWords.length}</span></label>
             </div>
             <div className="min-h-40 flex-1 overflow-y-auto px-5 py-3 sm:px-7">
               {collectionLoading ? <p className="py-10 text-center text-sm text-white/45">Загрузка коллекции…</p> : collectionError ? <p className="py-10 text-center text-sm text-red-200">{collectionError}</p> : filteredCollection.length === 0 ? <p className="py-10 text-center text-sm text-white/45">{collectionCards.length === 0 ? "Коллекция пока пуста. Откройте первую карточку на рабочем столе." : "Нет слов, соответствующих выбранным фильтрам."}</p> : (
                 <ul className="divide-y divide-white/[0.07]">
                   {filteredCollection.map((card) => {
                     const hard = card.scheduled_days < 30;
-                    return <li key={card.word} className="flex items-center gap-4 py-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-2xl">{card.word}</div><div className="min-w-0 flex-1"><div className="truncate text-sm text-white/85">{collectionTranslations[card.word] || "Перевод не найден"}</div><div className="mt-1 text-xs text-white/40">{collectionPinyins[card.word] || ""}</div></div><div className="text-right"><span className={`inline-flex rounded-full border px-2 py-1 text-[11px] ${hard ? "border-amber-300/20 bg-amber-300/[0.07] text-amber-100/75" : "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-100/75"}`}>{hard ? "Сложное" : "Лёгкое"}</span><div className="mt-1 text-[10px] text-white/35">{Math.max(0, Math.round(card.scheduled_days))} дн.</div></div></li>;
+                    return <li key={card.word} className="flex items-center gap-3 py-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-2xl">{card.word}</div><div className="min-w-0 flex-1"><div className="truncate text-sm text-white/85">{collectionTranslations[card.word] || "Перевод не найден"}</div><div className="mt-1 text-xs text-white/40">{collectionPinyins[card.word] || ""}</div></div><div className="flex shrink-0 flex-col items-end gap-1"><span className={`inline-flex rounded-full border px-2 py-1 text-[11px] ${card.unwanted ? "border-rose-300/20 bg-rose-300/[0.07] text-rose-100/75" : hard ? "border-amber-300/20 bg-amber-300/[0.07] text-amber-100/75" : "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-100/75"}`}>{card.unwanted ? "Ненужное" : hard ? "Сложное" : "Лёгкое"}</span>{card.unwanted ? <button type="button" onClick={async () => { try { const response = await fetch("/api/words/unwanted", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ word: card.word, action: "restore" }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Не удалось вернуть слово."); setUnwantedWords(Array.isArray(payload.words) ? payload.words : []); setCollectionCards((items) => items.map((item) => item.word === card.word ? { ...item, unwanted: false } : item)); } catch (error) { setCollectionError(error instanceof Error ? error.message : "Не удалось вернуть слово."); } }} className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs text-white/75 transition hover:bg-white/[0.12]">Вернуть</button> : <div className="text-[10px] text-white/35">{Math.max(0, Math.round(card.scheduled_days))} дн.</div>}</div></li>;
                   })}
                 </ul>
               )}
