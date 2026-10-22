@@ -8,6 +8,7 @@ type FrequencyTable = { data: FrequencyRow[] };
 
 let wordIndex: Map<string, FrequencyRow> | null = null;
 let wordRanks: Map<string, number> | null = null;
+let dictionaryFrequencyRanks: Map<string, number> | null = null;
 let characterIndex: Map<string, FrequencyRow> | null = null;
 let wordMetadataIndex: Map<string, { pinyin?: string; translation?: string }> | null = null;
 
@@ -64,6 +65,11 @@ async function loadIndexes() {
 
   wordIndex = new Map(words.data.map((row) => [String(row.Word ?? ""), row]));
   wordRanks = new Map([...words.data].sort((a, b) => Number(b.WCount ?? 0) - Number(a.WCount ?? 0)).map((row, index) => [String(row.Word ?? ""), index + 1]));
+  dictionaryFrequencyRanks = new Map((hskDictionary as Array<{ hanzi?: string; frequency?: string | number }>).flatMap((entry) => {
+    const word = entry.hanzi?.trim();
+    const rank = Number(entry.frequency);
+    return word && Number.isFinite(rank) && rank > 0 ? [[word, rank] as [string, number]] : [];
+  }));
   characterIndex = new Map(characters.data.map((row) => [String(row.Character ?? ""), row]));
 
   const metadata = new Map<string, { pinyin?: string; translation?: string }>();
@@ -124,13 +130,13 @@ export async function GET(request: NextRequest) {
           word: candidate,
           pinyin: metadata?.pinyin ?? null,
           translation: metadata?.translation ?? null,
-          frequency: selectFields(row, wordFields, wordRanks?.get(candidate)),
+          frequency: selectFields(row, wordFields, dictionaryFrequencyRanks?.get(candidate) ?? wordRanks?.get(candidate)),
         };
       });
 
     return NextResponse.json({
       word,
-      wordFrequency: selectFields(wordRow, wordFields, wordRanks?.get(word)),
+      wordFrequency: selectFields(wordRow, wordFields, dictionaryFrequencyRanks?.get(word) ?? wordRanks?.get(word)),
       relatedWords,
       characters: Array.from(new Set(Array.from(word))).map((character) => {
         const commonWords = (wordIndex ? Array.from(wordIndex.values()) : [])
