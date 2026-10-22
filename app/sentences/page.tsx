@@ -206,6 +206,7 @@ export default function SentencesPage() {
   const [debugOpen, setDebugOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [debugData, setDebugData] = useState<SentenceDebug | null>(null);
+  const [activeSentence, setActiveSentence] = useState<SentenceResult | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -450,7 +451,7 @@ export default function SentencesPage() {
             ) : (
               <div className="divide-y divide-white/[0.08] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
                 {results.map((result, index) => (
-                  <article key={`${index}-${result.sentence}`} className="px-5 py-5 sm:px-6 sm:py-6">
+                  <article key={`${index}-${result.sentence}`} onClick={() => setActiveSentence(result)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveSentence(result); } }} className="cursor-pointer px-5 py-5 transition hover:bg-white/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#f0d9bd] sm:px-6 sm:py-6">
                     <p className="text-xl leading-9 tracking-wide sm:text-2xl">
                       {result.segments?.length ? result.segments.map((segment, segmentIndex) => {
                         const isTarget = Boolean(target.trim()) && segment.text.toLowerCase().includes(target.trim().toLowerCase());
@@ -475,6 +476,51 @@ export default function SentencesPage() {
           </section>
         )}
       </div>
+
+      {activeSentence && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) setActiveSentence(null); }}
+          role="presentation"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Упражнение с предложением"
+            className="relative w-full max-w-2xl rounded-3xl border border-white/15 bg-[#111]/95 p-5 pt-14 text-white shadow-2xl shadow-black/50 sm:p-8 sm:pt-16"
+          >
+            <button
+              type="button"
+              onClick={() => setActiveSentence(null)}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-2xl leading-none text-white/75 transition hover:bg-white/10 hover:text-white"
+              aria-label="Закрыть окно"
+              title="Закрыть"
+            >
+              ×
+            </button>
+            <p className="text-center text-base leading-7 text-white/75 sm:text-lg">
+              {activeSentence.translation}
+            </p>
+            <div className="mt-6 space-y-4">
+              <input
+                type="text"
+                aria-label="Введите пиньинь предложения"
+                placeholder="Введите предложение пиньинем"
+                autoComplete="off"
+                className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
+              />
+              <input
+                type="text"
+                aria-label="Введите предложение китайскими иероглифами"
+                placeholder="Введите предложение китайскими иероглифами"
+                autoComplete="off"
+                lang="zh-Hans"
+                className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
+              />
+            </div>
+          </section>
+        </div>
+      )}
 
       {debugToolsEnabled && !debugOpen && (
         <button
