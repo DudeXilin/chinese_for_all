@@ -20,6 +20,18 @@ export async function GET() {
   const userId = claims?.claims?.sub;
 
   let reviewedWords = new Set<string>();
+  let unwantedWords = new Set<string>();
+  if (userId) {
+    const { data: unwanted, error: unwantedError } = await supabase
+      .from("user_unwanted_words")
+      .select("word")
+      .eq("user_id", userId);
+    if (unwantedError) {
+      console.error("[Working table] failed to load unwanted words", unwantedError);
+      return Response.json({ error: "Не удалось загрузить список ненужных слов. Проверьте схему user_unwanted_words в Supabase." }, { status: 500 });
+    }
+    unwantedWords = new Set((unwanted ?? []).map((row) => row.word).filter((word): word is string => typeof word === "string"));
+  }
   if (userId) {
     const { data, error } = await supabase
       .from("fsrs_reviews")
@@ -56,9 +68,9 @@ export async function GET() {
     return Boolean(word) && Number.isFinite(level) && level > 0 && Number.isFinite(frequency) && frequency >= 0;
   });
   const levels = [...new Set(validEntries.map((entry) => Number(entry.level)))].sort((a, b) => a - b);
-  const targetLevel = levels.find((level) => validEntries.some((entry) => Number(entry.level) === level && !reviewedWords.has(entry.hanzi!.trim()))) ?? levels[levels.length - 1] ?? 1;
+  const targetLevel = levels.find((level) => validEntries.some((entry) => Number(entry.level) === level && !reviewedWords.has(entry.hanzi!.trim()) && !unwantedWords.has(entry.hanzi!.trim()))) ?? levels[levels.length - 1] ?? 1;
   const targetLevelEntries = validEntries.filter((entry) => Number(entry.level) === targetLevel);
-  const targetLevelRemaining = targetLevelEntries.filter((entry) => !reviewedWords.has(entry.hanzi!.trim())).length;
+  const targetLevelRemaining = targetLevelEntries.filter((entry) => !reviewedWords.has(entry.hanzi!.trim()) && !unwantedWords.has(entry.hanzi!.trim())).length;
   const progress = {
     level: targetLevel,
     remaining: targetLevelRemaining,
@@ -74,7 +86,7 @@ export async function GET() {
       return Boolean(word) &&
         Number.isFinite(level) && level > 0 &&
         Number.isFinite(frequency) && frequency >= 0 &&
-        !reviewedWords.has(word!);
+        !reviewedWords.has(word!) && !unwantedWords.has(word!);
     })
     .sort((a, b) => {
       const levelDifference = Number(a.level) - Number(b.level);
