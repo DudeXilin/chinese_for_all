@@ -13,6 +13,7 @@ import peopleTopic from "@/data/topics/people_and_relationships/topic.json";
 import testDeck from "@/data/test_deck.json";
 import { getPinyins, getRussianTranslations, getSingleCharacterPinyins, getSingleCharacterRussianTranslations, getPartOfSpeechTranslations } from "@/lib/ru_en_chi_dictionary";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 type Theory = (typeof lessonTheory)[keyof typeof lessonTheory];
 
@@ -63,15 +64,7 @@ export default async function CardsExerciserPage({
 
     const hardWords = (fsrsCards ?? []).map((card) => card.word);
     if (hardWords.length === 0) {
-      return (
-        <main className="cards-exerciser-page flex min-h-screen items-center justify-center px-4 py-8 text-white">
-          <section className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-2xl">
-            <h1 className="text-2xl font-semibold">Сложных карточек пока нет</h1>
-            <p className="mt-3 text-sm leading-6 text-white/55">Здесь появятся слова с интервалом FSRS меньше 30 дней.</p>
-            <a href="/working_table" className="mt-6 inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-white/85 transition hover:bg-white/15">Вернуться на рабочий стол</a>
-          </section>
-        </main>
-      );
+      redirect("/sentences?source=collection");
     }
 
     const dictionaryTranslations = { ...getSingleCharacterRussianTranslations(), ...getRussianTranslations(hardWords) };
