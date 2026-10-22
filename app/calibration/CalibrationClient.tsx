@@ -91,14 +91,37 @@ export default function CalibrationClient() {
 
   return (
     <main className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-[#090909] text-white">
-      <header className="shrink-0 border-b border-white/[0.08] bg-[#090909]/95 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] text-center sm:px-8">
-        <p className="text-xs font-medium uppercase tracking-[0.28em] text-white/35">Калибровка</p>
-        <h1 className="mt-2 text-lg font-medium text-white/85 sm:text-2xl">Отметьте слова, которые вы точно хорошо знаете</h1>
-        <p className="mt-2 text-sm text-white/45">HSK {level}</p>
-        <p className="mt-1 text-xs text-white/30">Выбрано: {selected.size}</p>
+      <header className="shrink-0 border-b border-white/[0.08] bg-[#090909]/95 px-2 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-4 sm:pb-3">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-4">
+          {nextLevel ? (
+            <button
+              type="button"
+              disabled={loading || saving}
+              onClick={() => void loadLevel(nextLevel)}
+              className="min-h-9 rounded-lg border border-white/15 bg-white/[0.06] px-2 py-2 text-xs font-medium text-white/85 transition hover:bg-white/[0.11] disabled:opacity-40 sm:px-3 sm:text-sm"
+            >
+              К словам из HSK {nextLevel}
+            </button>
+          ) : <span />}
+          <div className="min-w-0 text-center">
+            <h1 className="text-sm font-medium leading-tight text-white/85 sm:text-lg">
+              <span className="block">Отметьте <strong className="font-bold text-white">хорошо</strong></span>
+              <span className="block">выученные слова</span>
+            </h1>
+            <p className="mt-1 text-xs text-white/45 sm:text-sm">HSK {level}</p>
+          </div>
+          <button
+            type="button"
+            disabled={saving || loading}
+            onClick={() => void finishCalibration()}
+            className="min-h-9 rounded-lg border border-emerald-300/30 bg-emerald-400/15 px-3 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/25 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4 sm:text-sm"
+          >
+            Готово
+          </button>
+        </div>
       </header>
 
-      <section className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6" aria-label={`Слова HSK ${level}`}>
+      <section className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-1 sm:px-3 sm:py-2" aria-label={`Слова HSK ${level}`}>
         {loading ? (
           <div className="flex min-h-48 items-center justify-center text-sm text-white/45">Загрузка слов…</div>
         ) : error && words.length === 0 ? (
@@ -109,7 +132,7 @@ export default function CalibrationClient() {
         ) : words.length === 0 ? (
           <p className="py-12 text-center text-sm text-white/45">Для этого уровня слова не найдены.</p>
         ) : (
-          <div className="flex content-start items-start justify-center gap-1.5 sm:gap-2" style={{ flexWrap: "wrap" }}>
+          <div className="flex content-start items-start justify-center gap-1 sm:gap-1.5" style={{ flexWrap: "wrap" }}>
             {words.map(({ word }) => {
               const isSelected = selected.has(word);
               const length = Math.max(1, Array.from(word).length);
@@ -122,8 +145,8 @@ export default function CalibrationClient() {
                   aria-label={word}
                   className={`flex shrink-0 items-center justify-center rounded-lg border font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/80 ${isSelected ? "border-emerald-300/80 bg-emerald-400/25 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.15)]" : "border-white/[0.09] bg-white/[0.035] text-white/85 hover:border-white/20 hover:bg-white/[0.08]"}`}
                   style={{
-                    width: `${length * 2.75}rem`,
-                    height: "clamp(2.75rem, 5.8vw, 4rem)",
+                    width: `${length * 2.55}rem`,
+                    height: "clamp(2.6rem, 6.5vh, 4.5rem)",
                     fontSize: "clamp(1rem, 2.2vw, 1.55rem)",
                   }}
                 >
@@ -135,31 +158,7 @@ export default function CalibrationClient() {
         )}
       </section>
 
-      <footer className="shrink-0 border-t border-white/[0.08] bg-[#090909]/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 sm:py-4">
-        {error && words.length > 0 && <p className="mb-3 text-center text-sm text-red-200">{error}</p>}
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 sm:flex-row sm:justify-center">
-          {nextLevel ? (
-            <button
-              type="button"
-              disabled={loading || saving}
-              onClick={() => void loadLevel(nextLevel)}
-              className="flex min-h-12 flex-1 items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white/85 transition hover:bg-white/[0.11] disabled:opacity-40"
-            >
-              <span>Перейти к словам из HSK {nextLevel}</span>
-              <span aria-hidden="true" className="text-xl">→</span>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            disabled={saving || loading || selected.size === 0}
-            onClick={() => void finishCalibration()}
-            className="flex min-h-12 flex-1 items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-400/15 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/25 disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            Завершить калибровку
-          </button>
-        </div>
-        <p className="mt-2 text-center text-xs text-white/30">Отмеченные слова появятся снова через 60 дней</p>
-      </footer>
+      {error && words.length > 0 && <p className="shrink-0 px-3 py-1 text-center text-sm text-red-200">{error}</p>}
 
       {saving && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="status" aria-live="polite">
