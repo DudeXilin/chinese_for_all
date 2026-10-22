@@ -13,7 +13,7 @@ export async function GET() {
     .from("user_unwanted_words")
     .select("word")
     .eq("user_id", userId);
-  if (unwantedError) {
+  if (unwantedError && unwantedError.code !== "42P01" && unwantedError.code !== "PGRST205") {
     console.error("[Sentences collection words] failed to load unwanted words", unwantedError);
     return Response.json({ error: "Не удалось загрузить список ненужных слов." }, { status: 500 });
   }
