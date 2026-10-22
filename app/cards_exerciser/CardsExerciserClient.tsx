@@ -148,6 +148,11 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   const [debugOpen, setDebugOpen] = useState(false);
   const [componentRoleHelp, setComponentRoleHelp] = useState<{ char: string; role: "semantic" | "phonetic" } | null>(null);
   const [frequencyOpen, setFrequencyOpen] = useState(false);
+  const [unwantedOpen, setUnwantedOpen] = useState(false);
+  const [unwantedBusy, setUnwantedBusy] = useState(false);
+  const [unwantedError, setUnwantedError] = useState("");
+  const [unwantedCanConfirm, setUnwantedCanConfirm] = useState(false);
+  const unwantedScrollRef = useRef<HTMLDivElement>(null);
   const [commonWordsOpen, setCommonWordsOpen] = useState(false);
   const [commonWordsTarget, setCommonWordsTarget] = useState<string | null>(null);
   const [commonWordsDialogData, setCommonWordsDialogData] = useState<{ word: string; relatedWords: Array<{ word: string; pinyin: string | null; translation: string | null; frequency: Record<string, string | number | null> | null }> } | null>(null);
@@ -257,8 +262,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     };
   }
 
-  function sanitizeDictionaryComponent(component: StructureComponent): StructureComponent {
-    return {
+  function sanitizeDictionaryComponent(component: StructureComponent): StructureComponent {    return {
       char: component.char,
       role: component.role,
       pinyin: dictionaryPinyins[component.char] ?? getPinyin(component.char),
@@ -331,6 +335,56 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   function closeCommonWords() {
     setCommonWordsOpen(false);
     setCommonWordsTarget(null);
+  }
+
+  async function openUnwantedDialog() {
+    setUnwantedOpen(true);
+    setUnwantedBusy(false);
+    setUnwantedError("");
+    setUnwantedCanConfirm(false);
+    if (!frequencyData || frequencyData.word !== currentWord) {
+      try {
+        const response = await fetch("/api/frequency?word=" + encodeURIComponent(currentWord), { cache: "force-cache" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
+        setFrequencyData({
+          ...payload,
+          relatedWords: filterRelatedWords(Array.isArray(payload.relatedWords) ? payload.relatedWords : []),
+        });
+      } catch (error) {
+        setUnwantedError(error instanceof Error ? error.message : "Не удалось загрузить данные слова.");
+      }
+    }
+  }
+
+  async function confirmUnwantedWord() {
+    if (!unwantedCanConfirm || unwantedBusy) return;
+    setUnwantedBusy(true);
+    setUnwantedError("");
+    try {
+      const response = await fetch("/api/words/unwanted", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ word: currentWord, action: "exclude" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Не удалось отказаться от слова.");
+      setUnwantedOpen(false);
+      setLastFSRSResult(null);
+      setAnswer("");
+      if (index >= words.length - 1) {
+        if (embedded) onClose?.();
+        else setFinished(true);
+      } else {
+        setIndex((value) => value + 1);
+        setSide("front");
+      }
+    } catch (error) {
+      setUnwantedError(error instanceof Error ? error.message : "Не удалось отказаться от слова.");
+    } finally {
+      setUnwantedBusy(false);
+    }
   }
 
   function closeTopStructure() { setStructureStack((stack) => stack.slice(0, -1)); }
@@ -517,8 +571,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
 
     return () => {
       html.style.overflow = previousHtmlOverflow;
-      body.style.overflow = previousBodyOverflow;
-      body.style.touchAction = previousBodyTouchAction;
+      body.style.overflow = previousBodyOverflow;      body.style.touchAction = previousBodyTouchAction;
     };
   }, [structureStack.length]);
 
@@ -777,14 +830,14 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                   <BookIcon />
                 </button>
               )}
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((index + 1) / Math.max(words.length, 1)) * 100}%` }} /></div>
-              <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{index + 1} / {words.length}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((index + 1) / Math.max(words.length, 1)) * 100}%` }} /></div>              <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{index + 1} / {words.length}</span>
 
             </div>
           </header>}
 
           <section className={`mx-auto w-full max-w-3xl ${embedded ? "mt-0" : "mt-5"}`}>
             <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/40 backdrop-blur-2xl">
+              {side === "back" && <button type="button" onClick={() => void openUnwantedDialog()} className="absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/30 text-xl shadow-lg backdrop-blur-xl transition hover:border-rose-200/25 hover:bg-rose-300/[0.08]" aria-label="Отказаться от слова" title="Это слово мне не нужно">🗑️</button>}
               {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
@@ -976,6 +1029,64 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       )}
 
 
+      {unwantedOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 px-3 py-4 backdrop-blur-md sm:px-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !unwantedBusy) setUnwantedOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="unwanted-title" className="relative flex max-h-[min(90dvh,860px)] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#171717]/[0.98] text-white/85 shadow-2xl shadow-black/60" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
+              <h2 id="unwanted-title" className="text-lg font-semibold text-white">Точно отказаться от слова?</h2>
+              <button type="button" onClick={() => setUnwantedOpen(false)} disabled={unwantedBusy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-40" aria-label="Закрыть">×</button>
+            </header>
+            <div ref={unwantedScrollRef} onScroll={(event) => { const el = event.currentTarget; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 12) setUnwantedCanConfirm(true); }} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-4 border-b border-white/10 pb-5">
+                <div className="min-w-0">
+                  <div className="text-6xl font-medium leading-tight text-white sm:text-8xl">{currentWord}</div>
+                  <p className="mt-2 text-sm leading-6 text-white/60">{translation}</p>
+                </div>
+                <div className="pt-2 text-right">
+                  <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Вероятность в фильмах</div>
+                  <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["W-CD%"] != null ? `${frequencyData.wordFrequency["W-CD%"]}%` : "—"}</div>
+                </div>
+                <div className="pt-2 text-right">
+                  <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Частотность в словаре</div>
+                  <div className="mt-1 font-mono text-sm text-white/85">{frequencyData?.word === currentWord && frequencyData.wordFrequency?.["rank"] != null ? `топ ${frequencyData.wordFrequency["rank"]}` : "—"}</div>
+                </div>
+              </div>
+              <div className="py-4">
+                <h3 className="mb-3 text-sm font-semibold text-white/75">10 самых частотных друзей слова</h3>
+                {frequencyLoading && frequencyData?.word !== currentWord ? <p className="py-8 text-center text-sm text-white/45">Загрузка друзей…</p> : frequencyData?.word === currentWord && frequencyData.relatedWords.length ? (
+                  <div className="space-y-2">
+                    {frequencyData.relatedWords.slice(0, 10).map((item, friendIndex) => (
+                      <div key={item.word} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-3 py-3 sm:px-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="w-5 shrink-0 font-mono text-xs text-white/30">{friendIndex + 1}.</span>
+                          <div className="min-w-0">
+                            <div className="text-2xl leading-tight text-white/90">{item.word}</div>
+                            <p className="mt-1 text-sm leading-5 text-white/60">{item.translation || "Перевод не найден"}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">В фильмах</div>
+                          <div className="font-mono text-xs text-white/75">{item.frequency?.["W-CD%"] == null ? "—" : `${item.frequency["W-CD%"]}%`}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">Топ</div>
+                          <div className="font-mono text-xs text-white/75">{item.frequency?.["rank"] == null ? "—" : item.frequency["rank"]}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-5 text-sm text-white/45">Частотные друзья для этого слова не найдены.</p>}
+              </div>
+              <p className="mt-2 border-t border-white/[0.08] pt-4 text-xs leading-5 text-white/35">После отказа слово исчезнет из новых карточек и примеров предложений. Его можно будет вернуть из коллекции.</p>
+              {unwantedError && <p role="alert" className="mt-3 rounded-xl border border-rose-300/15 bg-rose-300/[0.06] px-3 py-2 text-sm text-rose-100/80">{unwantedError}</p>}
+            </div>
+            <footer className="shrink-0 border-t border-white/10 px-5 py-4 sm:px-7">
+              <button type="button" onClick={() => void confirmUnwantedWord()} disabled={!unwantedCanConfirm || unwantedBusy} className="w-full rounded-2xl border border-rose-200/20 bg-rose-200/[0.10] px-5 py-3.5 text-sm font-semibold text-rose-50 transition hover:bg-rose-200/[0.16] disabled:cursor-not-allowed disabled:opacity-35">{unwantedBusy ? "Сохраняем…" : unwantedCanConfirm ? "Отказаться от слова" : "Пролистайте окно до конца"}</button>
+            </footer>
+          </section>
+        </div>
+      )}
+
       {frequencyOpen && (
         <div
           className="fixed inset-0 z-[160] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6"
@@ -1037,8 +1148,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                       {(Array.isArray(frequencyData.characters) ? frequencyData.characters : []).map(({ character, frequency }) => (
                         <div key={character} className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3 sm:p-4">
                           <div className="mb-3 flex items-center gap-3">
-                            <span className="text-3xl text-white/85">{character}</span>
-                            <span className="text-xs text-white/40">{frequency ? "Данные найдены" : "Нет записи в таблице"}</span>
+                            <span className="text-3xl text-white/85">{character}</span>                            <span className="text-xs text-white/40">{frequency ? "Данные найдены" : "Нет записи в таблице"}</span>
                           </div>
                           {frequency ? (
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -1297,8 +1407,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                           >
                             <div className="text-[54px] text-white/80">{component.char}</div>
                             {(component.meaning || component.pinyin) && (
-                              <div className="mt-2 leading-5 text-white/45">
-                                {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
+                              <div className="mt-2 leading-5 text-white/45">                                {component.pinyin && <div className="text-[23px]">{component.pinyin}</div>}
                                 {component.meaning && <div className="text-sm">{component.meaning}</div>}
                               </div>
                             )}
