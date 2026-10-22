@@ -3,8 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getPinyins, getRussianTranslations, getSingleCharacterPinyins, getSingleCharacterRussianTranslations } from "@/lib/ru_en_chi_dictionary";
 import WorkingTableCard from "./WorkingTableCard";
+import UnwantedWordDialog from "@/components/UnwantedWordDialog";
 
 type CollectionCard = { word: string; scheduled_days: number; due: string; stability: number; reps: number; unwanted?: boolean };
+type CollectionFrequency = Record<string, string | number | null>;
+type CollectionFrequencyItem = { word: string; pinyin: string | null; translation: string | null; frequency: CollectionFrequency | null };
+type CollectionFrequencyData = { word: string; wordFrequency: CollectionFrequency | null; relatedWords: CollectionFrequencyItem[] };
 
 export default function WorkingTablePage() {
   const [debugVisible, setDebugVisible] = useState(false);
@@ -19,6 +23,9 @@ export default function WorkingTablePage() {
   const [collectionTrashMode, setCollectionTrashMode] = useState(false);
   const [pendingUnwantedWord, setPendingUnwantedWord] = useState<string | null>(null);
   const [unwantedActionBusy, setUnwantedActionBusy] = useState(false);
+  const [collectionUnwantedError, setCollectionUnwantedError] = useState<string | null>(null);
+  const [collectionFrequencyData, setCollectionFrequencyData] = useState<CollectionFrequencyData | null>(null);
+  const [collectionFrequencyLoading, setCollectionFrequencyLoading] = useState(false);
 
   async function openCollection() {
     setCollectionTrashMode(false);
@@ -54,10 +61,31 @@ export default function WorkingTablePage() {
     }
   }
 
+  async function openCollectionUnwantedDialog(word: string) {
+    setPendingUnwantedWord(word);
+    setCollectionUnwantedError(null);
+    setCollectionFrequencyData(null);
+    setCollectionFrequencyLoading(true);
+    try {
+      const response = await fetch("/api/frequency?word=" + encodeURIComponent(word), { cache: "force-cache" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Не удалось загрузить частотность.");
+      setCollectionFrequencyData({
+        word,
+        wordFrequency: payload.wordFrequency && typeof payload.wordFrequency === "object" ? payload.wordFrequency : null,
+        relatedWords: Array.isArray(payload.relatedWords) ? payload.relatedWords.slice(0, 10) : [],
+      });
+    } catch (error) {
+      setCollectionUnwantedError(error instanceof Error ? error.message : "Не удалось загрузить данные слова.");
+    } finally {
+      setCollectionFrequencyLoading(false);
+    }
+  }
+
   async function confirmCollectionUnwantedWord() {
     if (!pendingUnwantedWord || unwantedActionBusy) return;
     setUnwantedActionBusy(true);
-    setCollectionError(null);
+    setCollectionUnwantedError(null);
     try {
       const response = await fetch("/api/words/unwanted", {
         method: "POST",
@@ -76,8 +104,9 @@ export default function WorkingTablePage() {
       });
       setShowUnwanted(true);
       setPendingUnwantedWord(null);
+      setCollectionUnwantedError(null);
     } catch (error) {
-      setCollectionError(error instanceof Error ? error.message : "Не удалось отметить слово ненужным.");
+      setCollectionUnwantedError(error instanceof Error ? error.message : "Не удалось отметить слово ненужным.");
     } finally {
       setUnwantedActionBusy(false);
     }
@@ -159,23 +188,51 @@ export default function WorkingTablePage() {
       </a>
 
       {pendingUnwantedWord && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !unwantedActionBusy) setPendingUnwantedWord(null); }}>
-          <section role="alertdialog" aria-modal="true" aria-labelledby="collection-unwanted-title" className="w-full max-w-md rounded-[28px] border border-white/15 bg-[#171717]/[0.98] p-6 text-white shadow-2xl sm:p-7" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-rose-200/15 bg-rose-200/[0.07] text-4xl">{pendingUnwantedWord}</div>
-              <div className="min-w-0 pt-1">
-                <h2 id="collection-unwanted-title" className="text-lg font-semibold">Точно отказаться от слова?</h2>
-                <p className="mt-2 text-sm text-white/65">{collectionTranslations[pendingUnwantedWord] || "Перевод не найден"}</p>
-                <p className="mt-3 text-sm leading-6 text-white/45">Слово перестанет появляться в новых карточках и предложениях. Его можно будет вернуть из фильтра «Ненужные слова».</p>
+        <UnwantedWordDialog
+          word={pendingUnwantedWord}
+          translation={collectionTranslations[pendingUnwantedWord] || "Перевод не найден"}
+          busy={unwantedActionBusy}
+          error={collectionUnwantedError}
+          onCancel={() => { if (!unwantedActionBusy) { setPendingUnwantedWord(null); setCollectionUnwantedError(null); } }}
+          onConfirm={() => void confirmCollectionUnwantedWord()}
+        >
+          <div className="grid grid-cols-2 gap-3 border-b border-white/10 pb-4 sm:gap-5">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3">
+              <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Вероятность в фильмах</div>
+              <div className="mt-1 font-mono text-sm text-white/85">{collectionFrequencyData?.word === pendingUnwantedWord && collectionFrequencyData.wordFrequency?.["W-CD%"] != null ? `${collectionFrequencyData.wordFrequency["W-CD%"]}%` : "—"}</div>
+            </div>
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3">
+              <div className="text-[10px] leading-4 text-white/40 sm:text-xs">Частотность в словаре</div>
+              <div className="mt-1 font-mono text-sm text-white/85">{collectionFrequencyData?.word === pendingUnwantedWord && collectionFrequencyData.wordFrequency?.["rank"] != null ? `топ ${collectionFrequencyData.wordFrequency["rank"]}` : "—"}</div>
+            </div>
+          </div>
+          <div className="py-4">
+            <h3 className="mb-3 text-sm font-semibold text-white/75">10 самых частотных друзей слова</h3>
+            {collectionFrequencyLoading && collectionFrequencyData?.word !== pendingUnwantedWord ? <p className="py-8 text-center text-sm text-white/45">Загрузка друзей…</p> : collectionFrequencyData?.word === pendingUnwantedWord && collectionFrequencyData.relatedWords.length ? (
+              <div className="space-y-2">
+                {collectionFrequencyData.relatedWords.map((item, friendIndex) => (
+                  <div key={item.word} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-3 py-3 sm:px-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="w-5 shrink-0 font-mono text-xs text-white/30">{friendIndex + 1}.</span>
+                      <div className="min-w-0">
+                        <div className="text-2xl leading-tight text-white/90">{item.word}</div>
+                        <p className="mt-1 text-sm leading-5 text-white/60">{item.translation || "Перевод не найден"}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">В фильмах</div>
+                      <div className="font-mono text-xs text-white/75">{item.frequency?.["W-CD%"] == null ? "—" : `${item.frequency["W-CD%"]}%`}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[9px] leading-4 text-white/35 sm:text-[10px]">Топ</div>
+                      <div className="font-mono text-xs text-white/75">{item.frequency?.["rank"] == null ? "—" : item.frequency["rank"]}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            {collectionError && <p role="alert" className="mt-4 rounded-xl border border-rose-200/15 bg-rose-200/[0.06] px-3 py-2 text-sm text-rose-100/80">{collectionError}</p>}
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button type="button" disabled={unwantedActionBusy} onClick={() => { setPendingUnwantedWord(null); setCollectionError(null); }} className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70 transition hover:bg-white/[0.09] disabled:opacity-40">Оставить слово</button>
-              <button type="button" disabled={unwantedActionBusy} onClick={() => void confirmCollectionUnwantedWord()} className="rounded-xl border border-rose-200/20 bg-rose-200/[0.10] px-4 py-3 text-sm font-semibold text-rose-50 transition hover:bg-rose-200/[0.17] disabled:opacity-40">{unwantedActionBusy ? "Сохраняем…" : "Отказаться от слова"}</button>
-            </div>
-          </section>
-        </div>
+            ) : <p className="rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-5 text-sm text-white/45">Частотные друзья для этого слова не найдены.</p>}
+          </div>
+        </UnwantedWordDialog>
       )}
 
       {collectionOpen && (
@@ -197,7 +254,7 @@ export default function WorkingTablePage() {
                 <ul className="divide-y divide-white/[0.07]">
                   {filteredCollection.map((card) => {
                     const hard = card.scheduled_days < 30;
-                    return <li key={card.word} className="flex items-center gap-3 py-3"><button type="button" onClick={() => { if (collectionTrashMode && !card.unwanted) setPendingUnwantedWord(card.word); }} disabled={!collectionTrashMode || Boolean(card.unwanted)} aria-label={collectionTrashMode && !card.unwanted ? `Отказаться от слова ${card.word}` : card.word} title={collectionTrashMode && !card.unwanted ? "Отметить слово как ненужное" : undefined} className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border text-2xl transition ${collectionTrashMode && !card.unwanted ? "cursor-pointer border-rose-200/25 bg-rose-200/[0.07] hover:border-rose-200/50 hover:bg-rose-200/[0.15]" : "cursor-default border-white/10 bg-white/[0.04]"} disabled:opacity-65`}>{card.word}</button><div className="min-w-0 flex-1"><div className="truncate text-sm text-white/85">{collectionTranslations[card.word] || "Перевод не найден"}</div><div className="mt-1 text-xs text-white/40">{collectionPinyins[card.word] || ""}</div></div><div className="flex shrink-0 flex-col items-end gap-1"><span className={`inline-flex rounded-full border px-2 py-1 text-[11px] ${card.unwanted ? "border-rose-300/20 bg-rose-300/[0.07] text-rose-100/75" : hard ? "border-amber-300/20 bg-amber-300/[0.07] text-amber-100/75" : "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-100/75"}`}>{card.unwanted ? "Ненужное" : hard ? "Сложное" : "Лёгкое"}</span>{card.unwanted ? <button type="button" onClick={async () => { try { const response = await fetch("/api/words/unwanted", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ word: card.word, action: "restore" }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Не удалось вернуть слово."); setUnwantedWords(Array.isArray(payload.words) ? payload.words : []); setCollectionCards((items) => items.map((item) => item.word === card.word ? { ...item, unwanted: false } : item)); } catch (error) { setCollectionError(error instanceof Error ? error.message : "Не удалось вернуть слово."); } }} className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs text-white/75 transition hover:bg-white/[0.12]">Вернуть</button> : <div className="text-[10px] text-white/35">{Math.max(0, Math.round(card.scheduled_days))} дн.</div>}</div></li>;
+                    return <li key={card.word} className="flex items-center gap-3 py-3"><button type="button" onClick={() => { if (collectionTrashMode && !card.unwanted) void openCollectionUnwantedDialog(card.word); }} disabled={!collectionTrashMode || Boolean(card.unwanted)} aria-label={collectionTrashMode && !card.unwanted ? `Отказаться от слова ${card.word}` : card.word} title={collectionTrashMode && !card.unwanted ? "Отметить слово как ненужное" : undefined} className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border text-2xl transition ${collectionTrashMode && !card.unwanted ? "cursor-pointer border-rose-200/25 bg-rose-200/[0.07] hover:border-rose-200/50 hover:bg-rose-200/[0.15]" : "cursor-default border-white/10 bg-white/[0.04]"} disabled:opacity-65`}>{card.word}</button><div className="min-w-0 flex-1"><div className="truncate text-sm text-white/85">{collectionTranslations[card.word] || "Перевод не найден"}</div><div className="mt-1 text-xs text-white/40">{collectionPinyins[card.word] || ""}</div></div><div className="flex shrink-0 flex-col items-end gap-1"><span className={`inline-flex rounded-full border px-2 py-1 text-[11px] ${card.unwanted ? "border-rose-300/20 bg-rose-300/[0.07] text-rose-100/75" : hard ? "border-amber-300/20 bg-amber-300/[0.07] text-amber-100/75" : "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-100/75"}`}>{card.unwanted ? "Ненужное" : hard ? "Сложное" : "Лёгкое"}</span>{card.unwanted ? <button type="button" onClick={async () => { try { const response = await fetch("/api/words/unwanted", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ word: card.word, action: "restore" }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Не удалось вернуть слово."); setUnwantedWords(Array.isArray(payload.words) ? payload.words : []); setCollectionCards((items) => items.map((item) => item.word === card.word ? { ...item, unwanted: false } : item)); } catch (error) { setCollectionError(error instanceof Error ? error.message : "Не удалось вернуть слово."); } }} className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs text-white/75 transition hover:bg-white/[0.12]">Вернуть</button> : <div className="text-[10px] text-white/35">{Math.max(0, Math.round(card.scheduled_days))} дн.</div>}</div></li>;
                   })}
                 </ul>
               )}
