@@ -257,8 +257,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     return {
       pinyin: dictionaryPinyins[char] || getPinyin(char) || "pinyin placeholder",
       translation: dictionaryTranslations[char] || "перевод placeholder",
-      components,
-      etymology: info.etymology,
+      components,      etymology: info.etymology,
     };
   }
 
@@ -336,6 +335,12 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     setCommonWordsOpen(false);
     setCommonWordsTarget(null);
   }
+
+  useEffect(() => {
+    if (!unwantedOpen) return;
+    const element = unwantedScrollRef.current;
+    if (element && element.scrollHeight <= element.clientHeight + 12) setUnwantedCanConfirm(true);
+  }, [unwantedOpen, frequencyData, currentWord]);
 
   async function openUnwantedDialog() {
     setUnwantedOpen(true);
@@ -518,7 +523,6 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       setTheoryOpen(true);
     }
   }, [theory, theoryKey]);
-
   useEffect(() => {
     if (side !== "front" || finished) return;
 
@@ -777,8 +781,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       console.error("[FSRS-6] review failed", error);
       logFSRS("review_error", {
         word: currentWord,
-        cardIndex: index,
-        rating: ratingName,
+        cardIndex: index,        rating: ratingName,
         message: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
@@ -1037,8 +1040,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
               <button type="button" onClick={() => setUnwantedOpen(false)} disabled={unwantedBusy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-xl text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-40" aria-label="Закрыть">×</button>
             </header>
             <div ref={unwantedScrollRef} onScroll={(event) => { const el = event.currentTarget; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 12) setUnwantedCanConfirm(true); }} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-4 border-b border-white/10 pb-5">
-                <div className="min-w-0">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-4 border-b border-white/10 pb-5">                <div className="min-w-0">
                   <div className="text-6xl font-medium leading-tight text-white sm:text-8xl">{currentWord}</div>
                   <p className="mt-2 text-sm leading-6 text-white/60">{translation}</p>
                 </div>
@@ -1297,8 +1299,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                     )}
 
                     {section.type === "comparison" && section.items && (
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {section.items.map((item, itemIndex) => {
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">                        {section.items.map((item, itemIndex) => {
                           const itemText = typeof item === "string" ? item : item.text;
                           const itemLabel = typeof item === "string" ? undefined : item.label;
                           return (
