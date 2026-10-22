@@ -102,6 +102,13 @@ export default function WorkingTablePage() {
 
       <WorkingTableCard />
 
+      <a
+        href="/cards_exerciser?mode=hard"
+        className="fixed bottom-5 left-1/2 z-30 -translate-x-1/2 rounded-full border border-white/20 bg-white/[0.11] px-6 py-3 text-sm font-medium text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition hover:border-white/30 hover:bg-white/[0.17] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:bottom-7 sm:px-8 sm:py-3.5"
+      >
+        Решать карточки
+      </a>
+
       {collectionOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-8" role="dialog" aria-modal="true" aria-label="Личная коллекция слов" onMouseDown={(event) => { if (event.target === event.currentTarget) setCollectionOpen(false); }}>
           <section className="relative flex max-h-[88svh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#151515]/95 text-white shadow-2xl">
