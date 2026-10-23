@@ -6,6 +6,7 @@ import { convertLatestPinyin } from "@/lib/neat_pinyin_converter";
 type SentenceResult = {
   sentence: string;
   translation: string;
+  pinyin?: string;
   segments?: Array<{ text: string; unknown: boolean }>;
 };
 type DatasetId = "sentences_with_translation.json" | "cmn_sentences_russian_translation.tsv" | "AMC_conversations_100K.txt" | "80k_ru_ch_sentences_simplified.tsv";
@@ -218,6 +219,21 @@ export default function SentencesPage() {
     setHanziInput("");
     setAnswerVisible(false);
     setActiveSentence(sentence);
+  }
+
+  function validatePracticeAnswers() {
+    if (!pinyinInput.trim()) {
+      setAnswerVisible(false);
+      const pinyinField = document.querySelector<HTMLInputElement>('input[aria-label="Введите пиньинь предложения"]');
+      pinyinField?.focus();
+      return;
+    }
+    if (!hanziInput.trim()) {
+      setAnswerVisible(false);
+      hanziInputRef.current?.focus();
+      return;
+    }
+    setAnswerVisible(true);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -524,7 +540,7 @@ export default function SentencesPage() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    hanziInputRef.current?.focus();
+                    validatePracticeAnswers();
                   }
                 }}
                 className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
@@ -541,15 +557,22 @@ export default function SentencesPage() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    setAnswerVisible(true);
+                    validatePracticeAnswers();
                   }
                 }}
                 className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
               />
               {answerVisible && (
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4" aria-live="polite">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-white/45">Правильный ответ</p>
-                  <p className="text-2xl leading-relaxed tracking-wide">{activeSentence.sentence}</p>
+                  <div className="space-y-2 text-base leading-7">
+                    <p><span className="mr-2 text-xs text-white/45">Правильный пиньинь</span>{activeSentence.pinyin || "—"}</p>
+                    <p><span className="mr-2 text-xs text-white/45">Правильные иероглифы</span><span className="text-xl tracking-wide"><HighlightedSentence sentence={activeSentence.sentence} target={target.trim()} /></span></p>
+                    <p><span className="mr-2 text-xs text-white/45">Перевод</span>{activeSentence.translation}</p>
+                    <div className="border-t border-white/10 pt-3">
+                      <p><span className="mr-2 text-xs text-white/45">Ваш пиньинь</span>{pinyinInput}</p>
+                      <p><span className="mr-2 text-xs text-white/45">Ваши иероглифы</span><span className="text-xl tracking-wide"><HighlightedSentence sentence={hanziInput} target={target.trim()} /></span></p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
