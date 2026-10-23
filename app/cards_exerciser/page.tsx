@@ -83,6 +83,7 @@ export default async function CardsExerciserPage({
       <CardsExerciserClient
         title="Сложные слова"
         words={hardWords}
+        repeatAgain
         dictionaryTranslations={dictionaryTranslations}
         dictionaryPinyins={dictionaryPinyins}
         dictionaryPartsOfSpeech={dictionaryPartsOfSpeech}
