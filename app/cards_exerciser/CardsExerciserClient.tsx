@@ -139,6 +139,7 @@ function BookIcon() {
 
 export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {}, embedded = false, initialSide = "front", onClose }: Props) {
   const [index, setIndex] = useState(0);
+  const [queue, setQueue] = useState<number[]>(() => words.map((_, wordIndex) => wordIndex));
   const [side, setSide] = useState<"front" | "back">(initialSide);
   const [answer, setAnswer] = useState("");
   const [finished, setFinished] = useState(false);
@@ -181,12 +182,13 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
   const [structureStack, setStructureStack] = useState<Array<{ char: string; pinyin: string; translation: string; components: StructureComponent[]; etymology?: CharacterStructure["etymology"] }>>([]);
   const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [fsrsCards, setFsrsCards] = useState<Record<number, SerializedCard>>({});
-  const [lastFSRSResult, setLastFSRSResult] = useState<{ index: number; word: string; answer: string; rating: number; previousCard: SerializedCard; result: ReturnType<typeof review> } | null>(null);
+  const [lastFSRSResult, setLastFSRSResult] = useState<{ index: number; cardIndex: number; previousQueue: number[]; word: string; answer: string; rating: number; previousCard: SerializedCard; result: ReturnType<typeof review> } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFrontRef = useRef(side === "front" && !finished);
   isFrontRef.current = side === "front" && !finished;
 
-  const currentWord = words[index] ?? "汉字";
+  const currentCardIndex = queue[index] ?? 0;
+  const currentWord = words[currentCardIndex] ?? "汉字";
   const frequencyPercent = (() => {
     if (!frequencyData || frequencyData.word !== currentWord) return null;
     const raw = Array.from(currentWord).length === 1
@@ -660,7 +662,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
         if (!response.ok) throw new Error("FSRS undo failed");
       }
 
-      setFsrsCards((cards) => ({ ...cards, [previous.index]: previous.previousCard }));
+      setFsrsCards((cards) => ({ ...cards, [previous.cardIndex]: previous.previousCard }));
+      setQueue(previous.previousQueue);
       setIndex(previous.index);
       setAnswer(previous.answer);
       setSide("back");
@@ -682,8 +685,9 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     setRatingBusy(true);
 
     const now = getAuthoritativeNow();
-    const card = fsrsCards[index] ?? createCard(now);
+    const card = fsrsCards[currentCardIndex] ?? createCard(now);
     const previousCard = { ...card };
+    const previousQueue = [...queue];
     const ratingName = Rating[rating];
 
     try {
@@ -716,12 +720,12 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
         result = review(card, now, rating);
       }
 
-      setFsrsCards((cards) => ({ ...cards, [index]: result.card }));
-      setLastFSRSResult({ index, word: currentWord, answer, rating, previousCard, result });
+      setFsrsCards((cards) => ({ ...cards, [currentCardIndex]: result.card }));
+      setLastFSRSResult({ index, cardIndex: currentCardIndex, previousQueue, word: currentWord, answer, rating, previousCard, result });
 
       logFSRS("review", {
         word: currentWord,
-        cardIndex: index,
+        cardIndex: currentCardIndex,
         answer: answer || null,
         rating: ratingName,
         ratingValue: rating,
@@ -761,19 +765,29 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
         },
       });
 
-      if (index >= words.length - 1) {
-        if (embedded) { onClose?.(); return; }
-        setFinished(true);
-        return;
+      if (rating === Rating.Again) {
+        // Keep failed cards in the active queue, moving them to its end.
+        // They remain available until any other rating is given to each card.
+        setQueue((currentQueue) => [...currentQueue.slice(1), currentCardIndex]);
+        setIndex(0);
+      } else {
+        const remainingQueue = queue.slice(1);
+        setQueue(remainingQueue);
+        setIndex(0);
+        if (remainingQueue.length === 0) {
+          if (embedded) { onClose?.(); return; }
+          setFinished(true);
+          return;
+        }
       }
-      setIndex((value) => value + 1);
       setAnswer("");
       setSide("front");
     } catch (error) {
       console.error("[FSRS-6] review failed", error);
       logFSRS("review_error", {
         word: currentWord,
-        cardIndex: index,        rating: ratingName,
+        cardIndex: currentCardIndex,
+        rating: ratingName,
         message: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
