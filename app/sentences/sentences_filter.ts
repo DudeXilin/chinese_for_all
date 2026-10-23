@@ -16,6 +16,7 @@ type Dataset = Record<string, unknown> | unknown[];
 export type SentenceResult = {
   sentence: string;
   translation: string;
+  pinyin?: string;
   segments: Array<{ text: string; unknown: boolean }>;
 };
 
@@ -228,6 +229,8 @@ export function filterSentences(
     if (!Array.isArray(record.tags) || taggedWords.length === 0) stats.missingTags += 1;
 
     const translation = getTranslation(record);
+    const pinyinValue = ["pinyin", "pinYin", "pinyin_sentence", "romanization", "romanisation"].map((key) => record[key]).find((value) => typeof value === "string" && value.trim());
+    const pinyin = typeof pinyinValue === "string" ? pinyinValue.trim() : "";
     const tokens = tokenizeSentence(sentence);
     const lexicalTokens = getLexicalTokens(tokens);
     const knownCount = lexicalTokens.filter((token) => known.has(token)).length;
@@ -289,6 +292,7 @@ export function filterSentences(
     matches.push({
       sentence,
       translation,
+      ...(pinyin ? { pinyin } : {}),
       segments: tokens.map((token) => ({ text: token, unknown: !isNonLexicalToken(token) && !known.has(normalizeWord(token)) })),
       knownRatio,
       exactKnownRatio,
