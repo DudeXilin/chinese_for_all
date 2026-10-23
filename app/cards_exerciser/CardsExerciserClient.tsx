@@ -53,7 +53,7 @@ type CharacterStructure = {
   etymology?: CharacterEtymology | null;
 };
 export type DeckCard = { word: string; pinyin?: string; translation?: string; characterStructure?: Record<string, { pinyin?: string; translation?: string; components?: StructureComponent[] }> };
-type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string>; dictionaryPartsOfSpeech?: Record<string, string>; embedded?: boolean; initialSide?: "front" | "back"; onClose?: () => void };
+type Props = { title: string; words: string[]; cards?: DeckCard[]; theory?: Theory; dictionaryTranslations?: Record<string, string>; dictionaryPinyins?: Record<string, string>; dictionaryPartsOfSpeech?: Record<string, string>; embedded?: boolean; initialSide?: "front" | "back"; onClose?: () => void; repeatAgain?: boolean };
 
 const translations: Record<string, string> = {
   "这里": "здесь", "那里": "там", "这儿": "здесь", "那儿": "там", "哪里": "где", "哪儿": "где",
@@ -137,7 +137,7 @@ function BookIcon() {
   );
 }
 
-export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {}, embedded = false, initialSide = "front", onClose }: Props) {
+export default function CardsExerciserClient({ title, words, cards, theory, dictionaryTranslations = {}, dictionaryPinyins = {}, dictionaryPartsOfSpeech = {}, embedded = false, initialSide = "front", onClose, repeatAgain = false }: Props) {
   const [index, setIndex] = useState(0);
   const [queue, setQueue] = useState<number[]>(() => words.map((_, wordIndex) => wordIndex));
   const [side, setSide] = useState<"front" | "back">(initialSide);
@@ -767,9 +767,8 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
         },
       });
 
-      if (rating === Rating.Again) {
-        // Keep failed cards in the active queue, moving them to its end.
-        // They remain available until any other rating is given to each card.
+      if (repeatAgain && rating === Rating.Again) {
+        // In difficult-card mode, keep failed cards in the active queue and move them to its end.
         setQueue((currentQueue) => [...currentQueue.slice(1), currentCardIndex]);
         setIndex(0);
       } else {
