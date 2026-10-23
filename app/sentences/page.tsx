@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { convertLatestPinyin } from "@/lib/neat_pinyin_converter";
 
 type SentenceResult = {
   sentence: string;
@@ -207,6 +208,17 @@ export default function SentencesPage() {
   const [copyStatus, setCopyStatus] = useState("");
   const [debugData, setDebugData] = useState<SentenceDebug | null>(null);
   const [activeSentence, setActiveSentence] = useState<SentenceResult | null>(null);
+  const [pinyinInput, setPinyinInput] = useState("");
+  const [hanziInput, setHanziInput] = useState("");
+  const [answerVisible, setAnswerVisible] = useState(false);
+  const hanziInputRef = useRef<HTMLInputElement>(null);
+
+  function openSentencePractice(sentence: SentenceResult) {
+    setPinyinInput("");
+    setHanziInput("");
+    setAnswerVisible(false);
+    setActiveSentence(sentence);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -451,7 +463,7 @@ export default function SentencesPage() {
             ) : (
               <div className="divide-y divide-white/[0.08] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
                 {results.map((result, index) => (
-                  <article key={`${index}-${result.sentence}`} onClick={() => setActiveSentence(result)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveSentence(result); } }} className="cursor-pointer px-5 py-5 transition hover:bg-white/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#f0d9bd] sm:px-6 sm:py-6">
+                  <article key={`${index}-${result.sentence}`} onClick={() => openSentencePractice(result)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openSentencePractice(result); } }} className="cursor-pointer px-5 py-5 transition hover:bg-white/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#f0d9bd] sm:px-6 sm:py-6">
                     <p className="text-xl leading-9 tracking-wide sm:text-2xl">
                       {result.segments?.length ? result.segments.map((segment, segmentIndex) => {
                         const isTarget = Boolean(target.trim()) && segment.text.toLowerCase().includes(target.trim().toLowerCase());
@@ -507,16 +519,39 @@ export default function SentencesPage() {
                 aria-label="Введите пиньинь предложения"
                 placeholder="Введите предложение пиньинем"
                 autoComplete="off"
+                value={pinyinInput}
+                onChange={(event) => setPinyinInput(convertLatestPinyin(event.target.value))}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    hanziInputRef.current?.focus();
+                  }
+                }}
                 className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
               />
               <input
+                ref={hanziInputRef}
                 type="text"
                 aria-label="Введите предложение китайскими иероглифами"
                 placeholder="Введите предложение китайскими иероглифами"
                 autoComplete="off"
                 lang="zh-Hans"
+                value={hanziInput}
+                onChange={(event) => setHanziInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    setAnswerVisible(true);
+                  }
+                }}
                 className="w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/30 focus:border-white/35 focus:ring-2 focus:ring-white/5"
               />
+              {answerVisible && (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4" aria-live="polite">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-white/45">Правильный ответ</p>
+                  <p className="text-2xl leading-relaxed tracking-wide">{activeSentence.sentence}</p>
+                </div>
+              )}
             </div>
           </section>
         </div>
