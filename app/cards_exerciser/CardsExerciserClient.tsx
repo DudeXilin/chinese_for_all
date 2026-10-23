@@ -199,7 +199,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
     return Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) : null;
   })();
   const frequencyHue = frequencyPercent == null ? 270 : Math.round((1 - frequencyPercent / 100) * 270);
-  const currentFSRSCard = fsrsCards[index] ?? createCard(getAuthoritativeNow());
+  const currentFSRSCard = fsrsCards[currentCardIndex] ?? createCard(getAuthoritativeNow());
   const deckCard = cards?.find((card) => card.word === currentWord);
   const uiWord = (uiDecks.words as Record<string, { pinyin: string; translation: string }>)[currentWord];
   const correctPinyin = dictionaryPinyins[currentWord] ?? getPinyin(currentWord) ?? "pinyin placeholder";
@@ -372,11 +372,13 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       setUnwantedOpen(false);
       setLastFSRSResult(null);
       setAnswer("");
-      if (index >= words.length - 1) {
+      const remainingQueue = queue.slice(1);
+      setQueue(remainingQueue);
+      setIndex(0);
+      if (remainingQueue.length === 0) {
         if (embedded) onClose?.();
         else setFinished(true);
       } else {
-        setIndex((value) => value + 1);
         setSide("front");
       }
     } catch (error) {
@@ -672,7 +674,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
       console.error("[FSRS-6] undo failed", error);
       logFSRS("undo_error", {
         word: previous.word,
-        cardIndex: previous.index,
+        cardIndex: previous.cardIndex,
         message: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
@@ -839,7 +841,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
                   <BookIcon />
                 </button>
               )}
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((index + 1) / Math.max(words.length, 1)) * 100}%` }} /></div>              <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{index + 1} / {words.length}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]"><div className="h-full rounded-full bg-white/60 transition-all duration-300" style={{ width: `${((words.length - queue.length) / Math.max(words.length, 1)) * 100}%` }} /></div>              <span className="shrink-0 font-mono text-[10px] tabular-nums text-white/30">{words.length - queue.length} / {words.length}</span>
 
             </div>
           </header>}
@@ -850,7 +852,7 @@ export default function CardsExerciserClient({ title, words, cards, theory, dict
               {embedded && <button type="button" onClick={onClose} className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 text-xl text-white/65 backdrop-blur-xl transition hover:bg-white/[0.12] hover:text-white" aria-label="Закрыть карточку">×</button>}
                             {side === "front" ? (
                 <div className="relative px-5 pb-7 pt-8 sm:px-10 sm:pb-8 sm:pt-10">
-                  {!embedded && lastFSRSResult && index === lastFSRSResult.index + 1 && (
+                  {!embedded && lastFSRSResult && queue.length > 0 && (
                     <button
                       type="button"
                       onClick={undoLastRating}
